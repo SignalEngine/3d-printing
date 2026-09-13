@@ -58,7 +58,7 @@ here unless there is a reason not to.
   overflow valve for when both subscriptions are exhausted, not the default. They are
   the only thing that keeps working when the subs run dry, so keep them installed.
 
-Cheap-per-token is not cheap-per-outcome: a measured builder benchmark had a /root/.claude/scripts/stack-init.sh.07/M
+Cheap-per-token is not cheap-per-outcome: a measured builder benchmark had a $0.07/M
 model burn more than the whole day's premium usage on one task it then failed.
 **Never cheapen the reviewer** — review-gate and /jury stay as configured.
 
