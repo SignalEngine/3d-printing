@@ -1,0 +1,187 @@
+<title>Poop Bag Holder v3</title>
+<meta name="description" content="Spin-and-zoom preview of the poop bag holder with bone holes and a treat-pouch loop.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+  :root {
+    --bg: #eceef1; --surface: #ffffff; --ink: #1a1d21; --muted: #5a626c; --line: #d6dae0;
+    --accent: #c9651a; --accent-ink: #ffffff; --stage: #dfe3e8; --model: #e2a14c; --text3d: #2b2f35;
+    --sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #111316; --surface: #1a1d21; --ink: #e7e9ec; --muted: #9aa2ac; --line: #2c3036;
+      --accent: #ee8a3a; --accent-ink: #15110d; --stage: #1f2328; --model: #e7a654; --text3d: #3a3f46;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #111316; --surface: #1a1d21; --ink: #e7e9ec; --muted: #9aa2ac; --line: #2c3036;
+    --accent: #ee8a3a; --accent-ink: #15110d; --stage: #1f2328; --model: #e7a654; --text3d: #3a3f46;
+  }
+  * { box-sizing: border-box; }
+  body { background: var(--bg); color: var(--ink); font-family: var(--sans); font-size: 15px; line-height: 1.5; padding-inline: 16px; padding-block: 20px 40px; }
+  .wrap { max-width: 880px; margin: 0 auto; display: grid; gap: 16px; }
+  header { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 16px; }
+  h1 { font-size: 1.35rem; font-weight: 600; margin: 0; text-wrap: balance; }
+  .stamp { font-family: var(--mono); font-size: 0.78rem; color: var(--muted); letter-spacing: 0.02em; }
+  .stage { position: relative; background: var(--stage); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; aspect-ratio: 4 / 3.4; max-height: 72vh; width: 100%; max-width: 100%; touch-action: none; }
+  .stage canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+  .hint { position: absolute; left: 12px; bottom: 10px; font-size: 0.78rem; color: var(--muted); pointer-events: none; }
+  .views { display: flex; flex-wrap: wrap; gap: 8px; }
+  .views button { font: 500 0.88rem var(--sans); color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 7px 14px; cursor: pointer; }
+  .views button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+  .views button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .specs { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 4px 16px; }
+  .specs dl { margin: 0; display: grid; grid-template-columns: minmax(120px, max-content) 1fr; }
+  .specs dt, .specs dd { margin: 0; padding: 9px 0; border-bottom: 1px solid var(--line); }
+  .specs dt { color: var(--muted); padding-right: 16px; font-size: 0.88rem; }
+  .specs dd { font-family: var(--mono); font-size: 0.86rem; font-variant-numeric: tabular-nums; }
+  .specs dt:last-of-type, .specs dd:last-of-type { border-bottom: 0; }
+  .note { color: var(--muted); font-size: 0.88rem; max-width: 65ch; margin: 0; }
+  .err { position: absolute; inset: 0; display: grid; place-items: center; padding: 16px; text-align: center; color: var(--muted); }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Poop Bag Holder v3</h1>
+    <span class="stamp" id="stamp">build __STAMP__</span>
+  </header>
+
+  <div class="stage" id="stage">
+    <span class="hint">Drag to spin · pinch or scroll to zoom · double-tap to reset</span>
+  </div>
+
+  <div class="views" role="group" aria-label="Camera views">
+    <button type="button" id="v-loop" data-view="loop" aria-pressed="true">Treat loop</button>
+    <button type="button" id="v-slot" data-view="slot" aria-pressed="false">Bag slot</button>
+    <button type="button" id="v-clip" data-view="clip" aria-pressed="false">Leash clip</button>
+    <button type="button" id="v-top" data-view="top" aria-pressed="false">Top</button>
+  </div>
+
+  <section class="specs" aria-label="Print details">
+    <dl>
+      <dt>Size</dt><dd>__SIZE__</dd>
+      <dt>Treat loop</dt><dd>3.6 mm bar · 6.3 × 5.2 mm hole · hook gate 4.54 mm</dd>
+      <dt>Bone holes</dt><dd>18 through-holes, 12 × 7.2 mm</dd>
+      <dt>Slice (A1, PLA)</dt><dd>0.20 mm standard · ~4 h 00 m · 23.1 cm³</dd>
+      <dt>Orientation</dt><dd>thread end on the bed · add a brim</dd>
+    </dl>
+  </section>
+
+  <p class="note">The dark letters are separate pieces inside the lid, so you can swap filament for a two-colour top. The filled hexagon panels sit 0.07 mm below the surface: under half a layer.</p>
+</div>
+
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+} }
+</script>
+<script type="module">
+import * as THREE from "three";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+
+const DATA = __DATA__;
+const stage = document.getElementById("stage");
+const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+
+function b64(s, Type) {
+  const bin = atob(s); const buf = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) buf[i] = bin.charCodeAt(i);
+  return new Type(buf.buffer);
+}
+function mesh(part, colorVar) {
+  const g = new THREE.BufferGeometry();
+  g.setAttribute("position", new THREE.BufferAttribute(b64(part.pos, Float32Array), 3));
+  g.setIndex(new THREE.BufferAttribute(b64(part.idx, Uint32Array), 1));
+  const flat = g.toNonIndexed(); flat.computeVertexNormals();
+  const m = new THREE.Mesh(flat, new THREE.MeshStandardMaterial({ color: css(colorVar), roughness: 0.62, metalness: 0.0 }));
+  m.userData.colorVar = colorVar;
+  return m;
+}
+
+let renderer;
+try {
+  renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+} catch (e) {
+  stage.insertAdjacentHTML("beforeend", '<div class="err">This browser could not start 3D graphics. The preview picture on Telegram shows the same model.</div>');
+  throw e;
+}
+renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+stage.prepend(renderer.domElement);
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(35, 1, 1, 2000);
+camera.up.set(0, 0, 1);                                   // print frame: Z is up, no axis remap
+scene.add(new THREE.HemisphereLight(0xffffff, 0x444444, 1.6));
+const key = new THREE.DirectionalLight(0xffffff, 1.8); key.position.set(-120, -160, 220); scene.add(key);
+const rim = new THREE.DirectionalLight(0xffffff, 0.6); rim.position.set(160, 120, 60); scene.add(rim);
+
+const parts = [mesh(DATA.body, "--model"), ...DATA.letters.map((p) => mesh(p, "--text3d"))];
+parts.forEach((p) => scene.add(p));
+
+const box = new THREE.Box3(); parts.forEach((p) => box.expandByObject(p));
+const center = box.getCenter(new THREE.Vector3());
+const radius = box.getBoundingSphere(new THREE.Sphere()).radius;
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.target.copy(center);
+controls.enableDamping = !matchMedia("(prefers-reduced-motion: reduce)").matches;
+controls.dampingFactor = 0.12;
+controls.minDistance = radius * 1.2; controls.maxDistance = radius * 8;
+
+// view directions = where the camera sits, as angle around the part (degrees) + height
+const VIEWS = { loop: [-45, 0.35], slot: [-89, 0.25], clip: [87, 0.25], top: [-90, 6.0] };
+let fitDist = 0, userZoomed = false, currentView = "loop";
+
+function fitDistance() {
+  const vfov = THREE.MathUtils.degToRad(camera.fov);
+  const hfov = 2 * Math.atan(Math.tan(vfov / 2) * camera.aspect);
+  return 1.15 * radius / Math.tan(Math.min(vfov, hfov) / 2);
+}
+function setView(name) {
+  currentView = name;
+  const [deg, lift] = VIEWS[name];
+  const t = THREE.MathUtils.degToRad(deg);
+  const dir = new THREE.Vector3(Math.cos(t), Math.sin(t), lift).normalize();
+  camera.position.copy(center).addScaledVector(dir, fitDist || fitDistance());
+  controls.update();
+  document.querySelectorAll(".views button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.view === name)));
+}
+function resize() {
+  const w = stage.clientWidth, h = stage.clientHeight;
+  if (w < 20 || h < 20) return;                            // artifact iframe can report 0x0 at first layout
+  renderer.setSize(w, h, false);
+  camera.aspect = w / h; camera.updateProjectionMatrix();
+  const d = fitDistance();
+  if (!userZoomed) { fitDist = d; setView(currentView); }
+}
+new ResizeObserver(resize).observe(stage);
+window.addEventListener("orientationchange", resize);
+[120, 400, 1000].forEach((ms) => setTimeout(resize, ms));
+controls.addEventListener("start", () => { if (camera.position.distanceTo(controls.target) !== fitDist) userZoomed = true; });
+renderer.domElement.addEventListener("wheel", () => { userZoomed = true; }, { passive: true });
+
+document.querySelectorAll(".views button").forEach((b) => b.addEventListener("click", () => { userZoomed = false; fitDist = fitDistance(); setView(b.dataset.view); }));
+let lastTap = 0;
+renderer.domElement.addEventListener("pointerup", (e) => {
+  if (e.pointerType !== "touch") return;
+  const now = performance.now();
+  if (now - lastTap < 320) { userZoomed = false; fitDist = fitDistance(); setView(currentView); }
+  lastTap = now;
+});
+renderer.domElement.addEventListener("dblclick", () => { userZoomed = false; fitDist = fitDistance(); setView(currentView); });
+
+new MutationObserver(() => parts.forEach((p) => p.material.color.set(css(p.userData.colorVar))))
+  .observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => parts.forEach((p) => p.material.color.set(css(p.userData.colorVar))));
+
+window.__state = () => ({
+  ready: fitDist > 0, az: controls.getAzimuthalAngle(), polar: controls.getPolarAngle(),
+  dist: camera.position.distanceTo(controls.target), view: currentView, w: stage.clientWidth, h: stage.clientHeight,
+});
+resize();
+renderer.setAnimationLoop(() => { controls.update(); renderer.render(scene, camera); });
+</script>

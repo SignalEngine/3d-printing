@@ -1,2 +1,7 @@
 .venv/
 models/*/original.*
+models/poop-bag-holder/*.stl
+models/poop-bag-holder/*.3mf
+models/poop-bag-holder/*.glb
+models/poop-bag-holder/*.png
+models/poop-bag-holder/viewer.html
