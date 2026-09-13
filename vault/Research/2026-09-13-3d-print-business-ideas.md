@@ -144,6 +144,68 @@ Revised plan (INFERRED, brain judgement):
 | 14 | Orders | 0 organic sales, or ad cost per sale >£12 |
 | 21 | Margin per bed-hour from real orders | <£10 gross/bed-hour → no 2nd printer |
 
+## Round 2 decision
+
+James parked it. Later the same day he asked for live data via his Chrome, dropped the lithophane lamp (electric parts + supply chain + support), and asked for deeper research on the "remix and customise anything" SaaS.
+
+---
+
+# Round 3: live browser data, pet photo-to-3D, remix legality
+
+## T-Rex skull
+
+James's skull is a Smithsonian 3D scan (3d.si.edu). Smithsonian models marked **CC0** may be used for any purpose including products; some scans are **non-commercial only**. The model page blocked fetching, so the exact licence is unchecked: look for the CC0 label on the model page before selling. VERIFIED (licence scheme), UNCHECKED (this file).
+
+## Live browser pass (James's Chrome, 13 Sep 2026)
+
+- **Etsy UK blocked every search even in a real browser** (bot wall). **eBay sold listings forced sign-in.** No sold counts. VERIFIED
+- MakerWorld "t rex skull": 682 results; top = "T-Rex Skeleton Kit Card" 46.8k downloads, 17.3k likes. VERIFIED
+- MakerWorld "halloween": 999+ results; top hit is a generic "Tiny Flexi Snake" (60.9k downloads) — search mixes in non-Halloween trending prints. VERIFIED
+- r/3Dprintmything has **46,139** members (about.json). The 3.4K browser reading was a misread. VERIFIED
+
+## Reddit: do people ask to modify existing models? (JSON pass, James's Chrome)
+
+- ~230 posts read across 8 subreddit×query combinations (r/3Dprinting, r/BambuLab, r/3Dprintmything, r/functionalprint, r/prusa3d; "modify", "remix", "customise", "edit stl", "resize", "add text", etc.).
+- **Only 6 genuine "modify this existing model" requests** (~2-3%): 4 functional, 2 decorative; 2 offered to pay. VERIFIED (for what was read)
+- The rest: **"design me something new" commissions** and **"print my file for me"** requests (both common in r/3Dprintmything), plus word-match noise.
+- Limits: 31 of 39 counted cells were never read at title level; Reddit search matches words, not phrases; r/3Dprintmything "remix"/"customise" searches hung. So this is a sample, not a census.
+- **Reading:** on Reddit, the demand is for *new designs from a description* and *printing*, not for *remixing an existing file*. Weak evidence against "lots of people ask to remix", stronger signal for "design it for me". INFERRED
+
+## eBay UK sold listings (James signed in; ~last 90 days)
+
+| Search | Sold results | Price (sold) |
+|---|---|---|
+| 3d printed t rex skull | 10 | £2.77-40, median £19.43 (22 Jul-9 Sep) |
+| t rex skull replica | 23 | £7.91-258.80, median £27.99 |
+| 3d printed skull halloween | 68 | — |
+| 3d printed pet figurine | 12 | £2.49-44.37; photo-to-pet services £14.99-73.50 |
+| 3d printed replacement part | 193 | — |
+| 3d printed halloween | 633 | newest ~150 sampled |
+| 3d printed dragon | 904 | newest ~150 sampled |
+| custom 3d printed | 1,800+ | newest ~150 sampled |
+
+VERIFIED counts as shown by eBay; broad searches include loose keyword matches, so large totals overstate exact-category sales.
+
+**Reading (INFERRED):**
+- **T-Rex skull as a product: thin.** ~10 sold across all UK eBay sellers in ~7 weeks at ~£19. A side listing, not a business.
+- **Dragons and Halloween sell in volume** but are the commodity end (many sellers, low prices).
+- **"Custom 3d printed" (1,800+) and replacement parts (193)** are the largest non-commodity signals, and match the Reddit finding that people want things *made for them*.
+
+## Pet photo → 3D market
+
+- AI tools (PrintPal, Sloyd, Tripo, Meshy) sell digital files/credits, not printed objects. VERIFIED (browser)
+- Printed-figurine services with review data: Cuddle Clones $99 for 4", ~3 weeks, full colour, Trustpilot 4.6 (144); my3dselfie 4.9★ (584, Judge.me); my3dfigure.com 3.8★ (252); my3d-figurine.com 2.3★ (7). Quality is uneven. VERIFIED
+- Bambu shuts PrintMon Maker + AI Scanner 20 Sep 2026, official reason model quality/UX. VERIFIED
+- Reading: this market is occupied, and AI mesh-generation-as-a-tool is being cut back while print-and-post fulfilment survives. INFERRED
+
+## Remix SaaS: legal reality (not legal advice)
+
+- "Uploader is responsible for permission + notice-and-takedown" is standard (Shapeways model), but **untested against a service that actively modifies files with AI**. Pop Mart v Bambu (Labubu files on MakerWorld) settled before trial, so nothing decided. VERIFIED
+- **Functional parts:** measurements and function generally aren't protected by copyright → "rebuild from scratch with same dimensions" is low risk (design right/patents can still apply). INFERRED from doctrine
+- **Decorative/character models:** a from-scratch rebuild that looks the same is still likely a derivative copy; Star Athletica (US 2017) makes protection of decorative useful articles easier, not harder. INFERRED, no direct case
+- MakerWorld Standard licence bans remixes; Exclusive licence allows derivatives only on MakerWorld — an off-platform remix service breaches both. CC-ND is broken by any edit. VERIFIED
+- Low-risk framings: functional parts, user's own designs, CC0/CC-BY sources, personal-use exports with no hosting/sharing. High-risk: decorative/character rebuilds, paste-a-link fetching, ND/Standard/Exclusive-licence files.
+
 ## Side tests
 - Relief vs lithophane: print 5 diverse pet photos both ways, post blind, ask "what is this?".
 - T-Rex skull: sell only if own design or a commercial licence is bought.
