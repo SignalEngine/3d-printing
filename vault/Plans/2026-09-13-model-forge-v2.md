@@ -38,5 +38,16 @@ Star counts and licences come from the research agent's `gh api` reads on 2026-0
 - Skill: `~/.claude/skills/model-forge/` (live copy).
 - Optional: a versioned copy in `SignalEngine/3d-printing` under `skills/model-forge/`. That makes it public, so it's James's call.
 
+## Builder notes (read before coding)
+- Work ONLY in the worktree you were given. Skill source: `skills/model-forge/` in that worktree. The live `~/.claude/skills/model-forge` symlinks to the main checkout; never edit it.
+- Python: `/root/3d-printing/.venv/bin/python` (build123d 0.11.1, trimesh, manifold3d, networkx, lxml already installed). `pip install` into that venv if needed (e.g. bd_warehouse); record each added package in SKILL.md's install line.
+- Render: `xvfb-run -a f3d <stl> --output=x.png --resolution=800,600 --up=+Z --camera-direction=...`. Bare f3d core-dumps; osmesa/egl write nothing. No `--edges`.
+- Fixtures/tests: `skills/model-forge/tests/` with one `run_gates.sh` that exits non-zero on any failed gate. Show every gate going RED on a sabotaged input, then GREEN. Paste both outputs in your report.
+- Before coding, run `/unlazy tree 2 <this plan>` and write `GATES.md` at the worktree root. Commit it LAST.
+- OrcaSlicer: find a headless install (AppImage `--appimage-extract` or flatpak). If the A1 profile or CLI slicing can't be made to work within ~45 min, stop item 6 and report what blocked it. Don't fake a pass.
+- Update SKILL.md so every new script appears in Step 2 with its exact command. Keep SKILL.md tight.
+- Code quality: stdlib and existing deps first, no MCP server, no abstractions used once. Mark shortcuts with `ponytail:` comments.
+- Do NOT review your own work, merge, or push to master. Commit on the worktree branch and report.
+
 ## Cost
 Built by a Sonnet builder pane from this plan, then the brain runs verify + /jury + review-gate. Estimate 2–3 hours in one session. OrcaSlicer's A1 profile setup is the unknown.
