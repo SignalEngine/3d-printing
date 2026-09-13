@@ -10,6 +10,8 @@
 
 **Spec:** `/root/3d-printing/vault/Plans/2026-09-13-printtweak-mvp-spec.md` (read it first; this plan argues from it).
 
+**Progress (13 Sep 2026):** Tasks 1-2 merged as `SignalEngine/printtweak` PR #1 (merge `f37408c`): 28 tests, `tsc` 0 errors, 9 guards sabotage-proven, 3 Codex review rounds fixed. A Codex review of the final fix round is pending (Codex capped until 14 Sep 02:43). Next: Task 3 (sandbox), blocked on printtweak.com + the Anthropic "PrintTweak" workspace key.
+
 ## Global Constraints
 
 - Repo: new **private** GitHub repo `SignalEngine/printtweak`, branch off `master`, PR-merge only, never force-push.
@@ -1857,6 +1859,8 @@ Confirmed by the brain against the code; not blocking Tasks 1-2, assigned to lat
 - **Task 6 — server-side upload validation in `designs.create`:** the 25 MB model / 10 MB photo and file-type limits are only enforced in the browser form. Read `ctx.db.system.get(uploadId)` and reject with `ConvexError("upload_too_large")` / `("upload_type")` on `size` or `contentType`. Test: a 26 MB stored blob is refused.
 - **Task 6 — text length caps:** reject `request` or tweak `text` over 2,000 characters with `ConvexError("too_long")`. Tests for both.
 - **Task 8 — funnel dedupe:** `preview_delivered` fires on every tweak. Count it once per design (skip the insert when the job kind is `tweak`, or count distinct design ids). Test: a design with 2 tweaks gives 1.
+- **Task 6 — tweak failure message:** `finishUnsuccessful` tells the user "Your free try has been refunded" when a *tweak* fails, but tweaks never use a free try. Use "That change didn't work. Your tweak has been refunded." for `job.kind === "tweak"`. Test on the stored message text.
+- **Task 6 — `emailVerified` before email linking:** `requireUser` links a new Clerk token to an existing user by email. Magic-link sign-in means Clerk already proved the email, but check `identity.emailVerified === true` before the by-email link (throw `ConvexError("email_unverified")`), and confirm the Clerk "convex" JWT template carries `email_verified`. Test: an identity with `emailVerified: false` and a matching email is refused and does not change the existing user's token.
 - Optional (not scheduled): constant-time `WORKER_SECRET` compare; `costUsd >= 0` and finite-quote validation in `reportResult` (worker-only boundary).
 
 Refuted, no action: refund on a declined tweak (spec: refusals don't use a try; bounded by the daily cap); failed jobs counting toward the daily cap (spend is spend); "ready" with a refused print quote (file still offered); Convex write races (mutations are serializable).
