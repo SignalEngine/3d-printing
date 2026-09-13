@@ -241,6 +241,14 @@ Every reference photo returned 403 to the VPS, so all five were designed from te
 5. **AI cost per design:** 102k-255k tokens per run on Sonnet 5 ($2/M input, $10/M output, $0.20/M cache read; claude.com/pricing, 13 Sep 2026). The input/output/cache split wasn't recorded, so the cost is estimated at **roughly $0.20-$1.50 per design**. INFERRED
 6. **Customer photos:** blocked here only because the VPS can't reach Reddit's image host. In a real product the customer uploads directly, so this is not a product blocker. INFERRED
 
+## Follow-up shipped (13 Sep 2026)
+
+James picked "fix the pipeline gaps". Merged as SignalEngine/3d-printing PR #3 ([plan](../Plans/2026-09-13-model-forge-quote-text-gates.md)):
+- `slice_gate.py` now prints print hours, material and machine cost, cost floor and margin per printer-hour, and fails on `--max-hours` / `--max-grams` / `--price` limits. The 15h trophy fails a 6h limit; the knob at £5 passes.
+- `text_check.py` OCRs cross-sections in every orientation and needs an exact match. The trophy reads CONGRATULATION and fails CONGRATULATIONS.
+- Evidence: all 8 gates green run by the brain; 3 sabotage mutations went red; jury pass 2 clean after 4 fixes; GLM review-gate PASS (Codex capped, OpenRouter needed a top-up first).
+- Known limits: mirrored text on a real part still passes; the cm³ fallback assumes PLA density.
+
 ## Economics sketch (INFERRED)
 
 - Price anchor from the thread: ~£25 + postage for a one-off printed part. Fiverr/Upwork design-only: $50-500.
