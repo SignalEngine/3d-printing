@@ -23,5 +23,15 @@ Gotchas found:
 - Text-to-CAD: Text2CAD is a research repo. zoo.dev Text-to-CAD is a paid hosted API that returns STEP.
 - Organic shapes (image/text → mesh): TRELLIS 13.6k★, Hunyuan3D-2 14.8k★ (no commits since Oct 2025), TripoSR 6.9k★. All need a CUDA GPU, which this VPS doesn't have. The workable route is a hosted API (Tripo/Meshy, not checked), then trimesh repair, then the same checks.
 
+## /last30days pass (2026-09-13)
+There was little community signal: Reddit blocked the run after 17 posts, and YouTube and GitHub came back empty. It still found 4 rival agent CAD tools to compare against model-forge:
+- brs077/3dp-mcp-server: build123d, Bambu, around 33 tools covering printability, orientation, multi-color split and publishing
+- pzfreo/build123d-mcp: helps the agent reason about 3D space in build123d
+- openscad-mcp: v0.6.1, 100+ stars. Measures clearances, volumes and contact areas (posted in r/openscad, Sep 10)
+- "OpenSCAD 3D Modeler" Claude Code skill: measures before it renders
+
+What the web roundups agree on: text-to-CAD handles simple single parts, but parts that must fit together still need real CAD. For organic shapes, Meshy is the most-cited source of watertight meshes.
+Raw file: `~/Documents/Last30Days/ai-cad-modelling-for-3d-printing-raw-v3.md`.
+
 ## Next
 - Add an OrcaSlicer CLI slice step with a Bambu A1 profile, once a real part needs it.
