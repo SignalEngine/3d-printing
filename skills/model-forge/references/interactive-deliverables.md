@@ -46,6 +46,12 @@ File:// testing is NOT sufficient. Claude's artifact viewer loads HTML in an ifr
 ## Axis-remap trap
 Swapping two axes in a Matrix4 (e.g. X_w=mesh.y, Y_w=mesh.x) is a REFLECTION (det=-1): geometry is silently mirrored. Use a proper rotation (e.g. Rz90: X_w=-mesh.y, Y_w=mesh.x), det=+1. Check the determinant of any hand-built transform.
 
+## Proven recipe on this VPS (2026-09-13, poop bag holder)
+- Template + test to copy: `models/poop-bag-holder/viewer.template.html` and `viewer.test.mjs` (Playwright from `/root/intentos/node_modules`, served over `python3 -m http.server`, because Chrome refuses a file:// iframe inside a setContent host).
+- three@0.160.0 via importmap on jsdelivr + OrbitControls (touch built in) + base64 typed-array geometry. This avoids the r128 "no OrbitControls" gap and needs no fetch, so it's CSP-safe.
+- Double-tap to reset must ignore multi-finger lifts, or pinch looks broken. Mark "user zoomed" only on a gesture `end` after the first fit, or a 0x0 iframe start never frames the model.
+- ASCII-only page (use HTML entities), and look at every screenshot you compute pixel stats on.
+
 ## Mechanism simulators
 For moving assemblies, ship an interactive sim: real part meshes + the SAME verified kinematic model used in numeric verification (never a second implementation), a slider/drag for the input DOF, state readout, X-ray toggle (default ON so the mechanism is visible), click/snap feedback. Assert in headless: state machine cycles correctly, moving part's pixels shift between states, schematic added parts (levers etc.) stay geometrically clear of real parts across the full input range. Schematic parts must attach at physically plausible pivots - a floating lever destroys trust in an otherwise-correct sim.
 
