@@ -1,0 +1,5 @@
+[
+  {"diameter": 6.5, "axis": "Y", "face": "through Y"},
+  {"diameter": 4.5, "axis": "Z", "face": "through Z"},
+  {"diameter": 4.5, "axis": "Z", "face": "through Z"}
+]

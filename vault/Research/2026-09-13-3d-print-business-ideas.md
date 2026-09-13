@@ -206,6 +206,45 @@ VERIFIED counts as shown by eBay; broad searches include loose keyword matches, 
 - MakerWorld Standard licence bans remixes; Exclusive licence allows derivatives only on MakerWorld — an off-platform remix service breaches both. CC-ND is broken by any edit. VERIFIED
 - Low-risk framings: functional parts, user's own designs, CC0/CC-BY sources, personal-use exports with no hosting/sharing. High-risk: decorative/character rebuilds, paste-a-link fetching, ND/Standard/Exclusive-licence files.
 
+---
+
+# Round 4: can "describe it, AI designs it" answer real requests? (test, 13 Sep 2026)
+
+James picked this test. Method: pull real r/3Dprintmything posts from the last 30 days via his Chrome, then run model-forge on 5 of them, one Sonnet 5 agent each, fully autonomous (no questions to the customer; assumptions written down). The brain session then re-ran `verify_model.py` on every file and viewed renders itself.
+
+## Demand found while picking requests
+
+- r/3Dprintmything: **46,139 members, 188 posts in 30 days.** VERIFIED
+- **Only 7 of 188 (~4%) were genuine "design this from a description" requests.** Most posters already had a file (Printables/MakerWorld/Etsy link) and just wanted it printed. VERIFIED
+- The only price in the threads: a UK pill-box poster called a £55 quote too much; a commenter said ~£6 material, "I'd charge £25 plus postage". VERIFIED
+
+## Results
+
+| Request | Gates (agent) | Brain re-check | Agent time | Tokens | Fix rounds | Print | Verdict |
+|---|---|---|---|---|---|---|---|
+| Glass knob, 15mm, M5 hole, dome | all PASS | verify PASS | 4 min | 102k | 1 (tool bug) | 22 min, 1 cm³ | Good; dome shape guessed |
+| Trinket box to fit earbud case, 51×51×28.3 | all PASS incl. lid fit | verify PASS | 5 min | 108k | 1 | 2h53, 22 g | Good to stated size; real case fit unknown |
+| Pill box, 5 parts, 255×70×30 | all PASS incl. fit | verify PASS; render looks right | 16 min | 170k | 0 design | 2h51, 24 g (≈44p) | Good; layout guessed (photo blocked) |
+| Netgate 2100 10" 1U rack bracket, 3 parts | all PASS incl. holes | verify PASS; brain render looks right | 32 min | 255k | 2 (7 bugs caught by gates) | 9h24, 128 g | Plausible; device dims sourced online, weight unpublished |
+| "Congratulation" trophy, 150 mm | all PASS, agent said render PASS | verify PASS; **brain render: letters overlap, word unreadable** | 15 min | 155k | 3 | **15h15, 122 g** | **Fail**: not sellable, and too slow to print |
+
+Every reference photo returned 403 to the VPS, so all five were designed from text only.
+
+## What this proves (VERIFIED unless marked)
+
+1. **Functional parts from a text description work.** 4 of 4 functional requests produced valid, sliced, plausible parts in 4-32 minutes of agent time.
+2. **Decorative text/art is where it breaks**, and **the agent passed its own broken render.** An independent visual review is mandatory; the model that built it cannot be the one that approves it (same rule as the builder/reviewer split).
+3. **Gates check printability, not sellability.** The trophy passed every gate but needs 15 hours on the printer. A paid service needs a print-time / material / price check before quoting.
+4. **Real-world fit is still unproven**: no part has been physically printed. Clearances are community defaults, not calibrated to James's A1.
+5. **AI cost per design:** 102k-255k tokens per run on Sonnet 5 ($2/M input, $10/M output, $0.20/M cache read; claude.com/pricing, 13 Sep 2026). The input/output/cache split wasn't recorded, so the cost is estimated at **roughly $0.20-$1.50 per design**. INFERRED
+6. **Customer photos:** blocked here only because the VPS can't reach Reddit's image host. In a real product the customer uploads directly, so this is not a product blocker. INFERRED
+
+## Economics sketch (INFERRED)
+
+- Price anchor from the thread: ~£25 + postage for a one-off printed part. Fiverr/Upwork design-only: $50-500.
+- Cost per order: AI ~£0.15-1.20, material £0.05-2.50, printer time 0.4-9 h, Royal Mail + packaging ~£3-4 (unpriced), plus human review of every render (~2-5 min).
+- **Demand is the constraint:** ~7 genuine design requests/month in the main UK+US request sub. A service would need its own acquisition (search ads for "custom 3d printed part", which had 1,800+ eBay sales), not Reddit alone.
+
 ## Side tests
 - Relief vs lithophane: print 5 diverse pet photos both ways, post blind, ask "what is this?".
 - T-Rex skull: sell only if own design or a commercial licence is bought.
