@@ -226,14 +226,16 @@ James picked this test. Method: pull real r/3Dprintmything posts from the last 3
 | Trinket box to fit earbud case, 51×51×28.3 | all PASS incl. lid fit | verify PASS | 5 min | 108k | 1 | 2h53, 22 g | Good to stated size; real case fit unknown |
 | Pill box, 5 parts, 255×70×30 | all PASS incl. fit | verify PASS; render looks right | 16 min | 170k | 0 design | 2h51, 24 g (≈44p) | Good; layout guessed (photo blocked) |
 | Netgate 2100 10" 1U rack bracket, 3 parts | all PASS incl. holes | verify PASS; brain render looks right | 32 min | 255k | 2 (7 bugs caught by gates) | 9h24, 128 g | Plausible; device dims sourced online, weight unpublished |
-| "Congratulation" trophy, 150 mm | all PASS, agent said render PASS | verify PASS; **brain render: letters overlap, word unreadable** | 15 min | 155k | 3 | **15h15, 122 g** | **Fail**: not sellable, and too slow to print |
+| "Congratulation" trophy, 150 mm | all PASS, agent said render PASS | verify PASS; front render reads CONG/RATU/LAT/ION with the N overhang; OCR of a letter cross-section reads "CONG RATU LAT ION" | 15 min | 155k | 3 | **15h15, 122 g** | **Text correct, product poor**: 4-line word split and a 15-hour print |
 
 Every reference photo returned 403 to the VPS, so all five were designed from text only.
+
+**Correction (same day):** the brain first recorded the trophy as "letters overlap, word unreadable, agent wrongly passed its own render". That was wrong: it came from the perspective **iso** render, where depth shading made stacked lines look jumbled. The front render and an OCR check both show the text is correct. The agent's render PASS was right; the brain's review was the faulty one. Lesson: judge text from the front/orthographic view or a cross-section, never from the iso view.
 
 ## What this proves (VERIFIED unless marked)
 
 1. **Functional parts from a text description work.** 4 of 4 functional requests produced valid, sliced, plausible parts in 4-32 minutes of agent time.
-2. **Decorative text/art is where it breaks**, and **the agent passed its own broken render.** An independent visual review is mandatory; the model that built it cannot be the one that approves it (same rule as the builder/reviewer split).
+2. **Text geometry also worked**, but the design choice (splitting a 14-letter word over 4 lines to fit 150 mm) is probably not what the customer pictured. Taste/intent is the weak point for decorative requests, not geometry. INFERRED. Independent review is still worth having, but this test did not show a builder passing a broken model.
 3. **Gates check printability, not sellability.** The trophy passed every gate but needs 15 hours on the printer. A paid service needs a print-time / material / price check before quoting.
 4. **Real-world fit is still unproven**: no part has been physically printed. Clearances are community defaults, not calibrated to James's A1.
 5. **AI cost per design:** 102k-255k tokens per run on Sonnet 5 ($2/M input, $10/M output, $0.20/M cache read; claude.com/pricing, 13 Sep 2026). The input/output/cache split wasn't recorded, so the cost is estimated at **roughly $0.20-$1.50 per design**. INFERRED
