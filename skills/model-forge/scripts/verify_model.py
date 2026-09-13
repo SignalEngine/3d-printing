@@ -18,7 +18,7 @@ def load_any(path):
         from build123d import import_step, export_stl
         import tempfile, os
         part = import_step(path)
-        tmp = tempfile.mktemp(suffix=".stl")
+        fd, tmp = tempfile.mkstemp(suffix=".stl"); os.close(fd)
         export_stl(part, tmp, tolerance=0.01, angular_tolerance=0.1)
         m = trimesh.load(tmp, force="mesh"); os.unlink(tmp)
         return m
@@ -51,18 +51,28 @@ def main():
     # --- SOFT CHECKS ---
     n, ar = m.face_normals, m.area_faces
     zmin = m.bounds[0][2]
-    on_bed = np.abs(m.triangles_center[:, 2] - zmin) < 0.1
-    ov = (n[:, 2] < -np.cos(np.radians(45))) & ~on_bed  # bed-contact faces are not overhangs
-    overhang_pct = 100 * ar[ov].sum() / ar.sum()
-    bed_faces = (np.abs(m.triangles_center[:, 2] - zmin) < 0.05) & (n[:, 2] < -0.99)
+    # bed-contact = downward-facing AND within BED_EPS of the lowest point (same
+    # threshold + normal test used for both the contact-area figure and the
+    # overhang exclusion — previously these used different z-thresholds and only
+    # one checked the normal, so vertical wall faces near the bed were silently
+    # excluded from the overhang count).
+    BED_EPS = 0.05
+    bed_faces = (np.abs(m.triangles_center[:, 2] - zmin) < BED_EPS) & (n[:, 2] < -0.99)
     bed_area = ar[bed_faces].sum()
+    ov = (n[:, 2] < -np.cos(np.radians(45))) & ~bed_faces  # bed-contact faces are not overhangs
+    overhang_pct = 100 * ar[ov].sum() / ar.sum()
     if bed_area < 25: warns.append(f"Bed contact only {bed_area:.0f}mm^2 — adhesion risk in current orientation (brim or reorient).")
     if overhang_pct > 15: warns.append(f"{overhang_pct:.0f}% of surface overhangs >45deg — supports likely; consider reorienting or chamfering.")
 
-    # Thin-wall sampling via ray thickness at face centroids (sampled for speed)
+    # Thin-wall sampling via ray thickness at face centroids, weighted by face
+    # AREA (not triangle index) so a few large thin faces can't be diluted by
+    # many tiny triangles elsewhere in the mesh, and a large thin panel voids
+    # by triangle count is not under-sampled relative to its actual surface.
     if wt:
         try:
-            idx = np.random.default_rng(0).choice(len(m.faces), size=min(400, len(m.faces)), replace=False)
+            n_sample = min(400, len(m.faces))
+            p = ar / ar.sum()
+            idx = np.random.default_rng(0).choice(len(m.faces), size=n_sample, replace=False, p=p)
             pts = m.triangles_center[idx] - m.face_normals[idx] * 0.01
             th = trimesh.proximity.thickness(m, pts, exterior=False, normals=m.face_normals[idx], method="ray")
             th = th[np.isfinite(th)]

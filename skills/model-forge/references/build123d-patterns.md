@@ -80,10 +80,35 @@ with BuildSketch(part.faces().sort_by(Axis.Z)[-1]):
 extrude(amount=-0.6, mode=Mode.SUBTRACT)   # deboss prints cleaner than emboss on top faces
 ```
 
-### Threads (only ≥M8)
+### bd_warehouse: threads, fasteners, gears (installed in the venv)
+Install once: `$PY -m pip install bd_warehouse` (already in this venv — see SKILL.md Step 2).
+Use these instead of hand-rolling thread helixes, screw heads, or involute gear
+profiles — they're maintained, dimensionally-correct implementations.
+
+**Threads (only ≥M8 — smaller printed threads round off; use heat-set inserts instead):**
 ```python
-# pip install bd_warehouse --break-system-packages
 from bd_warehouse.thread import IsoThread
+male = IsoThread(major_diameter=8, pitch=1.25, length=10, external=True)
+# Internal (female) thread: external=False builds the thread RIDGES. Cut the hole at major_diameter,
+# then ADD the thread solid inside it. Subtracting it only carves a ~0.2 mm groove in the wall
+# (verified 2026-09-13: M8 in a Ø8 bore, subtract -73.8 mm3 of groove, add +80 mm3 of ridges).
+female = Pos(0, 0, -5) * IsoThread(major_diameter=8, pitch=1.25, length=10, external=False)
+nut_body = (Box(20, 20, 10) - Cylinder(4, 10)) + female
+```
+
+**Fasteners — model real screws/nuts to check clearance holes and head pockets, don't print the fastener itself:**
+```python
+from bd_warehouse.fastener import SocketHeadCapScrew, HexNut
+screw = SocketHeadCapScrew(size="M4-0.7", length=10, fastener_type="iso4762")
+nut = HexNut(size="M4-0.7", fastener_type="iso4032")
+# .clearance_hole_diameters / .tap_hole_diameters give the drill sizes for that fastener
+```
+
+**Gears:**
+```python
+from bd_warehouse.gear import SpurGear
+gear = SpurGear(module=1, tooth_count=20, thickness=5, pressure_angle=20)
+# module (mm/tooth) sets tooth size; two meshing gears must share module + pressure_angle
 ```
 
 ### Tolerance test coupon (offer before first fit-critical part)

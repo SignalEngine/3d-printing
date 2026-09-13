@@ -16,7 +16,7 @@ def load_any(path):
     if path.lower().endswith((".step", ".stp")):
         from build123d import import_step, export_stl
         import tempfile, os
-        tmp = tempfile.mktemp(suffix=".stl")
+        fd, tmp = tempfile.mkstemp(suffix=".stl"); os.close(fd)
         export_stl(import_step(path), tmp, tolerance=0.01, angular_tolerance=0.1)
         m = trimesh.load(tmp, force="mesh"); os.unlink(tmp); return m
     return trimesh.load(path, force="mesh")
