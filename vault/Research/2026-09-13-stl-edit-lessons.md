@@ -28,3 +28,9 @@ Job: James's downloaded "Poop Bag Holder - No Holes - Flexi" STL. Two changes: t
 - f3d `--camera-direction` is the direction the camera LOOKS. To face a feature at angle θ, use (-cos θ, -sin θ, …).
 - f3d with `--up=+Z` and a straight-down camera renders blank. Use `--up=+Y` for top and bottom views (fixed in model-forge v2 render.sh).
 - `verify_model.py --bodies N` is needed when text is separate shells (4 letters + 1 body here).
+
+## Publishing the remix (2026-09-13)
+- Source: MakerWorld model 2003956 "Heavy-Duty Flexi Leash Poop Bag Holder", under the **MakerWorld Exclusive License**. That comes from a search snippet; the page returned 403 to every fetch method, so James should read it on the page.
+- The Exclusive License allows non-commercial derivatives **only on MakerWorld**, with attribution. No Printables/Thingiverse/Cults, no selling files or prints.
+- MakerWorld rules (read directly from the Bambu wiki upload guidelines): upload type must be Remix, never Original; at least one clear photo of the real print; minor edits (pattern swap, text, scaling) don't count as a derivative. The treat loop is the functional change that makes this more than minor.
+- Upload: MakerWorld → Upload → Remix tab → drag in a Bambu Studio project 3MF (with print settings) → paste the original model link → licence must follow the original.
