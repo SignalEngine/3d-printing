@@ -1,3 +1,4 @@
+<meta charset="utf-8">
 <title>Poop Bag Holder v3</title>
 <meta name="description" content="Spin-and-zoom preview of the poop bag holder with bone holes and a treat-pouch loop.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -50,7 +51,7 @@
   </header>
 
   <div class="stage" id="stage">
-    <span class="hint">Drag to spin · pinch or scroll to zoom · double-tap to reset</span>
+    <span class="hint">Drag to spin &middot; pinch or scroll to zoom &middot; double-tap to reset</span>
   </div>
 
   <div class="views" role="group" aria-label="Camera views">
@@ -63,10 +64,10 @@
   <section class="specs" aria-label="Print details">
     <dl>
       <dt>Size</dt><dd>__SIZE__</dd>
-      <dt>Treat loop</dt><dd>3.6 mm bar · 6.3 × 5.2 mm hole · hook gate 4.54 mm</dd>
-      <dt>Bone holes</dt><dd>18 through-holes, 12 × 7.2 mm</dd>
-      <dt>Slice (A1, PLA)</dt><dd>0.20 mm standard · ~4 h 00 m · 23.1 cm³</dd>
-      <dt>Orientation</dt><dd>thread end on the bed · add a brim</dd>
+      <dt>Treat loop</dt><dd>3.6 mm bar &middot; 6.3 &times; 5.2 mm hole &middot; hook gate 4.54 mm</dd>
+      <dt>Bone holes</dt><dd>18 through-holes, 12 &times; 7.2 mm</dd>
+      <dt>Slice (A1, PLA)</dt><dd>0.20 mm standard &middot; ~4 h 00 m &middot; 23.1 cm&sup3;</dd>
+      <dt>Orientation</dt><dd>thread end on the bed &middot; add a brim</dd>
     </dl>
   </section>
 
@@ -133,7 +134,8 @@ controls.dampingFactor = 0.12;
 controls.minDistance = radius * 1.2; controls.maxDistance = radius * 8;
 
 // view directions = where the camera sits, as angle around the part (degrees) + height
-const VIEWS = { loop: [-45, 0.35], slot: [-89, 0.25], clip: [87, 0.25], top: [-90, 6.0] };
+const VIEWS = { loop: [-15, 0.3],  // 30 deg off the loop so its hole shows
+                slot: [-89, 0.25], clip: [87, 0.25], top: [-90, 6.0] };
 let fitDist = 0, userZoomed = false, currentView = "loop";
 
 function fitDistance() {
@@ -161,17 +163,34 @@ function resize() {
 new ResizeObserver(resize).observe(stage);
 window.addEventListener("orientationchange", resize);
 [120, 400, 1000].forEach((ms) => setTimeout(resize, ms));
-controls.addEventListener("start", () => { if (camera.position.distanceTo(controls.target) !== fitDist) userZoomed = true; });
+// a user gesture that ends at a different distance is a user zoom: later resizes (URL bar, rotation) must not undo it.
+// Only gestures count, and only after the first fit: the artifact iframe starts at 0x0, before any fit exists.
+controls.addEventListener("end", () => {
+  if (fitDist > 0 && Math.abs(camera.position.distanceTo(controls.target) - fitDist) > 0.5) userZoomed = true;
+});
 renderer.domElement.addEventListener("wheel", () => { userZoomed = true; }, { passive: true });
 
 document.querySelectorAll(".views button").forEach((b) => b.addEventListener("click", () => { userZoomed = false; fitDist = fitDistance(); setView(b.dataset.view); }));
-let lastTap = 0;
-renderer.domElement.addEventListener("pointerup", (e) => {
+// double-tap = two quick single-finger taps. Lifting two fingers after a pinch is NOT a double tap.
+const downs = new Map(); let maxDown = 0, lastTap = 0;
+renderer.domElement.addEventListener("pointerdown", (e) => {
   if (e.pointerType !== "touch") return;
-  const now = performance.now();
-  if (now - lastTap < 320) { userZoomed = false; fitDist = fitDistance(); setView(currentView); }
-  lastTap = now;
+  downs.set(e.pointerId, { x: e.clientX, y: e.clientY, t: performance.now() });
+  maxDown = Math.max(maxDown, downs.size);
 });
+const endTouch = (e) => {
+  const d = downs.get(e.pointerId); if (!d) return;
+  downs.delete(e.pointerId);
+  const isTap = e.type === "pointerup" && maxDown === 1 && performance.now() - d.t < 250 && Math.hypot(e.clientX - d.x, e.clientY - d.y) < 10;
+  if (downs.size === 0) maxDown = 0;
+  if (!isTap) { lastTap = 0; return; }
+  const now = performance.now();
+  if (now - lastTap < 320) { userZoomed = false; fitDist = fitDistance(); setView(currentView); lastTap = 0; }
+  else lastTap = now;
+};
+window.addEventListener("pointerup", endTouch);
+window.addEventListener("pointercancel", endTouch);
+window.addEventListener("blur", () => { downs.clear(); maxDown = 0; lastTap = 0; });
 renderer.domElement.addEventListener("dblclick", () => { userZoomed = false; fitDist = fitDistance(); setView(currentView); });
 
 new MutationObserver(() => parts.forEach((p) => p.material.color.set(css(p.userData.colorVar))))
