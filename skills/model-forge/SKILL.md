@@ -12,8 +12,9 @@ On this VPS the stack lives in a venv — use its python for everything (no --br
 ```bash
 PY=/root/3d-printing/.venv/bin/python
 S=/root/.claude/skills/model-forge/scripts
-# (re)install: $PY -m pip install build123d trimesh manifold3d matplotlib rtree shapely networkx lxml
+# (re)install: $PY -m pip install build123d trimesh manifold3d matplotlib rtree shapely networkx lxml bd_warehouse
 # networkx+lxml are required for trimesh to LOAD .3mf (missing = verify crashes)
+# bd_warehouse adds threads/fasteners/gears (see references/build123d-patterns.md)
 ```
 Work files go in `/root/3d-printing/models/<name>/`. Below, read `python3 scripts/…` as `$PY $S/…`.
 - **build123d** — parametric BREP CAD (OpenCASCADE). Primary modelling tool.
@@ -44,16 +45,25 @@ Don't ask about things that don't affect the part, and don't ask what can be ass
 
 ## Step 2 — Verify (mandatory, no exceptions)
 ```bash
-python3 scripts/verify_model.py out.3mf            # hard checks must PASS
-python3 scripts/render_views.py out.3mf view.png --section   # then LOOK at it
+python3 scripts/verify_model.py out.3mf                         # hard checks must PASS
+bash scripts/render.sh out.stl /tmp/view --section               # real f3d render, then LOOK at it
+python3 scripts/features.py out.step --expect holes.json          # hole geometry vs intended sizes/faces
+python3 scripts/fit.py lid.stl box.stl                            # clearance/interference between mating parts
+python3 scripts/slice_gate.py out.3mf                             # real slice on the Bambu A1 profile
 ```
-- verify_model.py: watertight, winding, body count, build volume (256³), volume, overhang %, bed contact, thin walls, mass estimate. Exit 0 required.
-- render_views.py output MUST be viewed with the view tool. Check: features on correct faces, correct side/mirroring, holes where intended, proportions plausible against stated dimensions. Use `--section` whenever there are internal features.
-- **Primary real render (true depth, lighting) — f3d under Xvfb** (osmesa/egl backends write nothing on this VPS; plain f3d core-dumps without a display). Export STL first, then:
-  `xvfb-run -a f3d out.stl --output=iso.png --resolution=800,600 --up=+Z --camera-direction=-1,1,-1.2`
-  Swap `--camera-direction` for other views (0,0,-1 top; 0,1,0 front). Don't pass `--edges`: it draws the tessellation, and long sliver triangles show up as fake dark bars.
-- A geometrically-valid model with holes in the wrong face has happened in practice; the render catches what the numbers can't.
-- On any FAIL: fix the geometry at the source (don't blind-repair your own generated model) and re-run BOTH steps. Iterate until clean.
+- **verify_model.py**: watertight, winding, body count, build volume (256³), volume, overhang %, bed contact, thin walls (area-weighted sampling), mass estimate. Exit 0 required.
+- **render.sh**: real depth-rendered PNGs via f3d under Xvfb — `<prefix>-iso.png`, `-front.png`, `-top.png`, and `-section.png` (with `--section`) or `-iso-rear.png` (without). Falls back to `render_views.py`'s matplotlib grid if f3d/xvfb-run are missing. Output MUST be viewed with the view tool: check features on correct faces, correct side/mirroring, holes where intended, proportions plausible against stated dimensions. Use `--section` whenever there are internal features.
+  A geometrically-valid model with holes in the wrong face has happened in practice; the render catches what the numbers can't.
+- **features.py**: lists every hole (diameter, depth, axis, which face) straight off the BREP (STEP input required — needs real CAD geometry, not a mesh). Pass `--expect holes.json` to hard-fail on a hole with the wrong diameter or on the wrong face — catches "M3 not M4" or "hole on the wrong face" as a number, before it needs a render to spot.
+- **fit.py**: for any assembly of ≥2 parts that mate (lid/box, clip/rail, pin/bushing) — export both from the SAME coordinate system, then check clearance/interference/contact area between them. `verify_model.py` only checks single bodies; this is the second check for anything that has to fit another part.
+- **slice_gate.py**: a real headless slice through OrcaSlicer on a Bambu Lab A1 profile (0.4mm nozzle, `0.20mm Standard`, `Bambu PLA Basic`). Reports estimated print time and filament use. "Watertight" is not "slices clean" — this refuses non-manifold meshes itself, since OrcaSlicer will silently slice one without complaint. Needs the OrcaSlicer AppImage extracted once — if `scripts/slice_gate.py` reports it's missing:
+  ```bash
+  curl -sL -o /tmp/orca.AppImage "$(curl -sL https://api.github.com/repos/OrcaSlicer/OrcaSlicer/releases/latest | python3 -c "import json,sys; d=json.load(sys.stdin); print(next(a['browser_download_url'] for a in d['assets'] if 'Linux_AppImage_Ubuntu2404_V' in a['name']))")"
+  chmod +x /tmp/orca.AppImage && cd /tmp && ./orca.AppImage --appimage-extract
+  mkdir -p /root/3d-printing/orcaslicer && mv squashfs-root /root/3d-printing/orcaslicer/
+  # also needs: apt-get install -y libglu1-mesa libwebkit2gtk-4.1-0
+  ```
+- On any FAIL: fix the geometry at the source (don't blind-repair your own generated model) and re-run every step above. Iterate until clean.
 
 ## Step 3 — Deliver
 Copy to outputs and present:
