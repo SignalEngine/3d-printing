@@ -49,7 +49,8 @@ python3 scripts/verify_model.py out.3mf                         # hard checks mu
 bash scripts/render.sh out.stl /tmp/view --section               # real f3d render, then LOOK at it
 python3 scripts/features.py out.step --expect holes.json          # hole geometry vs intended sizes/faces
 python3 scripts/fit.py lid.stl box.stl                            # clearance/interference between mating parts
-python3 scripts/slice_gate.py out.3mf                             # real slice on the Bambu A1 profile
+python3 scripts/slice_gate.py out.3mf --max-hours 6 --price 25    # real slice + print time/cost + optional quote limits
+python3 scripts/text_check.py out.3mf --expect "CONGRATULATION"   # OCR-verify ordered text actually reads correctly
 ```
 - **verify_model.py**: watertight, winding, body count, build volume (256³), volume, overhang %, bed contact, thin walls (area-weighted sampling), mass estimate. Exit 0 required. Default `--bodies 1` FAILs a legitimate multi-colour/multi-material part (separate letter/logo shells embedded in the base body) — pass `--bodies N` for the actual expected shell count on those.
 - **render.sh**: real depth-rendered PNGs via f3d under Xvfb — `<prefix>-iso.png`, `-front.png`, `-top.png`, and `-section.png` (with `--section`) or `-iso-rear.png` (without). Pass `--section-z <mm>` to cut somewhere other than the default mid-Z. Falls back to `render_views.py`'s matplotlib grid if f3d/xvfb-run are missing. Output MUST be viewed with the view tool: check features on correct faces, correct side/mirroring, holes where intended, proportions plausible against stated dimensions. Use `--section` whenever there are internal features.
@@ -63,6 +64,8 @@ python3 scripts/slice_gate.py out.3mf                             # real slice o
   mkdir -p /root/3d-printing/orcaslicer && mv squashfs-root /root/3d-printing/orcaslicer/
   # also needs: apt-get install -y libglu1-mesa libwebkit2gtk-4.1-0
   ```
+- **slice_gate.py** also prints a cost block after any successful slice: `print hours`, `material` (g and £), `machine` (£), `cost floor` (£), and — with `--price` — `price per printer-hour`. It only FAILs (`QUOTE FAIL`, exit 1) when `--max-hours`/`--max-grams`/`--min-gbp-per-hour` (with `--price`) is given and exceeded; no flags = info only, same PASS as before. See a model's print time and cost before quoting it.
+- **text_check.py**: any part carrying ordered text (a name, initials, a message) must pass this before delivery. It cross-sections the mesh and OCRs each slice in every rotation/mirror — catches wrong, missing, or overlapping-and-illegible text that a render can miss. Judge text and legibility from the front/orthographic view or a cross-section render, never the iso view — an iso render misled a real review on 2026-09-13 (the text was actually correct).
 - On any FAIL: fix the geometry at the source (don't blind-repair your own generated model) and re-run every step above. Iterate until clean.
 
 ## Step 3 — Deliver
@@ -73,7 +76,7 @@ Copy to outputs and present:
 STL only if explicitly requested.
 4. If the user is on mobile or asks to *see* the model: offer/build a self-contained HTML viewer (see `references/interactive-deliverables.md`) — phones cannot open 3MF locally (Bambu Handy lacks local file import).
 
-Final reply must state, briefly: dimensions, assumptions made, print orientation (which face down), suggested settings for the part class (layer/walls/infill from design-rules table), material note if relevant, support/brim note if warranted. No essays — a tight block.
+Final reply must state, briefly: dimensions, assumptions made, print orientation (which face down), suggested settings for the part class (layer/walls/infill from design-rules table), material note if relevant, support/brim note if warranted, and print hours / grams / cost floor from `slice_gate.py`. No essays — a tight block.
 
 ## Editing downloaded models
 Follow `references/mesh-editing.md`. Key rules:

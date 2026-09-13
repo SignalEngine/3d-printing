@@ -8,6 +8,7 @@ set -uo pipefail
 PY=/root/3d-printing/.venv/bin/python
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 S="$HERE/.."
+ROOT="$(cd "$HERE/../../.." && pwd)"
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 FAIL=0
@@ -270,6 +271,86 @@ trimesh.util.concatenate([A, B]).export('$TMP/overlap.stl')
     [ "$FAIL" = 0 ] && echo SLICE_GATE_OK
 }
 
+gate_quote() {
+    note "slice_gate.py: no flags -> PASS with print hours / cost floor lines"
+    "$PY" -c "from build123d import *; export_stl(Box(20,20,10), '$TMP/cube.stl')"
+    "$PY" "$S/scripts/slice_gate.py" "$TMP/cube.stl" >"$TMP/quote_cube.out" 2>&1
+    assert_exit "cube, no flags" 0 $?
+    grep -q "^print hours:" "$TMP/quote_cube.out" || { echo "FAIL: missing 'print hours:' line"; FAIL=1; }
+    grep -q "^cost floor:" "$TMP/quote_cube.out" || { echo "FAIL: missing 'cost floor:' line"; FAIL=1; }
+
+    note "slice_gate.py: trophy over --max-hours must FAIL"
+    "$PY" "$S/scripts/slice_gate.py" "$ROOT/models/rq-trophy/trophy.3mf" --max-hours 6 >"$TMP/quote_trophy_hours.out" 2>&1
+    assert_exit "trophy over max-hours" 1 $?
+    grep -q "QUOTE FAIL" "$TMP/quote_trophy_hours.out" || { echo "FAIL: missing QUOTE FAIL"; FAIL=1; }
+    grep -q "RESULT: FAIL" "$TMP/quote_trophy_hours.out" || { echo "FAIL: missing RESULT: FAIL"; FAIL=1; }
+
+    note "slice_gate.py: pillbox assembly under both limits must PASS"
+    "$PY" "$S/scripts/slice_gate.py" "$ROOT/models/rq-pillbox/assembly.3mf" --max-hours 6 --max-grams 60 >"$TMP/quote_pillbox.out" 2>&1
+    assert_exit "pillbox under limits" 0 $?
+
+    note "slice_gate.py: knob at --price 5 must PASS (well over min £/hr)"
+    "$PY" "$S/scripts/slice_gate.py" "$ROOT/models/rq-knob/knob.3mf" --price 5 >"$TMP/quote_knob.out" 2>&1
+    assert_exit "knob price 5" 0 $?
+    grep -q "price per printer-hour" "$TMP/quote_knob.out" || { echo "FAIL: missing price-per-hour line"; FAIL=1; }
+
+    note "slice_gate.py: trophy at --price 25 must FAIL (under min £/hr)"
+    "$PY" "$S/scripts/slice_gate.py" "$ROOT/models/rq-trophy/trophy.3mf" --price 25 >"$TMP/quote_trophy_price.out" 2>&1
+    assert_exit "trophy price 25" 1 $?
+    grep -q "QUOTE FAIL" "$TMP/quote_trophy_price.out" || { echo "FAIL: missing QUOTE FAIL for price"; FAIL=1; }
+
+    [ "$FAIL" = 0 ] && echo QUOTE_GATE_OK
+}
+
+gate_text() {
+    note "text_check.py: build123d plate with raised HELLO reads correctly"
+    "$PY" -c "
+from build123d import *
+with BuildPart() as bp:
+    with BuildSketch():
+        Rectangle(60, 20)
+    extrude(amount=3)
+    with BuildSketch(bp.faces().sort_by(Axis.Z)[-1]):
+        Text('HELLO', font_size=10)
+    extrude(amount=2)
+export_stl(bp.part, '$TMP/hello.stl')
+"
+    "$PY" "$S/scripts/text_check.py" "$TMP/hello.stl" --expect HELLO --axis z --steps 6 >"$TMP/text_hello.out" 2>&1
+    assert_exit "HELLO plate reads HELLO" 0 $?
+    grep -q "RESULT: PASS" "$TMP/text_hello.out" || { echo "FAIL: missing RESULT: PASS"; FAIL=1; }
+
+    note "text_check.py: same plate, --expect WORLD must FAIL"
+    "$PY" "$S/scripts/text_check.py" "$TMP/hello.stl" --expect WORLD --axis z --steps 6 >"$TMP/text_world.out" 2>&1
+    assert_exit "HELLO plate does not read WORLD" 1 $?
+
+    note "text_check.py: HELLO and WORLD extruded on top of each other must not pass as HELLO"
+    "$PY" -c "
+from build123d import *
+with BuildPart() as bp:
+    with BuildSketch():
+        Rectangle(60, 20)
+    extrude(amount=3)
+    top = bp.faces().sort_by(Axis.Z)[-1]
+    with BuildSketch(top):
+        Text('HELLO', font_size=10)
+        Text('WORLD', font_size=10)
+    extrude(amount=2)
+export_stl(bp.part, '$TMP/overlap.stl')
+"
+    "$PY" "$S/scripts/text_check.py" "$TMP/overlap.stl" --expect HELLO --axis z --steps 6 >"$TMP/text_overlap.out" 2>&1
+    assert_exit "overlapping text must not pass" 1 $?
+
+    note "text_check.py: real trophy.stl reads CONGRATULATION"
+    "$PY" "$S/scripts/text_check.py" "$ROOT/models/rq-trophy/trophy.stl" --expect CONGRATULATION >"$TMP/text_trophy_ok.out" 2>&1
+    assert_exit "trophy reads CONGRATULATION" 0 $?
+
+    note "text_check.py: real trophy.stl must NOT read CONGRATULATIONS (extra S)"
+    "$PY" "$S/scripts/text_check.py" "$ROOT/models/rq-trophy/trophy.stl" --expect CONGRATULATIONS >"$TMP/text_trophy_bad.out" 2>&1
+    assert_exit "trophy does not read CONGRATULATIONS" 1 $?
+
+    [ "$FAIL" = 0 ] && echo TEXT_GATE_OK
+}
+
 gate_docs() {
     note "docs: bd_warehouse patterns documented and importable"
     grep -q "bd_warehouse.thread import IsoThread" "$S/references/build123d-patterns.md" || { echo "FAIL: threads not documented"; FAIL=1; }
@@ -293,9 +374,11 @@ case "${1:-all}" in
     features) gate_features ;;
     fit) gate_fit ;;
     slice) gate_slice ;;
+    quote) gate_quote ;;
+    text) gate_text ;;
     docs) gate_docs ;;
     all)
-        gate_checker; gate_render; gate_features; gate_fit; gate_slice; gate_docs
+        gate_checker; gate_render; gate_features; gate_fit; gate_slice; gate_quote; gate_text; gate_docs
         [ "$FAIL" = 0 ] && echo ALL_GATES_OK
         ;;
     *) echo "unknown gate: $1" >&2; exit 2 ;;
