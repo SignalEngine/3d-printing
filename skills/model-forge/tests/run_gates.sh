@@ -52,7 +52,7 @@ export_stl(bp.part, '$TMP/thin.stl')
 }
 
 gate_render() {
-    note "render.sh: real f3d PNGs (iso/front/top/section)"
+    note "render.sh: real f3d PNGs (iso/front/top/section), each >5% non-background pixels"
     "$PY" -c "from build123d import *; export_stl(Box(20,20,10), '$TMP/cube.stl')"
     bash "$S/scripts/render.sh" "$TMP/cube.stl" "$TMP/r" --section >"$TMP/render.out" 2>&1
     ok=1
@@ -60,7 +60,40 @@ gate_render() {
         f="$TMP/r-$v.png"
         if [ ! -s "$f" ]; then echo "FAIL: missing/empty $f"; ok=0; fi
     done
-    if [ "$ok" = 1 ]; then echo RENDER_GATE_OK; else FAIL=1; cat "$TMP/render.out"; fi
+    if [ "$ok" = 1 ]; then
+        "$PY" -c "
+import sys, numpy as np
+from PIL import Image
+names = sys.argv[1:]
+bad = []
+for n in names:
+    im = np.array(Image.open(n).convert('L'))
+    bg = im[0, 0]
+    nonbg = (np.abs(im.astype(int) - int(bg)) > 10).mean() * 100
+    print(f'{n}: {nonbg:.1f}% non-background')
+    if nonbg <= 5:
+        bad.append(n)
+sys.exit(1 if bad else 0)
+" "$TMP/r-iso.png" "$TMP/r-front.png" "$TMP/r-top.png" "$TMP/r-section.png" >"$TMP/render_px.out" 2>&1
+        px_exit=$?
+        cat "$TMP/render_px.out"
+        if [ "$px_exit" != 0 ]; then echo "FAIL: a render came back blank (<=5% non-background)"; ok=0; fi
+    fi
+
+    note "render.sh: filename containing a single quote must not crash or inject (plain STL path)"
+    mkdir -p "$TMP/quote'dir"
+    cp "$TMP/cube.stl" "$TMP/quote'dir/it's a cube.stl"
+    bash "$S/scripts/render.sh" "$TMP/quote'dir/it's a cube.stl" "$TMP/q" >"$TMP/render_quote.out" 2>&1
+    assert_exit "quoted filename render (stl)" 0 $?
+    [ -s "$TMP/q-iso.png" ] || { echo "FAIL: quoted-filename render produced no output"; ok=0; FAIL=1; }
+
+    note "render.sh: quoted STEP filename exercises the vulnerable conversion path (python -c interpolation)"
+    "$PY" -c "from build123d import *; export_step(Box(20,20,10), \"$TMP/quote'dir/it's a cube.step\")"
+    bash "$S/scripts/render.sh" "$TMP/quote'dir/it's a cube.step" "$TMP/qstep" --section >"$TMP/render_quote_step.out" 2>&1
+    assert_exit "quoted filename render (step, --section)" 0 $?
+    [ -s "$TMP/qstep-iso.png" ] && [ -s "$TMP/qstep-section.png" ] || { echo "FAIL: quoted STEP render produced no output"; ok=0; FAIL=1; cat "$TMP/render_quote_step.out"; }
+
+    if [ "$ok" = 1 ] && [ "$FAIL" = 0 ]; then echo RENDER_GATE_OK; else FAIL=1; cat "$TMP/render.out"; fi
 }
 
 gate_features() {
@@ -101,6 +134,12 @@ export_stl(Pos(20.2,0,0) * Box(20,20,10), '$TMP/fitB_clear.stl')
     "$PY" "$S/scripts/fit.py" "$TMP/fitA.stl" "$TMP/fitB_clear.stl" >"$TMP/fit_clear.out" 2>&1
     grep -q "RESULT: CLEARANCE" "$TMP/fit_clear.out" || { echo "FAIL: expected CLEARANCE"; FAIL=1; cat "$TMP/fit_clear.out"; }
 
+    note "fit.py: a failed interference boolean must report UNKNOWN (exit 2), never a false CLEARANCE"
+    "$PY" "$S/scripts/fit.py" "$TMP/fitA.stl" "$TMP/fitB_over.stl" --engine bogus_engine_xyz >"$TMP/fit_unknown.out" 2>&1
+    assert_exit "forced boolean failure" 2 $?
+    grep -q "RESULT: UNKNOWN" "$TMP/fit_unknown.out" || { echo "FAIL: expected RESULT: UNKNOWN"; FAIL=1; cat "$TMP/fit_unknown.out"; }
+    grep -q "RESULT: CLEARANCE" "$TMP/fit_unknown.out" && { echo "FAIL: forced failure fell through to CLEARANCE"; FAIL=1; }
+
     [ "$FAIL" = 0 ] && echo FIT_GATE_OK
 }
 
@@ -120,6 +159,19 @@ m.export('$TMP/broken.stl')
     "$PY" "$S/scripts/slice_gate.py" "$TMP/broken.stl" >"$TMP/slice_bad.out" 2>&1
     assert_exit "broken mesh refused" 1 $?
     grep -q "refusing to slice" "$TMP/slice_bad.out" || { echo "FAIL: missing refusal message"; FAIL=1; }
+
+    note "slice_gate.py: overlapping-but-individually-watertight shells WARN, still slice (not FAIL)"
+    "$PY" -c "
+import trimesh
+A = trimesh.creation.box((20,20,10))
+B = trimesh.creation.box((5,5,5))
+B.apply_translation([0,0,2.5])
+trimesh.util.concatenate([A, B]).export('$TMP/overlap.stl')
+"
+    "$PY" "$S/scripts/slice_gate.py" "$TMP/overlap.stl" >"$TMP/slice_overlap.out" 2>&1
+    assert_exit "overlapping shells still slice" 0 $?
+    grep -q "WARN:.*shells overlap" "$TMP/slice_overlap.out" || { echo "FAIL: missing overlapping-shells WARN"; FAIL=1; cat "$TMP/slice_overlap.out"; }
+    grep -q "RESULT: PASS" "$TMP/slice_overlap.out" || { echo "FAIL: expected RESULT: PASS despite WARN"; FAIL=1; }
 
     [ "$FAIL" = 0 ] && echo SLICE_GATE_OK
 }

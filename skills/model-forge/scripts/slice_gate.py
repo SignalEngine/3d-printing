@@ -46,6 +46,22 @@ def main():
               "(see verify_model.py) before slicing.")
         sys.exit(1)
 
+    # is_watertight passes each shell individually — it does NOT catch two
+    # separate watertight bodies that self-intersect (e.g. embedded
+    # multi-colour text/parts). WARN only: an embedded shell is often
+    # legitimate (the slicer merges overlapping shells at slice time).
+    if m.body_count > 1:
+        bodies = m.split(only_watertight=False)
+        sum_vol = sum(b.volume for b in bodies if b.is_watertight)
+        try:
+            union_vol = trimesh.boolean.union(bodies, check_volume=False).volume
+        except Exception:
+            union_vol = None
+        if union_vol is not None and sum_vol > 0 and union_vol < 0.999 * sum_vol:
+            print(f"WARN: {m.body_count} shells overlap — union volume {union_vol:.2f}mm^3 vs "
+                  f"sum-of-bodies {sum_vol:.2f}mm^3. Fine for text/colour parts embedded in the "
+                  "body (the slicer merges overlapping shells); check it's intended otherwise.")
+
     with tempfile.TemporaryDirectory() as outdir:
         machine = os.path.join(PROFILES, "machine", f"Bambu Lab A1 {a.nozzle} nozzle.json")
         process = os.path.join(PROFILES, "process", f"{a.process}.json")
