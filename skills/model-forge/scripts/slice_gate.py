@@ -27,12 +27,28 @@ def load_any(path):
     return trimesh.load(path, force="mesh")
 
 
+def parse_hours(time_str):
+    """'21m 38s' / '2h 51m 3s' / '15h 14m 45s' / '1d 2h 3m' -> float hours."""
+    units = {"d": 24, "h": 1, "m": 1 / 60, "s": 1 / 3600}
+    total = 0.0
+    for value, unit in re.findall(r"(\d+)\s*([dhms])", time_str):
+        total += int(value) * units[unit]
+    return total
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("model")
     ap.add_argument("--nozzle", default="0.4")
     ap.add_argument("--process", default="0.20mm Standard @BBL A1")
     ap.add_argument("--filament", default="Bambu PLA Basic @BBL A1")
+    ap.add_argument("--gbp-per-kg", type=float, default=18.0)
+    ap.add_argument("--gbp-per-hour", type=float, default=0.30,
+                     help="estimated machine cost: electricity + wear")
+    ap.add_argument("--max-hours", type=float, default=None)
+    ap.add_argument("--max-grams", type=float, default=None)
+    ap.add_argument("--price", type=float, default=None, help="proposed sale price, GBP")
+    ap.add_argument("--min-gbp-per-hour", type=float, default=10.0)
     a = ap.parse_args()
 
     if not os.path.exists(ORCA_BIN):
@@ -96,9 +112,55 @@ def main():
         fil_cm3 = re.search(r"filament used \[cm3\]\s*=\s*([\d.]+)", gcode)
         print(f"file: {a.model}")
         print(f"profile: A1 {a.nozzle}nozzle / {a.process} / {a.filament}")
-        print(f"estimated print time: {time_m.group(1).strip() if time_m else 'unknown'}")
+        time_str = time_m.group(1).strip() if time_m else "unknown"
+        print(f"estimated print time: {time_str}")
         fil = f"{fil_g.group(1)}g" if fil_g else (f"{fil_cm3.group(1)}cm3" if fil_cm3 else "unknown")
         print(f"filament: {fil}")
+
+        hours = parse_hours(time_str) if time_m else None
+        if hours == 0:
+            # An unrecognised time format (e.g. HH:MM:SS) parses to 0 and would zero the
+            # machine cost silently; treat it as unknown instead.
+            print(f"WARN: could not parse print time {time_str!r}; hours unknown")
+            hours = None
+        if fil_g:
+            grams = float(fil_g.group(1))
+        elif fil_cm3:
+            # ponytail: PLA density (1.24 g/cm3) only — PETG is 1.27, ABS 1.04.
+            grams = float(fil_cm3.group(1)) * 1.24
+        else:
+            grams = None
+
+        fails = []
+        if hours is not None:
+            print(f"print hours: {hours:.2f}")
+            if a.max_hours is not None and hours > a.max_hours:
+                fails.append(f"print hours {hours:.2f} > --max-hours {a.max_hours}")
+        if grams is not None:
+            material_cost = grams / 1000 * a.gbp_per_kg
+            print(f"material: {grams:.1f}g = £{material_cost:.2f}")
+            if a.max_grams is not None and grams > a.max_grams:
+                fails.append(f"material {grams:.1f}g > --max-grams {a.max_grams}")
+        if hours is not None:
+            machine_cost = hours * a.gbp_per_hour
+            print(f"machine: £{machine_cost:.2f}")
+        if hours is not None and grams is not None:
+            cost_floor = material_cost + machine_cost
+            print(f"cost floor: £{cost_floor:.2f}")
+            if a.price is not None:
+                margin = a.price - cost_floor
+                per_hour = margin / hours if hours > 0 else float("inf")
+                print(f"margin per printer-hour: £{per_hour:.2f}")
+                if per_hour < a.min_gbp_per_hour:
+                    fails.append(
+                        f"margin per printer-hour £{per_hour:.2f} < --min-gbp-per-hour {a.min_gbp_per_hour}")
+
+        if fails:
+            for reason in fails:
+                print(f"QUOTE FAIL: {reason}")
+            print("RESULT: FAIL")
+            sys.exit(1)
+
         print("RESULT: PASS")
         sys.exit(0)
 
