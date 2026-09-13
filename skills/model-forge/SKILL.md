@@ -64,7 +64,7 @@ python3 scripts/text_check.py out.3mf --expect "CONGRATULATION"   # OCR-verify o
   mkdir -p /root/3d-printing/orcaslicer && mv squashfs-root /root/3d-printing/orcaslicer/
   # also needs: apt-get install -y libglu1-mesa libwebkit2gtk-4.1-0
   ```
-- **slice_gate.py** also prints a cost block after any successful slice: `print hours`, `material` (g and £), `machine` (£), `cost floor` (£), and — with `--price` — `price per printer-hour`. It only FAILs (`QUOTE FAIL`, exit 1) when `--max-hours`/`--max-grams`/`--min-gbp-per-hour` (with `--price`) is given and exceeded; no flags = info only, same PASS as before. See a model's print time and cost before quoting it.
+- **slice_gate.py** also prints a cost block after any successful slice: `print hours`, `material` (g and £), `machine` (£), `cost floor` (£), and — with `--price` — `margin per printer-hour` ((price − cost floor) ÷ hours). It only FAILs (`QUOTE FAIL`, exit 1) when `--max-hours`/`--max-grams`/`--min-gbp-per-hour` (with `--price`) is given and exceeded; no flags = info only, same PASS as before. See a model's print time and cost before quoting it.
 - **text_check.py**: any part carrying ordered text (a name, initials, a message) must pass this before delivery. It cross-sections the mesh and OCRs each slice in every rotation/mirror — catches wrong, missing, or overlapping-and-illegible text that a render can miss. Judge text and legibility from the front/orthographic view or a cross-section render, never the iso view — an iso render misled a real review on 2026-09-13 (the text was actually correct).
 - On any FAIL: fix the geometry at the source (don't blind-repair your own generated model) and re-run every step above. Iterate until clean.
 

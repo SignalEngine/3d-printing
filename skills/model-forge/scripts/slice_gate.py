@@ -118,6 +118,11 @@ def main():
         print(f"filament: {fil}")
 
         hours = parse_hours(time_str) if time_m else None
+        if hours == 0:
+            # An unrecognised time format (e.g. HH:MM:SS) parses to 0 and would zero the
+            # machine cost silently; treat it as unknown instead.
+            print(f"WARN: could not parse print time {time_str!r}; hours unknown")
+            hours = None
         if fil_g:
             grams = float(fil_g.group(1))
         elif fil_cm3:
@@ -145,10 +150,10 @@ def main():
             if a.price is not None:
                 margin = a.price - cost_floor
                 per_hour = margin / hours if hours > 0 else float("inf")
-                print(f"price per printer-hour: £{per_hour:.2f}")
+                print(f"margin per printer-hour: £{per_hour:.2f}")
                 if per_hour < a.min_gbp_per_hour:
                     fails.append(
-                        f"price per printer-hour £{per_hour:.2f} < --min-gbp-per-hour {a.min_gbp_per_hour}")
+                        f"margin per printer-hour £{per_hour:.2f} < --min-gbp-per-hour {a.min_gbp_per_hour}")
 
         if fails:
             for reason in fails:

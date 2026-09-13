@@ -33,12 +33,12 @@ def normalize(text):
     return re.sub(r"[^A-Z0-9]", "", text.upper())
 
 
-def sections_for_axis(mesh, axis_name):
+def sections_for_axis(mesh, axis_name, steps):
     normal = AXES[axis_name]
     axis_i = normal.index(1)
     lo, hi = mesh.bounds[0][axis_i], mesh.bounds[1][axis_i]
     margin = (hi - lo) * 0.05
-    heights = np.linspace(lo + margin, hi - margin, STEPS)
+    heights = np.linspace(lo + margin, hi - margin, steps)
     origin = mesh.bounds[0].copy()
     origin[axis_i] = 0.0
     paths = mesh.section_multiplane(plane_origin=origin, plane_normal=normal, heights=heights)
@@ -77,18 +77,13 @@ def ocr_all_orientations(png_path):
     return reads
 
 
-STEPS = 12
-
-
 def main():
-    global STEPS
     ap = argparse.ArgumentParser()
     ap.add_argument("model")
     ap.add_argument("--expect", required=True)
     ap.add_argument("--axis", choices=["x", "y", "z"], default=None)
     ap.add_argument("--steps", type=int, default=12)
     a = ap.parse_args()
-    STEPS = a.steps
 
     if not shutil.which("tesseract"):
         print("ERROR: tesseract not found on PATH.")
@@ -102,7 +97,7 @@ def main():
 
     with tempfile.TemporaryDirectory() as tmpdir:
         for axis_name in axes:
-            for section_axis, height, path2d in sections_for_axis(mesh, axis_name):
+            for section_axis, height, path2d in sections_for_axis(mesh, axis_name, a.steps):
                 png = os.path.join(tmpdir, f"sec_{section_axis}_{height:.2f}.png")
                 render_section(path2d, png)
                 for raw, rotation, mirrored in ocr_all_orientations(png):
@@ -110,7 +105,9 @@ def main():
                     if norm:
                         all_reads.append((norm, raw, section_axis, height, rotation, mirrored))
 
-    matches = [r for r in all_reads if expect_norm and expect_norm in r[0]]
+    # Exact match on the whole normalised read: substring matching let --expect A
+    # pass on 'CAT' and HELLO pass on 'HELLOWORLD' (jury, 2026-09-13).
+    matches = [r for r in all_reads if expect_norm and r[0] == expect_norm]
     if matches:
         norm, raw, axis_name, height, rotation, mirrored = matches[0]
         mirror_str = " mirrored" if mirrored else ""

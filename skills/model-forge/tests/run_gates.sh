@@ -292,7 +292,7 @@ gate_quote() {
     note "slice_gate.py: knob at --price 5 must PASS (well over min £/hr)"
     "$PY" "$S/scripts/slice_gate.py" "$ROOT/models/rq-knob/knob.3mf" --price 5 >"$TMP/quote_knob.out" 2>&1
     assert_exit "knob price 5" 0 $?
-    grep -q "price per printer-hour" "$TMP/quote_knob.out" || { echo "FAIL: missing price-per-hour line"; FAIL=1; }
+    grep -q "margin per printer-hour" "$TMP/quote_knob.out" || { echo "FAIL: missing margin-per-hour line"; FAIL=1; }
 
     note "slice_gate.py: trophy at --price 25 must FAIL (under min £/hr)"
     "$PY" "$S/scripts/slice_gate.py" "$ROOT/models/rq-trophy/trophy.3mf" --price 25 >"$TMP/quote_trophy_price.out" 2>&1
@@ -322,6 +322,23 @@ export_stl(bp.part, '$TMP/hello.stl')
     note "text_check.py: same plate, --expect WORLD must FAIL"
     "$PY" "$S/scripts/text_check.py" "$TMP/hello.stl" --expect WORLD --axis z --steps 6 >"$TMP/text_world.out" 2>&1
     assert_exit "HELLO plate does not read WORLD" 1 $?
+
+    note "text_check.py: plate reading HELLOWORLD must not pass as HELLO (extra letters)"
+    "$PY" -c "
+from build123d import *
+with BuildPart() as bp:
+    with BuildSketch():
+        Rectangle(110, 20)
+    extrude(amount=3)
+    with BuildSketch(bp.faces().sort_by(Axis.Z)[-1]):
+        Text('HELLOWORLD', font_size=10)
+    extrude(amount=2)
+export_stl(bp.part, '$TMP/helloworld.stl')
+"
+    "$PY" "$S/scripts/text_check.py" "$TMP/helloworld.stl" --expect HELLO --axis z --steps 6 >"$TMP/text_extra.out" 2>&1
+    assert_exit "extra letters must not pass" 1 $?
+    "$PY" "$S/scripts/text_check.py" "$TMP/helloworld.stl" --expect HELLOWORLD --axis z --steps 6 >"$TMP/text_full.out" 2>&1
+    assert_exit "HELLOWORLD plate reads HELLOWORLD" 0 $?
 
     note "text_check.py: HELLO and WORLD extruded on top of each other must not pass as HELLO"
     "$PY" -c "
