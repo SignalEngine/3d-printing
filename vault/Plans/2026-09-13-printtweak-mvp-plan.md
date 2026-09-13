@@ -1850,6 +1850,17 @@ Then add printtweak.com as a LaunchEngine product and start the 14-day campaign 
 
 ---
 
+## Review follow-ups (from Tasks 1-2 gates, 2026-09-13)
+
+Confirmed by the brain against the code; not blocking Tasks 1-2, assigned to later tasks. Each needs a failing test first.
+
+- **Task 6 — server-side upload validation in `designs.create`:** the 25 MB model / 10 MB photo and file-type limits are only enforced in the browser form. Read `ctx.db.system.get(uploadId)` and reject with `ConvexError("upload_too_large")` / `("upload_type")` on `size` or `contentType`. Test: a 26 MB stored blob is refused.
+- **Task 6 — text length caps:** reject `request` or tweak `text` over 2,000 characters with `ConvexError("too_long")`. Tests for both.
+- **Task 8 — funnel dedupe:** `preview_delivered` fires on every tweak. Count it once per design (skip the insert when the job kind is `tweak`, or count distinct design ids). Test: a design with 2 tweaks gives 1.
+- Optional (not scheduled): constant-time `WORKER_SECRET` compare; `costUsd >= 0` and finite-quote validation in `reportResult` (worker-only boundary).
+
+Refuted, no action: refund on a declined tweak (spec: refusals don't use a try; bounded by the daily cap); failed jobs counting toward the daily cap (spend is spend); "ready" with a refused print quote (file still offered); Convex write races (mutations are serializable).
+
 ## Self-review (done while writing)
 
 - **Spec coverage:** flow §2 → Tasks 6-7; Convex tables §3 → Task 1-2; worker + sandbox §3 → Tasks 3-5; vision check → Task 5; limits/pricing/refusals/failures §4 → Tasks 1, 2, 4 (refusal rules in system prompt), 5; payments/ops → Task 7 + worker alerts; tests §5 → 1: Task 3 image uses model-forge unchanged, run `run_gates.sh all` in Task 3 Step 5; 2: Task 3; 3: Tasks 1-2; 4: Task 2; 5: Task 7; 6: Task 5 Step 5; 7: Task 8 Step 6. Setup list §6 and LaunchEngine §7 → Task 8 Step 5/7. Funnel → Task 8.
