@@ -17,17 +17,17 @@ Scope: fix mktemp/checker bugs, add real render/features/fit/slice scripts, add 
 - [x] G3: render.sh produces real f3d depth-rendered PNGs (iso/top/front/section)
   CHECK: bash skills/model-forge/tests/run_gates.sh render
   EXPECT: RENDER_GATE_OK
-  EVIDENCE: automatic-evidence=v1; definition-sha256=a94c3136b4dc1e25a2be2d6ef9ded20cd2ee5956f8f9d26bbd5466aedd2aa58d; exit=0; EXPECT=matched; output-sha256=7783874c03e0000bae0773b3909033506f4cd78f32bd6bafe78aeb24839c911b; output-bytes=611; shell=/bin/sh; cwd=/root/wt-model-forge-v2; path=6e0b5bc8a1e5/19 entries
+  EVIDENCE: automatic-evidence=v1; definition-sha256=a94c3136b4dc1e25a2be2d6ef9ded20cd2ee5956f8f9d26bbd5466aedd2aa58d; exit=0; EXPECT=matched; output-sha256=a8bc2484514b18b05257d67d3ae30f987d5e051699ce410a47aaaeb258ccdeda; output-bytes=750; shell=/bin/sh; cwd=/root/wt-model-forge-v2; path=6e0b5bc8a1e5/19 entries
 
 - [x] G4: features.py flags a hole moved to the wrong face
   CHECK: bash skills/model-forge/tests/run_gates.sh features
   EXPECT: FEATURES_GATE_OK
-  EVIDENCE: automatic-evidence=v1; definition-sha256=60a31af804f908e888bfa4d63eb94e74b4e9eac696cae52f93f3e70945a8515a; exit=0; EXPECT=matched; output-sha256=6dabd6ed4dc0dd92dc2005883ad6e406bf824004bb8d424fda4d027975921184; output-bytes=154; shell=/bin/sh; cwd=/root/wt-model-forge-v2; path=6e0b5bc8a1e5/19 entries
+  EVIDENCE: automatic-evidence=v1; definition-sha256=60a31af804f908e888bfa4d63eb94e74b4e9eac696cae52f93f3e70945a8515a; exit=0; EXPECT=matched; output-sha256=0b5beee1eb1145621c5794bb9a805ae243e12893e23d48c94d46fab85aa93d53; output-bytes=494; shell=/bin/sh; cwd=/root/wt-model-forge-v2; path=6e0b5bc8a1e5/19 entries
 
 - [x] G5: fit.py reports interference volume > 0 for an oversized lid, 0 for a cleared one
   CHECK: bash skills/model-forge/tests/run_gates.sh fit
   EXPECT: FIT_GATE_OK
-  EVIDENCE: automatic-evidence=v1; definition-sha256=576f6d27b3d21ead11b8ab8f14e933088eb24b2b91746b7c3fbc6f3af488bfb9; exit=0; EXPECT=matched; output-sha256=fd0055b6bcdbd2d3ed7558d638cac4e828788b945972f9218105e1127c894879; output-bytes=227; shell=/bin/sh; cwd=/root/wt-model-forge-v2; path=6e0b5bc8a1e5/19 entries
+  EVIDENCE: automatic-evidence=v1; definition-sha256=576f6d27b3d21ead11b8ab8f14e933088eb24b2b91746b7c3fbc6f3af488bfb9; exit=0; EXPECT=matched; output-sha256=2d06ea5a2467065fcd39e6d5e8dad1d9771b74502de37e1f698973e0b43a0c7b; output-bytes=418; shell=/bin/sh; cwd=/root/wt-model-forge-v2; path=6e0b5bc8a1e5/19 entries
 
 - [x] G6: slice_gate.py slices a good plate on the Bambu A1 profile and refuses a non-manifold mesh
   CHECK: bash skills/model-forge/tests/run_gates.sh slice
@@ -42,4 +42,4 @@ Scope: fix mktemp/checker bugs, add real render/features/fit/slice scripts, add 
 - [x] G8: full gate runner is a single non-zero-on-failure entrypoint
   CHECK: bash skills/model-forge/tests/run_gates.sh all
   EXPECT: ALL_GATES_OK
-  EVIDENCE: automatic-evidence=v1; definition-sha256=7ff261eb43d904d97a757ebabe715602175aed2a25b72ed6f0c5271a983ed54b; exit=0; EXPECT=matched; output-sha256=b47166f541ed9d76c3af668994fc18b4168bc38088078c92254045a26f6f1898; output-bytes=1607; shell=/bin/sh; cwd=/root/wt-model-forge-v2; path=6e0b5bc8a1e5/19 entries
+  EVIDENCE: automatic-evidence=v1; definition-sha256=7ff261eb43d904d97a757ebabe715602175aed2a25b72ed6f0c5271a983ed54b; exit=0; EXPECT=matched; output-sha256=80afdb12bb2fc81a0d2cff5e506ece5746a48768508a17e7699f8153fab0393c; output-bytes=2277; shell=/bin/sh; cwd=/root/wt-model-forge-v2; path=6e0b5bc8a1e5/19 entries

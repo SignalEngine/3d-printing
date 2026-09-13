@@ -29,8 +29,6 @@ def axis_index(direction):
 
 
 def find_holes(part):
-    overall = part.bounding_box()
-    omin, omax = np.array(tuple(overall.min)), np.array(tuple(overall.max))
     holes = []
     for f in part.faces():
         if f.geom_type != GeomType.CYLINDER or not f.is_circular_concave:
@@ -39,27 +37,38 @@ def find_holes(part):
         ax = cyl.Axis()
         direction = (ax.Direction().X(), ax.Direction().Y(), ax.Direction().Z())
         idx = axis_index(direction)
+        loc = ax.Location()
+        loc_arr = np.array([loc.X(), loc.Y(), loc.Z()])
         bb = f.bounding_box()
         fmin, fmax = np.array(tuple(bb.min)), np.array(tuple(bb.max))
         depth = float(fmax[idx] - fmin[idx])
-        eps = 0.05
-        touches_max = abs(fmax[idx] - omax[idx]) < eps
-        touches_min = abs(fmin[idx] - omin[idx]) < eps
         name = AXIS_NAMES[idx]
-        if touches_max and touches_min:
+
+        # Probe 0.2mm beyond each end of the cylinder along its own axis: a
+        # point NOT inside the solid there means that end is an opening —
+        # independent of the part's overall bounding box (a boss/feature
+        # elsewhere in the part must not change this hole's classification).
+        probe_min = loc_arr.copy(); probe_min[idx] = fmin[idx] - 0.2
+        probe_max = loc_arr.copy(); probe_max[idx] = fmax[idx] + 0.2
+        open_min = not part.is_inside(tuple(probe_min))
+        open_max = not part.is_inside(tuple(probe_max))
+        if open_min and open_max:
             face = f"through {name}"
-        elif touches_max:
+        elif open_max:
             face = f"+{name}"
-        elif touches_min:
+        elif open_min:
             face = f"-{name}"
         else:
             face = f"internal {name}"  # blind hole that doesn't reach an outer face
+
+        center_arr = loc_arr.copy()
+        center_arr[idx] = (fmin[idx] + fmax[idx]) / 2.0
         holes.append({
             "diameter": round(f.radius * 2, 3),
             "depth": round(depth, 3),
             "axis": name,
             "face": face,
-            "center": [round(c, 3) for c in tuple(f.center())],
+            "center": [round(c, 3) for c in center_arr.tolist()],
         })
     return holes
 

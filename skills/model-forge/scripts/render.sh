@@ -85,7 +85,7 @@ zc = float(z) if z else m.bounds.mean(0)[2]
 cut = m.slice_plane(plane_origin=[0, 0, zc], plane_normal=[0, 0, -1], cap=True)
 cut.export(out)
 PYEOF
-    xvfb-run -a f3d "$SECTION_STL" --output="${PREFIX}-section.png" --resolution=800,600 --up=+Z --camera-direction="1,1,1.2"
+    xvfb-run -a f3d "$SECTION_STL" --output="${PREFIX}-section.png" --resolution=800,600 --up=+Z --camera-direction="-1,1,-1.2"
 else
     render_view "${PREFIX}-iso-rear.png" "1,-1,-1.2" "+Z"
 fi

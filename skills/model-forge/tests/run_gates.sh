@@ -93,6 +93,30 @@ sys.exit(1 if bad else 0)
     assert_exit "quoted filename render (step, --section)" 0 $?
     [ -s "$TMP/qstep-iso.png" ] && [ -s "$TMP/qstep-section.png" ] || { echo "FAIL: quoted STEP render produced no output"; ok=0; FAIL=1; cat "$TMP/render_quote_step.out"; }
 
+    note "render.sh: --section on a hollow cube must show the cavity (differ from a solid cube's section by >5% of pixels)"
+    "$PY" -c "
+from build123d import *
+export_stl(Box(20,20,20), '$TMP/hsolid.stl')
+with BuildPart() as bp:
+    Box(20,20,20)
+    Box(16,16,16, mode=Mode.SUBTRACT)
+export_stl(bp.part, '$TMP/hhollow.stl')
+"
+    bash "$S/scripts/render.sh" "$TMP/hsolid.stl" "$TMP/hsolid" --section >"$TMP/render_hsolid.out" 2>&1
+    bash "$S/scripts/render.sh" "$TMP/hhollow.stl" "$TMP/hhollow" --section >"$TMP/render_hhollow.out" 2>&1
+    "$PY" -c "
+import numpy as np
+from PIL import Image
+a = np.array(Image.open('$TMP/hsolid-section.png').convert('L')).astype(int)
+b = np.array(Image.open('$TMP/hhollow-section.png').convert('L')).astype(int)
+diff = (np.abs(a - b) > 10).mean() * 100
+print(f'section diff: {diff:.2f}%')
+import sys; sys.exit(0 if diff > 5 else 1)
+" >"$TMP/render_section_diff.out" 2>&1
+    sec_exit=$?
+    cat "$TMP/render_section_diff.out"
+    [ "$sec_exit" = 0 ] || { echo "FAIL: hollow-cube section does not differ from solid-cube section by >5%"; ok=0; FAIL=1; }
+
     if [ "$ok" = 1 ] && [ "$FAIL" = 0 ]; then echo RENDER_GATE_OK; else FAIL=1; cat "$TMP/render.out"; fi
 }
 
@@ -115,6 +139,48 @@ export_step(bp.part, '$TMP/hole.step')
     assert_exit "hole on correct face" 0 $?
     "$PY" "$S/scripts/features.py" "$TMP/hole.step" --expect "$TMP/expect_wrong.json" >"$TMP/feat_wrong.out" 2>&1
     assert_exit "hole on wrong face" 1 $?
+
+    note "features.py: a through-hole must classify as 'through Z' even when a boss elsewhere changes the part's overall Z bounds"
+    "$PY" -c "
+from build123d import *
+with BuildPart() as bp:
+    Box(30,30,10)
+    with Locations((10,0,10)):
+        Box(10,10,10)
+    with Locations((-8,0,0)):
+        Cylinder(2,10, mode=Mode.SUBTRACT)
+export_step(bp.part, '$TMP/plateboss.step')
+with BuildPart() as bp2:
+    Box(30,30,10)
+    Cylinder(2,10, mode=Mode.SUBTRACT)
+export_step(bp2.part, '$TMP/centered.step')
+"
+    echo '[{"diameter":4.0,"face":"through Z","tol":0.1}]' > "$TMP/expect_boss.json"
+    "$PY" "$S/scripts/features.py" "$TMP/plateboss.step" --expect "$TMP/expect_boss.json" >"$TMP/feat_boss.out" 2>&1
+    assert_exit "hole through Z despite boss" 0 $?
+    grep -q "through Z" "$TMP/feat_boss.out" || { echo "FAIL: expected 'through Z' classification"; FAIL=1; cat "$TMP/feat_boss.out"; }
+
+    note "features.py: hole centre must be a real 3D point on the axis, not a point on the wall"
+    "$PY" "$S/scripts/features.py" "$TMP/centered.step" >"$TMP/feat_centered.out" 2>&1
+    "$PY" -c "
+import re, sys
+out = open('$TMP/feat_centered.out').read()
+m = re.search(r'center=\[([^\]]+)\]', out)
+c = [float(x) for x in m.group(1).split(',')]
+ok = all(abs(v) <= 0.01 for v in c)
+print('centered hole center:', c, 'ok' if ok else 'BAD')
+sys.exit(0 if ok else 1)
+" || { echo "FAIL: centred hole centre not within 0.01mm of [0,0,0]"; FAIL=1; }
+    "$PY" "$S/scripts/features.py" "$TMP/plateboss.step" >"$TMP/feat_offset.out" 2>&1
+    "$PY" -c "
+import re, sys
+out = open('$TMP/feat_offset.out').read()
+m = re.search(r'center=\[([^\]]+)\]', out)
+c = [float(x) for x in m.group(1).split(',')]
+ok = abs(c[0] - (-8.0)) <= 0.01 and abs(c[1]) <= 0.01
+print('offset hole center:', c, 'ok' if ok else 'BAD')
+sys.exit(0 if ok else 1)
+" || { echo "FAIL: offset hole centre not within 0.01mm of [-8,0,z]"; FAIL=1; }
 
     [ "$FAIL" = 0 ] && echo FEATURES_GATE_OK
 }
@@ -139,6 +205,34 @@ export_stl(Pos(20.2,0,0) * Box(20,20,10), '$TMP/fitB_clear.stl')
     assert_exit "forced boolean failure" 2 $?
     grep -q "RESULT: UNKNOWN" "$TMP/fit_unknown.out" || { echo "FAIL: expected RESULT: UNKNOWN"; FAIL=1; cat "$TMP/fit_unknown.out"; }
     grep -q "RESULT: CLEARANCE" "$TMP/fit_unknown.out" && { echo "FAIL: forced failure fell through to CLEARANCE"; FAIL=1; }
+
+    note "fit.py: crossed touching bars must report a near-zero gap and real contact area (not a vertex-to-surface false CLEARANCE)"
+    "$PY" -c "
+from build123d import *
+export_stl(Box(20,2,2), '$TMP/barA.stl')
+export_stl(Pos(0,0,2) * Box(2,20,2), '$TMP/barB_touch.stl')
+export_stl(Pos(0,0,2.5) * Box(2,20,2), '$TMP/barB_sep.stl')
+"
+    "$PY" "$S/scripts/fit.py" "$TMP/barA.stl" "$TMP/barB_touch.stl" >"$TMP/fit_cross.out" 2>&1
+    "$PY" -c "
+import re, sys
+out = open('$TMP/fit_cross.out').read()
+gap = float(re.search(r'minimum gap: ([\d.]+)', out).group(1))
+area = float(re.search(r'contact area.*?: ([\d.]+)', out).group(1))
+print('crossed bars gap', gap, 'area', area)
+sys.exit(0 if (gap <= 0.05 and 3 <= area <= 5) else 1)
+" || { echo "FAIL: crossed bars expected gap<=0.05 and contact 3-5mm^2"; FAIL=1; cat "$TMP/fit_cross.out"; }
+
+    "$PY" "$S/scripts/fit.py" "$TMP/barA.stl" "$TMP/barB_sep.stl" >"$TMP/fit_sep.out" 2>&1
+    grep -q "RESULT: CLEARANCE" "$TMP/fit_sep.out" || { echo "FAIL: expected CLEARANCE for separated bars"; FAIL=1; }
+    "$PY" -c "
+import re, sys
+out = open('$TMP/fit_sep.out').read()
+gap = float(re.search(r'minimum gap: ([\d.]+)', out).group(1))
+area = float(re.search(r'contact area.*?: ([\d.]+)', out).group(1))
+print('separated bars gap', gap, 'area', area)
+sys.exit(0 if (0.45 <= gap <= 0.55 and area == 0) else 1)
+" || { echo "FAIL: separated bars expected gap 0.45-0.55 and contact 0"; FAIL=1; cat "$TMP/fit_sep.out"; }
 
     [ "$FAIL" = 0 ] && echo FIT_GATE_OK
 }

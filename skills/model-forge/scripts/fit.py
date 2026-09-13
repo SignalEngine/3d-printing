@@ -67,16 +67,18 @@ def main():
         print(f"interference footprint (mm): {np.round(bb[1]-bb[0], 2).tolist()}")
         sys.exit(0)
 
-    # No overlap: minimum surface-to-surface distance in BOTH directions —
-    # a one-directional check (only A's vertices against B's surface) can
-    # miss the true closest pair when the two meshes have very different
-    # triangle density.
-    _, dist_a_to_b, _ = B.nearest.on_surface(A.vertices)
-    _, dist_b_to_a, _ = A.nearest.on_surface(B.vertices)
+    # No overlap: minimum surface-to-surface distance in BOTH directions,
+    # measured over DENSE SURFACE SAMPLES rather than mesh vertices — two
+    # faces can touch across their interior (no vertex anywhere near the
+    # contact patch) while still reporting a large vertex-to-surface gap.
+    n_samples = 4000
+    samples_a, _ = trimesh.sample.sample_surface_even(A, n_samples)
+    samples_b, _ = trimesh.sample.sample_surface_even(B, n_samples)
+    _, dist_a_to_b, _ = B.nearest.on_surface(samples_a)
+    _, dist_b_to_a, _ = A.nearest.on_surface(samples_b)
     min_gap = float(min(dist_a_to_b.min(), dist_b_to_a.min()))
-    touching_verts = dist_a_to_b < a.contact_eps
-    touching_faces = np.isin(A.faces, np.nonzero(touching_verts)[0]).all(axis=1)
-    contact_area = float(A.area_faces[touching_faces].sum())
+    touching = dist_a_to_b < a.contact_eps
+    contact_area = float(touching.mean() * A.area)
 
     print("RESULT: CLEARANCE")
     print(f"minimum gap: {min_gap:.4f} mm")
