@@ -60,7 +60,7 @@ Job states: `queued → designing → checking → ready | failed | declined`. D
   - no host secrets and no Convex token inside;
   - network egress only to a host-side proxy for the Anthropic API, which adds the API key, so the container never holds it.
 - Inside the container: Claude Agent SDK (Python, `claude-agent-sdk` 0.2.x) on Sonnet 5 runs model-forge: design or edit → `verify_model.py` → `render.sh` → `text_check.py` (when text is ordered) → `slice_gate.py` quote.
-- Limits per job: a turn cap (`max_turns`) and a 35-minute hard timeout. The SDK has **no hard spend cap**; it reports `total_cost_usd` when the run ends, which is stored on the job.
+- Limits per job: `max_budget_usd` (hard AI spend cap per run), `max_turns`, and a 35-minute hard timeout. The SDK also reports `total_cost_usd` when the run ends, which is stored on the job. (Correction 13 Sep: an earlier draft said the SDK had no spend cap; `max_budget_usd` is in `ClaudeAgentOptions`, claude-agent-sdk 0.2.152.)
 - The worker uploads files and status back to Convex, then removes the container.
 
 ### Separate check before "ready"
