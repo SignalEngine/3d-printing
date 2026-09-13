@@ -57,6 +57,93 @@ From caravan parts: **a fitment database** — every confirmed order (model/year
 | Rack mounts | Post 3 rendered configs on r/homelab, r/Ubiquiti with a pre-order link | <10 paid orders at £50+ in 14 days |
 | Caravan parts | Find 20 real "discontinued part" requests across caravantalk / ukcampsite / Facebook groups for one make; list 10 parts; check eBay sold prices | <20 requests for one make, or sold prices under £25 |
 
-## Decision
+## Round 1 decision
 
-Pending James's pick. Log with `idea-decide "20260913-153240" "<choice + why>"`.
+James picked the caravan parts demand check (logged). Result: **not measured, not dead**. Forums (caravantalk, motorhomefacts) and eBay sold listings blocked every scraper, so ~5 Swift requests were found and prices were not checked. Positive sign: motorhome3dprints.com (UK) already sells printed motorhome replacement parts.
+
+---
+
+# Round 2 (same day): Halloween, photo-to-print, missed models, AI Remix SaaS
+
+James asked: would his printed T-Rex skull sell, how were trends found, what about an AI photo → questions → quote → print site, what did we miss, and should model-forge become a £5 "AI remix" SaaS. Run id `20260913-155420`.
+
+## Honest answer: how trends were found
+
+Badly in round 1: /last30days was blocked by Reddit partway through and found nothing on YouTube; the web agents mostly read printer-seller SEO lists. No sold counts. Round 2 tried Etsy bestseller badges, eBay sold listings and MakerWorld download counts, but **Etsy, eBay and MakerWorld all block scrapers** (WebFetch and Firecrawl including stealth proxy). VERIFIED. Real numbers need James's own browser (Claude-in-Chrome) or a paid Apify Etsy/eBay actor.
+
+Free method James can use by hand: Etsy search → note "Bestseller" / "Popular now" badges and "X people bought this in the last 24 hours"; eBay → filter Sold items; MakerWorld/Printables → sort by downloads in a category. Paid: eRank, EverBee, Alura (not tested).
+
+## T-Rex skull + Halloween
+
+- Skulls, pumpkin/glow lamps, ghosts, articulated dragons/skeletons, door toppers, tombstones recur as Halloween sellers. INFERRED from search snippets, no sold counts.
+- T-Rex skulls on Etsy run ~£20 small up to large 29cm prints; painted, aged or glow versions price higher. INFERRED.
+- **The popular MakerWorld "T-rex Skull" (TreeD-prints) needs a paid commercial licence to sell prints.** VERIFIED. Downloaded file = cannot sell without the licence; own design = fine.
+- Avoid Universal Monsters etc. (trademark).
+
+## Photo / idea → AI → quote → print
+
+- Nobody runs the full loop. Bambu MakerLab, Meshy/Tripo, Backflip make decorative meshes. VERIFIED
+- **No tool infers real dimensions from an ordinary photo** — "fix my broken thing from a photo" is unsolved unless narrowed to a catalogued product family. VERIFIED (no counter-evidence)
+- Household printer ownership ~1-2%; >70% of entry buyers churn. "Everyone has a printer" is false. VERIFIED-ish
+- Demand for "make it for me": r/3Dprintmything 45k members; Fiverr/Upwork CAD $50-500/part. VERIFIED
+- Where AI quality is enough today: pet memorial / photo gifts, minis of yourself.
+
+## AI Remix SaaS (James's idea)
+
+- No chat-edit feature on MakerWorld, Printables, Thangs, Cults3D. VERIFIED (search, not exhaustive)
+- Bambu shuts PrintMon Maker + AI Scanner on 20 Sep 2026 citing quality/UX, promises redesigned AI tools. VERIFIED
+- **MakerWorld ToS bans automated/AI access to its content; default licence bans derivatives; CC-ND forbids remix.** Paste-a-link is blocked; user upload + per-licence check is the only clean path. VERIFIED
+- The in-house poop-bag holder remix had 5 geometry bugs on attempt 1 and needed several rounds plus a custom gate ([[2026-09-13-stl-edit-lessons]]). Per-remix cost at £5 likely thin. INFERRED (not measured)
+- MakerWorld ~10M MAU, 2.6M models. VERIFIED
+
+## Missed models with revenue evidence
+
+Contract manufacturing for other sellers (Slant 3D, $1.5M raise, scaling to 3,000 printers); print-farm software (Printago, AutoFarm3D); tabletop terrain Patreons; jigs/fixtures for local manufacturers (gap, unproven); architectural models (slow B2B).
+
+## Round 2 proposals, scored
+
+| Idea | Worth /15 | Doable /20 | Total | Reason |
+|---|---|---|---|---|
+| Own-brand personalised occasion shop: AI generates original Halloween→Christmas designs, buyer personalises, proof, print (proposers 1+2 merged) | 12 | 15 | 27 | Proven Etsy category, sidesteps licences, uses the pipeline on sources you own |
+| Photo → stylised relief luminaries/plaques: ghost pet, pet memorial lamp (proposers 3+4 merged) | 12 | 15 | 27 | Within today's AI capability, emotional £50+ gift; muddy-relief risk untested |
+| Photo → 3D figurine (proposer 5) | 10 | 13 | 23 | Mesh quality in single-colour PLA is the weak point |
+| AI Remix SaaS as pitched (James) | 10 | 12 | 22 | Unbuilt wedge, but licence wall, reliability and £5 economics |
+
+Every proposer that scored the Remix SaaS gave it ~3/10 standalone and ~8/10 as the internal engine of a shop that owns its designs.
+
+Merged winner = occasion shop with the photo-relief luminary as the hero product.
+
+## Round 2 critique (idea-panel)
+
+Agreed by all three perspectives:
+- The £3-6k Halloween revenue estimate is unevidenced.
+- Single-colour glow PLA is a visual weakness next to multicolour and resin decor.
+- Personalised items carry more disputes and refunds than generic ones.
+- Lithophane lamps are the proven fallback format.
+- Etsy's AI-disclosure rules add friction the plan ignored.
+
+Disagreements and their cruxes:
+1. **Demand, not production, is the bottleneck** (skeptic, and James's own past pattern of "test from outside first"). Doubling SKUs does nothing if a zero-review shop gets no impressions.
+2. **New Etsy shop in 5 selling weeks:** one side says 7 sales/day, the other says 1-3/day at best. Crux: does a new shop exit ad learning within 14 days?
+3. **Relief vs lithophane:** a front-lit PLA depth relief may read as a topographic blob; a backlit lithophane hides muddy mid-tones and is proven. Crux: can a stranger identify the pet in a relief without being told?
+4. **Margin at realistic volume:** at 2 sales/day after ~12% Etsy fees, £6-12 per-sale ad cost, postage and 25% failures, margin may be negative.
+
+Revised plan (INFERRED, brain judgement):
+- **Test demand before building any web app.** Build nothing platform-shaped this season.
+- Hero product becomes the **pet lithophane lamp**; the relief becomes a 5-photo side test.
+- Add earlier gates: day 7 ≥50 impressions/day; day 14 ≥1 organic sale; stop ads if cost per sale >£12.
+- Check the Royal Mail 2026 Halloween last-posting date (the assumed ~28 Oct is unverified).
+- Keep proofs manual; no auto-approve until a dispute rate is measured.
+
+## Kill/thrive test for the pick
+
+| Day | Check | Stop if |
+|---|---|---|
+| 0-3 | 5 own-design listings live (2 personalised Halloween, 2 pet lithophane lamp, 1 skull size ladder), real photos of real prints | — |
+| 7 | Etsy stats impressions, ads at £5/day | <50 impressions/day across listings |
+| 14 | Orders | 0 organic sales, or ad cost per sale >£12 |
+| 21 | Margin per bed-hour from real orders | <£10 gross/bed-hour → no 2nd printer |
+
+## Side tests
+- Relief vs lithophane: print 5 diverse pet photos both ways, post blind, ask "what is this?".
+- T-Rex skull: sell only if own design or a commercial licence is bought.
