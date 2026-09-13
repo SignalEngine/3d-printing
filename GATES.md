@@ -17,7 +17,7 @@ Scope: fix mktemp/checker bugs, add real render/features/fit/slice scripts, add 
 - [x] G3: render.sh produces real f3d depth-rendered PNGs (iso/top/front/section)
   CHECK: bash skills/model-forge/tests/run_gates.sh render
   EXPECT: RENDER_GATE_OK
-  EVIDENCE: automatic-evidence=v1; definition-sha256=a94c3136b4dc1e25a2be2d6ef9ded20cd2ee5956f8f9d26bbd5466aedd2aa58d; exit=0; EXPECT=matched; output-sha256=8ae9e5671c9f4117e6603b773e82833194041b11edaf62adb3fb99717025f33a; output-bytes=70; shell=/bin/sh; cwd=/root/wt-model-forge-v2; path=6e0b5bc8a1e5/19 entries
+  EVIDENCE: automatic-evidence=v1; definition-sha256=a94c3136b4dc1e25a2be2d6ef9ded20cd2ee5956f8f9d26bbd5466aedd2aa58d; exit=0; EXPECT=matched; output-sha256=7783874c03e0000bae0773b3909033506f4cd78f32bd6bafe78aeb24839c911b; output-bytes=611; shell=/bin/sh; cwd=/root/wt-model-forge-v2; path=6e0b5bc8a1e5/19 entries
 
 - [x] G4: features.py flags a hole moved to the wrong face
   CHECK: bash skills/model-forge/tests/run_gates.sh features
@@ -27,12 +27,12 @@ Scope: fix mktemp/checker bugs, add real render/features/fit/slice scripts, add 
 - [x] G5: fit.py reports interference volume > 0 for an oversized lid, 0 for a cleared one
   CHECK: bash skills/model-forge/tests/run_gates.sh fit
   EXPECT: FIT_GATE_OK
-  EVIDENCE: automatic-evidence=v1; definition-sha256=576f6d27b3d21ead11b8ab8f14e933088eb24b2b91746b7c3fbc6f3af488bfb9; exit=0; EXPECT=matched; output-sha256=9cd1bd26cf573cf34ecea41c3a4a8728556e7a908035d3255075a37b27e4ca98; output-bytes=93; shell=/bin/sh; cwd=/root/wt-model-forge-v2; path=6e0b5bc8a1e5/19 entries
+  EVIDENCE: automatic-evidence=v1; definition-sha256=576f6d27b3d21ead11b8ab8f14e933088eb24b2b91746b7c3fbc6f3af488bfb9; exit=0; EXPECT=matched; output-sha256=fd0055b6bcdbd2d3ed7558d638cac4e828788b945972f9218105e1127c894879; output-bytes=227; shell=/bin/sh; cwd=/root/wt-model-forge-v2; path=6e0b5bc8a1e5/19 entries
 
 - [x] G6: slice_gate.py slices a good plate on the Bambu A1 profile and refuses a non-manifold mesh
   CHECK: bash skills/model-forge/tests/run_gates.sh slice
   EXPECT: SLICE_GATE_OK
-  EVIDENCE: automatic-evidence=v1; definition-sha256=e01fa854bd7cd108f0632fe6cf2500633f10325c79ec18763b1d23bbabea154d; exit=0; EXPECT=matched; output-sha256=8bb197e63753acca51df02a62dbaa2e96b490598689eb8f4443a5725c27a0716; output-bytes=148; shell=/bin/sh; cwd=/root/wt-model-forge-v2; path=6e0b5bc8a1e5/19 entries
+  EVIDENCE: automatic-evidence=v1; definition-sha256=e01fa854bd7cd108f0632fe6cf2500633f10325c79ec18763b1d23bbabea154d; exit=0; EXPECT=matched; output-sha256=10ac9dc60fa330dbedb7eff09d49575530d4c43e232f9df000d37b27518069f9; output-bytes=289; shell=/bin/sh; cwd=/root/wt-model-forge-v2; path=6e0b5bc8a1e5/19 entries
 
 - [x] G7: build123d-patterns.md documents bd_warehouse threads/fasteners/gears, and importing all three works in the venv
   CHECK: bash skills/model-forge/tests/run_gates.sh docs
@@ -42,4 +42,4 @@ Scope: fix mktemp/checker bugs, add real render/features/fit/slice scripts, add 
 - [x] G8: full gate runner is a single non-zero-on-failure entrypoint
   CHECK: bash skills/model-forge/tests/run_gates.sh all
   EXPECT: ALL_GATES_OK
-  EVIDENCE: automatic-evidence=v1; definition-sha256=7ff261eb43d904d97a757ebabe715602175aed2a25b72ed6f0c5271a983ed54b; exit=0; EXPECT=matched; output-sha256=eafd34a90df3a8ed4a22ec413abf9858901a4d3854c8bd3d67acee9ee6a10c6b; output-bytes=791; shell=/bin/sh; cwd=/root/wt-model-forge-v2; path=6e0b5bc8a1e5/19 entries
+  EVIDENCE: automatic-evidence=v1; definition-sha256=7ff261eb43d904d97a757ebabe715602175aed2a25b72ed6f0c5271a983ed54b; exit=0; EXPECT=matched; output-sha256=b47166f541ed9d76c3af668994fc18b4168bc38088078c92254045a26f6f1898; output-bytes=1607; shell=/bin/sh; cwd=/root/wt-model-forge-v2; path=6e0b5bc8a1e5/19 entries
