@@ -89,7 +89,11 @@ profiles — they're maintained, dimensionally-correct implementations.
 ```python
 from bd_warehouse.thread import IsoThread
 male = IsoThread(major_diameter=8, pitch=1.25, length=10, external=True)
-# external=False cuts an internal thread profile — subtract it from a boss/hole
+# Internal (female) thread: external=False builds the thread RIDGES. Cut the hole at major_diameter,
+# then ADD the thread solid inside it. Subtracting it only carves a ~0.2 mm groove in the wall
+# (verified 2026-09-13: M8 in a Ø8 bore, subtract -73.8 mm3 of groove, add +80 mm3 of ridges).
+female = Pos(0, 0, -5) * IsoThread(major_diameter=8, pitch=1.25, length=10, external=False)
+nut_body = (Box(20, 20, 10) - Cylinder(4, 10)) + female
 ```
 
 **Fasteners — model real screws/nuts to check clearance holes and head pockets, don't print the fastener itself:**
