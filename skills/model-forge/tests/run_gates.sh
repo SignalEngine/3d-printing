@@ -455,6 +455,24 @@ sys.exit(0 if (area >= 1000 and 25 <= z <= 30) else 1)
     assert_exit "open tube PASS" 0 $?
     grep -qi "needs supports" "$TMP/supports_open.out" && { echo "FAIL: open tube should not warn needs supports"; FAIL=1; cat "$TMP/supports_open.out"; }
 
+    note "verify_model.py: a Ø4 through-hole wall pattern plus a roof must not bury the headline in dozens of bridge/thread false positives — at most 3 support lines"
+    "$PY" -c "
+from build123d import *
+with BuildPart() as bp:
+    Cylinder(26, 60)
+    with Locations((0,0,-1.5)):
+        Cylinder(23, 57, mode=Mode.SUBTRACT)
+    for zz in [-20, -10, 0, 10, 20]:
+        with Locations(Location((26,0,zz), (0,90,0))):
+            Cylinder(2, 10, mode=Mode.SUBTRACT)
+export_stl(bp.part, '$TMP/tube_holes.stl')
+"
+    "$PY" "$S/scripts/verify_model.py" "$TMP/tube_holes.stl" >"$TMP/supports_holes.out" 2>&1
+    assert_exit "hole-pattern tube PASS (WARN only)" 0 $?
+    n_lines=$(grep -c "needs supports" "$TMP/supports_holes.out")
+    [ "$n_lines" -le 3 ] || { echo "FAIL: expected <=3 'needs supports' lines, got $n_lines"; FAIL=1; cat "$TMP/supports_holes.out"; }
+    grep -qi "needs supports" "$TMP/supports_holes.out" || { echo "FAIL: expected at least one needs-supports WARN (the roof)"; FAIL=1; }
+
     [ "$FAIL" = 0 ] && echo SUPPORTS_GATE_OK
 }
 

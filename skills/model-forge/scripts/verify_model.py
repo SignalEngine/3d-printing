@@ -110,11 +110,22 @@ def main():
                             if geom.area > 0.5:
                                 islands.append((geom.area, float(z)))
                     prev_poly = poly
+            # Islands under 20mm^2 are the print's own short bridges (a
+            # helical thread crescent, the top of a small through-hole) —
+            # spanned on both sides by the layer below, they print fine.
+            # A real part can report dozens of tiny geometric islands;
+            # cap output at 3 lines so the one that matters isn't buried.
+            significant = sorted((isl for isl in islands if isl[0] >= 20), key=lambda isl: -isl[0])
             if worst_z is not None and worst_area > 50:
                 warns.append(f"needs supports — largest unsupported area {worst_area:.0f}mm^2 at z={worst_z:.1f}")
-            for area, z in islands:
-                if area > 2:
-                    warns.append(f"needs supports — mid-air island {area:.1f}mm^2 starting at z={z:.1f} (nothing below to attach to)")
+            if significant:
+                top_area, top_z = significant[0]
+                warns.append(f"needs supports — largest mid-air island {top_area:.0f}mm^2 at z={top_z:.1f} (nothing below to attach to)")
+                rest = significant[1:]
+                if rest:
+                    max_rest = max(area for area, _ in rest)
+                    warns.append(f"needs supports — {len(rest)} smaller island(s) <= {max_rest:.0f}mm^2 across other layers "
+                                  "(likely bridges or threads; check the render)")
         except Exception as e:
             warns.append(f"needs-supports check skipped ({e}).")
 
