@@ -10,7 +10,7 @@
 
 **Spec:** `/root/3d-printing/vault/Plans/2026-09-13-printtweak-mvp-spec.md` (read it first; this plan argues from it).
 
-**Progress (13 Sep 2026):** Tasks 1-2 merged as `SignalEngine/printtweak` PR #1 (merge `f37408c`): 28 tests, `tsc` 0 errors, 9 guards sabotage-proven, 3 Codex review rounds fixed. A Codex review of the final fix round is pending (Codex capped until 14 Sep 02:43). Next: Task 3 (sandbox) in personal mode, blocked only on James putting a `claude setup-token` token into `/etc/printtweak/worker.env`.
+**Progress (14 Sep 2026):** Tasks 1-2 merged (printtweak PR #1, `f37408c`). Post-merge Codex found an account-takeover P1 in email relinking; fixed and merged (PR #2, `725e2f8`). Task 3 sandbox merged (PR #3, `1710513`): 6 of 7 sandbox checks pass, live Anthropic check waits for James's `claude setup-token` token; jury clean in two rounds; Codex review of Task 3 scheduled for 13:10 UTC (MiniMax review-gate timed out). Task 4 (in-container runner) dispatched to a builder. Blocked for live runs: James's token in `/etc/printtweak/worker.env`.
 
 ## Update 2026-09-14: personal mode (overrides the tasks below where they conflict)
 
