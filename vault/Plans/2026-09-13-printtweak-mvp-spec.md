@@ -5,6 +5,23 @@
 **Why:** test real interest in "describe a part, or upload your model, and AI makes it print-ready", using a 14-day LaunchEngine campaign.
 **Evidence it rests on:** [[2026-09-13-3d-print-business-ideas]] rounds 3-4 and [[2026-09-13-3d-print-business-research]].
 
+## 0. Update 2026-09-14: personal mode first (overrides the sections below where they conflict)
+
+James decided PrintTweak runs **only for him, on his own Claude subscription**, before any other users.
+
+Why (official Anthropic docs, read 14 Sep 2026):
+- Own subscription in scripts is supported: `claude setup-token` issues a one-year `CLAUDE_CODE_OAUTH_TOKEN` "for CI pipelines, scripts, or other environments where interactive browser login isn't available", which "authenticates with your Claude subscription"; environment credentials apply to "the CLI and the surfaces that wrap it, including … the Agent SDK" ([authentication](https://code.claude.com/docs/en/authentication.md)).
+- Other people signing in with their subscriptions is not allowed: "Unless previously approved, Anthropic does not allow third party developers to offer claude.ai login or rate limits for their products, including agents built on the Claude Agent SDK. Use the API key authentication methods… instead." ([Agent SDK overview](https://code.claude.com/docs/en/agent-sdk/overview.md)).
+- Sharing James's subscription with other users would be account sharing, so personal mode means the site is locked to his email.
+
+What changes:
+- **Auth for AI:** the worker uses James's `CLAUDE_CODE_OAUTH_TOKEN` (from `claude setup-token`), not an Anthropic Console API key. No PrintTweak Console workspace for now.
+- **Access:** `ALLOWED_EMAILS` (James only). Anyone else signing in is refused.
+- **Sandbox:** the job container holds the token (only James submits requests, so there is no stranger prompt-injection path); the proxy becomes a pass-through to `api.anthropic.com` `/v1/*` and the internal network still blocks everything else.
+- **Vision check:** runs as a short Agent SDK query on Haiku reading the render file, because the plain `anthropic` API client cannot use a subscription token.
+- **Deferred until other users exist:** payments (Stripe), the public free-try limits' commercial role, and the 14-day LaunchEngine interest test. Those need API-key mode: each user brings their own Anthropic API key, or a PrintTweak Console workspace pays.
+- **Domain:** optional for personal use (a Railway subdomain works).
+
 ## 1. What it is
 
 One chat where someone either **describes a part** ("a knob, 15 mm tall, M5 hole") or **attaches their own model** ("make it 2 mm wider, add my name"). The AI designs or edits it with the model-forge pipeline, checks it, and shows a 3D preview with a price. They pay £5 to download the print-ready file, or pay a quote to have it printed and posted in the UK.
@@ -114,7 +131,7 @@ The same container image runs on a dedicated box pointed at the same Convex. No 
 
 These need his accounts:
 - Buy printtweak.com.
-- Anthropic Console: new workspace, API key, monthly spend limit.
+- ~~Anthropic Console: new workspace, API key, monthly spend limit.~~ Deferred (personal mode): instead run `claude setup-token` once and put the token in `/etc/printtweak/worker.env` on the VPS.
 - Stripe: £5 file product in live mode.
 - Approve new Clerk, Convex and Railway projects (created by the build session if logged in).
 

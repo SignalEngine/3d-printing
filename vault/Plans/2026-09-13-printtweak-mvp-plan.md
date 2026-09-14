@@ -10,7 +10,20 @@
 
 **Spec:** `/root/3d-printing/vault/Plans/2026-09-13-printtweak-mvp-spec.md` (read it first; this plan argues from it).
 
-**Progress (13 Sep 2026):** Tasks 1-2 merged as `SignalEngine/printtweak` PR #1 (merge `f37408c`): 28 tests, `tsc` 0 errors, 9 guards sabotage-proven, 3 Codex review rounds fixed. A Codex review of the final fix round is pending (Codex capped until 14 Sep 02:43). Next: Task 3 (sandbox), blocked on printtweak.com + the Anthropic "PrintTweak" workspace key.
+**Progress (13 Sep 2026):** Tasks 1-2 merged as `SignalEngine/printtweak` PR #1 (merge `f37408c`): 28 tests, `tsc` 0 errors, 9 guards sabotage-proven, 3 Codex review rounds fixed. A Codex review of the final fix round is pending (Codex capped until 14 Sep 02:43). Next: Task 3 (sandbox) in personal mode, blocked only on James putting a `claude setup-token` token into `/etc/printtweak/worker.env`.
+
+## Update 2026-09-14: personal mode (overrides the tasks below where they conflict)
+
+James chose to run PrintTweak only for himself, on his Claude subscription. Spec §0 has the reasons and the official doc quotes. Builders apply these changes when they reach each task:
+
+- **Global:** AI auth is `CLAUDE_CODE_OAUTH_TOKEN` (from `claude setup-token`, James's Pro/Max plan). No Anthropic Console key or PrintTweak workspace. Secrets on the VPS: `/etc/printtweak/worker.env` holds `CONVEX_URL`, `WORKER_SECRET`, `CLAUDE_CODE_OAUTH_TOKEN` (mode 600). Never print the token, never pass it through a chat or a prompt.
+- **Task 3 (sandbox):** `proxy.py` stops injecting a key: it forwards `/v1/*` to `https://api.anthropic.com` with the request's own auth headers (drop only hop-by-hop headers). The job container receives `-e CLAUDE_CODE_OAUTH_TOKEN` and NOT `ANTHROPIC_API_KEY`. Sandbox test 1 changes to: no `WORKER_SECRET`, `CONVEX`, or `STRIPE` values in the container env (the OAuth token is expected there). Test 4 (proxy reaches Anthropic) runs a one-line Agent SDK query through the proxy instead of an unauthenticated `/v1/models` call. Keep the internal network, memory limit, read-only model-forge and non-root user.
+- **Task 4 (runner):** unchanged code; the SDK reads `CLAUDE_CODE_OAUTH_TOKEN` from the environment. Keep `max_budget_usd` and `max_turns` so one bad job can't burn the subscription.
+- **Task 5 (worker):** `JOB_DOCKER_ARGS` gets `-e CLAUDE_CODE_OAUTH_TOKEN` (value from the worker's own environment; pass the variable name only so it never appears in a process listing: `-e CLAUDE_CODE_OAUTH_TOKEN` with the var exported). `vision_check.matches` no longer uses the `anthropic` client (it can't use a subscription token): it runs a second, short container job with `claude_agent_sdk.query(model="claude-haiku-4-5-20251001", allowed_tools=["Read"], max_turns=3, max_budget_usd=0.2)` asking it to read `/job/out/view-front.png` and reply with the same JSON shape. Unit tests keep the injectable fake; the live sabotage (knob render vs pill box request) still has to match True/False.
+- **Task 6 (front end):** add `ALLOWED_EMAILS` (comma-separated, lower-cased) checked in `requireUser` before any lookup or insert: throw `ConvexError("not_allowed")`. Tests: an allowed email passes; any other email is refused and creates no user row. The landing says "Private beta" and hides the "2 free" copy.
+- **Task 7 (payments):** deferred. Do not build until other users are supported in API-key mode.
+- **Task 8:** keep the funnel page (useful for James's own usage) but skip the LaunchEngine campaign. Deploy steps drop the Anthropic workspace, Stripe and the custom domain (a Railway subdomain is fine). Live end-to-end becomes: James runs the 5 round-4 requests himself and records time, subscription-usage impact and results.
+- **Later, for other users:** API-key mode only (each user's own Anthropic API key, or a PrintTweak Console workspace). Never offer Claude subscription login.
 
 ## Global Constraints
 
