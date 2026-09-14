@@ -9,3 +9,5 @@ models/poop-bag-holder/iframe-host.html
 orcaslicer/
 *.log
 result.json
+# raw mascot clips are large; web versions + story preview are committed
+vault/Design/tweakmypart-mascot/clips/[0-9]-*.mp4
