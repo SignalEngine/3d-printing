@@ -10,7 +10,7 @@
 
 **Spec:** `/root/3d-printing/vault/Plans/2026-09-13-printtweak-mvp-spec.md` (read it first; this plan argues from it).
 
-**Progress (14 Sep 2026):** Tasks 1-2 merged (printtweak PR #1, `f37408c`). Post-merge Codex found an account-takeover P1 in email relinking; fixed and merged (PR #2, `725e2f8`). Task 3 sandbox merged (PR #3, `1710513`): 6 of 7 sandbox checks pass, live Anthropic check waits for James's `claude setup-token` token; jury clean in two rounds; Codex review of Task 3 scheduled for 13:10 UTC (MiniMax review-gate timed out). Task 4 (in-container runner) dispatched to a builder. Blocked for live runs: James's token in `/etc/printtweak/worker.env`.
+**Progress (14 Sep 2026):** Tasks 1-2 merged (PR #1, `f37408c`); post-merge Codex P1 (email relink takeover) fixed (PR #2, `725e2f8`). Task 3 sandbox merged (PR #3, `1710513`), Codex review scheduled 13:10 UTC. Task 4 in-container runner merged (PR #4, `b27e8b7`): 11 tests, 4 sabotages red, two jury hardening rounds; Codex review scheduled 13:40 UTC. Task 5 (host worker) dispatched. Live runs (Task 3 check 4, Task 4 smoke, Task 5 vision) still blocked on James's `claude setup-token` token in `/etc/printtweak/worker.env`.
 
 ## Update 2026-09-14: personal mode (overrides the tasks below where they conflict)
 
