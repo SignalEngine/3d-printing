@@ -131,6 +131,14 @@ def main():
         fil = f"{fil_g.group(1)}g" if fil_g else (f"{fil_cm3.group(1)}cm3" if fil_cm3 else "unknown")
         print(f"filament: {fil}")
 
+        # "supports: tree" above is just this script's own flag echoed back —
+        # it says nothing about whether the slicer actually emitted support
+        # material. Count the support feature blocks OrcaSlicer writes into
+        # the gcode itself so the gate can't false-PASS on a slice that never
+        # generated supports (e.g. geometry didn't need them despite the flag).
+        support_blocks = len(re.findall(r"^;\s*(?:FEATURE:\s*Support|TYPE:Support)", gcode, re.MULTILINE))
+        print(f"support feature blocks: {support_blocks}")
+
         hours = parse_hours(time_str) if time_m else None
         if hours == 0:
             # An unrecognised time format (e.g. HH:MM:SS) parses to 0 and would zero the
@@ -175,7 +183,7 @@ def main():
                     else:
                         base_grams = None
                     if base_grams is not None:
-                        print(f"filament delta vs no supports: +{grams - base_grams:.1f}g")
+                        print(f"filament delta vs no supports: {grams - base_grams:+.1f}g")
             except Exception:
                 pass  # delta is informational only
 

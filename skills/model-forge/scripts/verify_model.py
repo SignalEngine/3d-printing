@@ -105,7 +105,7 @@ def main():
                         unsupported = poly.difference(prev_poly.buffer(reach))
                         if unsupported.area > worst_area:
                             worst_area, worst_z = unsupported.area, float(z)
-                        island = poly.difference(prev_poly.buffer(1e-6))
+                        island = poly.difference(prev_poly.buffer(reach))
                         for geom in getattr(island, "geoms", [island]):
                             if geom.area > 0.5:
                                 islands.append((geom.area, float(z)))
@@ -124,8 +124,8 @@ def main():
                 rest = significant[1:]
                 if rest:
                     max_rest = max(area for area, _ in rest)
-                    warns.append(f"needs supports — {len(rest)} smaller island(s) <= {max_rest:.0f}mm^2 across other layers "
-                                  "(likely bridges or threads; check the render)")
+                    warns.append(f"needs supports — {len(rest)} smaller island(s) 20-{max_rest:.0f}mm^2 "
+                                  "(islands under 20mm^2 ignored: bridges/threads)")
         except Exception as e:
             warns.append(f"needs-supports check skipped ({e}).")
 

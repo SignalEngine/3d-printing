@@ -454,6 +454,7 @@ sys.exit(0 if (area >= 1000 and 25 <= z <= 30) else 1)
     "$PY" "$S/scripts/verify_model.py" "$TMP/tube_open.stl" >"$TMP/supports_open.out" 2>&1
     assert_exit "open tube PASS" 0 $?
     grep -qi "needs supports" "$TMP/supports_open.out" && { echo "FAIL: open tube should not warn needs supports"; FAIL=1; cat "$TMP/supports_open.out"; }
+    grep -qi "skipped" "$TMP/supports_open.out" && { echo "FAIL: needs-supports check was skipped (crashed), not genuinely clean"; FAIL=1; cat "$TMP/supports_open.out"; }
 
     note "verify_model.py: a Ø4 through-hole wall pattern plus a roof must not bury the headline in dozens of bridge/thread false positives — at most 3 support lines"
     "$PY" -c "
@@ -473,11 +474,28 @@ export_stl(bp.part, '$TMP/tube_holes.stl')
     [ "$n_lines" -le 3 ] || { echo "FAIL: expected <=3 'needs supports' lines, got $n_lines"; FAIL=1; cat "$TMP/supports_holes.out"; }
     grep -qi "needs supports" "$TMP/supports_holes.out" || { echo "FAIL: expected at least one needs-supports WARN (the roof)"; FAIL=1; }
 
+    note "verify_model.py: a 45deg self-supporting bottom chamfer must NOT trigger needs-supports (island check must honor the same self-support reach as the unsupported-area check)"
+    "$PY" -c "
+from build123d import *
+with BuildPart() as bp:
+    c = Cylinder(10, 20)
+    bottom_edges = c.faces().sort_by(Axis.Z)[0].edges()
+    chamfer(bottom_edges, 2)
+export_stl(bp.part, '$TMP/cyl_chamfer.stl')
+"
+    "$PY" "$S/scripts/verify_model.py" "$TMP/cyl_chamfer.stl" >"$TMP/supports_chamfer.out" 2>&1
+    assert_exit "chamfered cylinder PASS" 0 $?
+    grep -qi "needs supports" "$TMP/supports_chamfer.out" && { echo "FAIL: self-supporting chamfer should not warn needs supports"; FAIL=1; cat "$TMP/supports_chamfer.out"; }
+
+    note "verify_model.py: the real poop-bag-holder assembly still WARNs needs supports on its roof (regression guard for the island-reach fix)"
+    "$PY" "$S/scripts/verify_model.py" /root/3d-printing/models/poop-bag-holder/holder_v3.3mf --bodies 5 >"$TMP/supports_holder.out" 2>&1
+    grep -qi "needs supports" "$TMP/supports_holder.out" || { echo "FAIL: expected holder assembly to still WARN needs supports on its roof"; FAIL=1; cat "$TMP/supports_holder.out"; }
+
     [ "$FAIL" = 0 ] && echo SUPPORTS_GATE_OK
 }
 
 gate_slice_supports() {
-    note "slice_gate.py: --supports tree slices the closed-top tube and reports supports were on"
+    note "slice_gate.py: --supports tree slices the closed-top tube and gcode actually contains support blocks"
     "$PY" -c "
 from build123d import *
 with BuildPart() as bp:
@@ -488,7 +506,14 @@ export_stl(bp.part, '$TMP/tube_roof2.stl')
 "
     "$PY" "$S/scripts/slice_gate.py" "$TMP/tube_roof2.stl" --supports tree >"$TMP/slice_supports.out" 2>&1
     assert_exit "closed-top tube slices with --supports tree" 0 $?
-    grep -qi "support" "$TMP/slice_supports.out" || { echo "FAIL: expected slice_gate.py to report supports state"; FAIL=1; cat "$TMP/slice_supports.out"; }
+    n_blocks=$(grep -oP "support feature blocks: \K\d+" "$TMP/slice_supports.out")
+    [ -n "$n_blocks" ] && [ "$n_blocks" -gt 0 ] || { echo "FAIL: expected support feature blocks > 0 with --supports tree, got '${n_blocks:-none}'"; FAIL=1; cat "$TMP/slice_supports.out"; }
+
+    note "slice_gate.py: --supports none on the same tube must produce zero support feature blocks"
+    "$PY" "$S/scripts/slice_gate.py" "$TMP/tube_roof2.stl" --supports none >"$TMP/slice_supports_none.out" 2>&1
+    assert_exit "closed-top tube slices with --supports none" 0 $?
+    n_blocks_none=$(grep -oP "support feature blocks: \K\d+" "$TMP/slice_supports_none.out")
+    [ "$n_blocks_none" = "0" ] || { echo "FAIL: expected 0 support feature blocks with --supports none, got '${n_blocks_none:-none}'"; FAIL=1; cat "$TMP/slice_supports_none.out"; }
 
     [ "$FAIL" = 0 ] && echo SLICE_SUPPORTS_GATE_OK
 }
