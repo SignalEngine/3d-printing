@@ -30,6 +30,21 @@ Test B (weight-bearing pose + beat prompts + short negative, cfg 0.5) moved his 
 
 Pipeline: `toolpath_render.py` (G-code → glowing print loop) and `composite_print.py` (OpenCV bezel tracking + screen blend into the build-plate box), both in the session scratchpad until the site build copies them into the repo.
 
+## Rollout result (14 clips, ~$11.30, /watch at 1 fps on the 101 s reel)
+
+Worked: legs and weight now move in idle-1 (00:02-00:04), idle-2 (00:10-00:12), idle-3 step and stretch (00:18-00:21), thinking hand-to-chin with a bent knee (00:34-00:37), presenting wide sweep (00:43-00:45), point aimed outward away from his body (00:51-00:53), oops shrug palms up with a flat mouth (00:58-01:01). The composited G-code print tracks his chest through arm crossings (idle-3) and leans (point); focus builds the knob and hands off to the physical knob (00:68-00:69).
+
+Failed: 
+- **Story door and grab (00:72-00:89):** the glass turns into a flat panel sticking out sideways with a picture of another robot inside it; the knob vanishes instead of being lifted (00:79); he holds an empty fist while "looking at" it; the visor turns gold for a moment (00:84). Three prompt rounds have now failed at door + object handling, so the video model cannot be relied on for it.
+- **walk-in-wave:** the blue hip spool swells into an oversized floating spool (00:97-00:99), and the enter keyframe still showed a print head that disappears by the end.
+- **idle-2:** the face vanishes into the back of the visor during the head turn (00:11-00:12).
+- **listening:** still close to still.
+- **point:** print tracking weakest (median score 0.40); the ring sits low in the window during the lean.
+
+## Decision (James, 14 Sep): swap the grab for a proud reveal
+
+After focus: the finished print glows, he looks down at it, gives a small proud thumbs up, and the chamber light fades to dark so the next idle starts empty. Door and object handling dropped. Re-rolls: idle-2 (face kept toward the viewer), listening (bigger beats), walk-in (start frame is the standing pose shifted to the right edge, so the spools keep their size).
+
 ## Order and cost
 
 1. Test ONE clip end to end first: new keyframe (~$0.12) + idle A with every prompt fix (2 seeds, ~$1.80) + composited printing (script, no fal cost). Show James before anything else is spent.
