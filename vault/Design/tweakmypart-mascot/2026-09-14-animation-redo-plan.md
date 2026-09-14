@@ -45,6 +45,14 @@ Failed:
 
 After focus: the finished print glows, he looks down at it, gives a small proud thumbs up, and the chamber light fades to dark so the next idle starts empty. Door and object handling dropped. Re-rolls: idle-2 (face kept toward the viewer), listening (bigger beats), walk-in (start frame is the standing pose shifted to the right edge, so the spools keep their size).
 
+## Clip set 2 (final for now), /watch at 2 fps on the re-roll reel
+
+- **idle-2 (re-roll):** leans in and taps the glass with his face kept visible; the composited print is drawn over his fingers while he taps (no occlusion handling yet).
+- **listening (re-roll):** real motion now: leans in with a step, nods, cups a hand, open-palm "go on"; the window flashes bright for about a second near the start.
+- **reveal:** thumbs up and the chamber fades to dark; his head flips oddly for about a second near the start.
+- **hello (walk-in re-roll):** enters from the right with real steps, spools keep their size, waves, settles.
+- Web set: `vault/Design/tweakmypart-mascot/web-v2/` (11 clips + posters, 5.9 MB). Viewer: https://claude.ai/code/artifact/9d48f7f4-9706-4fd9-b472-05fb6613ccfd
+
 ## Order and cost
 
 1. Test ONE clip end to end first: new keyframe (~$0.12) + idle A with every prompt fix (2 seeds, ~$1.80) + composited printing (script, no fal cost). Show James before anything else is spent.
