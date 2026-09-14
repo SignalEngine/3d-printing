@@ -53,6 +53,14 @@ After focus: the finished print glows, he looks down at it, gives a small proud 
 - **hello (walk-in re-roll):** enters from the right with real steps, spools keep their size, waves, settles.
 - Web set: `vault/Design/tweakmypart-mascot/web-v2/` (11 clips + posters, 5.9 MB). Viewer: https://claude.ai/code/artifact/9d48f7f4-9706-4fd9-b472-05fb6613ccfd
 
+## Tablet preview clips (James, 14 Sep: "build the tablet preview zoom clips next")
+
+1. Close-up tablet keyframe from `key-empty.png`: blank flat landscape screen, chunky dials on the sides with his hands on them, head tilted down (FLUX Kontext pro vs max, 2 each).
+2. `tab-transform` (6 s, Kling, start `key-empty` → end tablet keyframe): camera push-in while the chamber reconfigures into the tablet and the dials extend. Played reversed to leave the preview.
+3. `tab-knobs` (5 s, start = end = tablet keyframe): dials twist a quarter turn and back; the site scrubs `currentTime` from the model's rotation.
+4. Measure the blank screen rectangle on the keyframe; the live three.js viewer (and loading screen) sits on it as a DOM overlay. Mock on the viewer page before any site build.
+- **Status 14 Sep:** keyframes came back as a clean close-up with a blank flat screen, but Kontext again did not add the side dials or tilt the head down (4th attempt at dials across rounds). The fal.ai account used for all mascot work (the key in `/root/accelion-ai/.env.local`, i.e. Accelion's fal account) is now locked: "Exhausted balance". No clips can be generated until it is topped up.
+
 ## Order and cost
 
 1. Test ONE clip end to end first: new keyframe (~$0.12) + idle A with every prompt fix (2 seeds, ~$1.80) + composited printing (script, no fal cost). Show James before anything else is spent.
