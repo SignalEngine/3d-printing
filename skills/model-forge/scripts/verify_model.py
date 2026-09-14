@@ -81,6 +81,54 @@ def main():
         except Exception as e:
             warns.append(f"Thin-wall check skipped ({e}).")
 
+    # Needs-supports check: slice the part in its CURRENT orientation and
+    # look for area with nothing under it — the overhang-normal-angle check
+    # above misses a flat horizontal roof over a hollow cavity (its normal
+    # points straight up, so it never registers as "overhang"), which is
+    # exactly what turned a real print to spaghetti. WARN, not FAIL — supports
+    # are a valid choice, this just makes sure the choice gets made.
+    if wt:
+        try:
+            from shapely.ops import unary_union
+            dz = 0.4
+            zmin, zmax = float(m.bounds[0][2]), float(m.bounds[1][2])
+            heights = np.arange(zmin + dz, zmax, dz)
+            reach = dz * np.tan(np.radians(50))  # max self-supporting overhang per layer
+            worst_area, worst_z = 0.0, None
+            islands = []
+            if len(heights):
+                sections = m.section_multiplane(plane_origin=[0, 0, 0], plane_normal=[0, 0, 1], heights=heights.tolist())
+                prev_poly = None
+                for z, path in zip(heights, sections):
+                    poly = unary_union(path.polygons_full) if (path is not None and path.polygons_full) else None
+                    if prev_poly is not None and poly is not None and not poly.is_empty:
+                        unsupported = poly.difference(prev_poly.buffer(reach))
+                        if unsupported.area > worst_area:
+                            worst_area, worst_z = unsupported.area, float(z)
+                        island = poly.difference(prev_poly.buffer(reach))
+                        for geom in getattr(island, "geoms", [island]):
+                            if geom.area > 0.5:
+                                islands.append((geom.area, float(z)))
+                    prev_poly = poly
+            # Islands under 20mm^2 are the print's own short bridges (a
+            # helical thread crescent, the top of a small through-hole) —
+            # spanned on both sides by the layer below, they print fine.
+            # A real part can report dozens of tiny geometric islands;
+            # cap output at 3 lines so the one that matters isn't buried.
+            significant = sorted((isl for isl in islands if isl[0] >= 20), key=lambda isl: -isl[0])
+            if worst_z is not None and worst_area > 50:
+                warns.append(f"needs supports — largest unsupported area {worst_area:.0f}mm^2 at z={worst_z:.1f}")
+            if significant:
+                top_area, top_z = significant[0]
+                warns.append(f"needs supports — largest mid-air island {top_area:.0f}mm^2 at z={top_z:.1f} (nothing below to attach to)")
+                rest = significant[1:]
+                if rest:
+                    max_rest = max(area for area, _ in rest)
+                    warns.append(f"needs supports — {len(rest)} smaller island(s) 20-{max_rest:.0f}mm^2 "
+                                  "(islands under 20mm^2 ignored: bridges/threads)")
+        except Exception as e:
+            warns.append(f"needs-supports check skipped ({e}).")
+
     # --- REPORT ---
     print(f"file: {a.path}")
     print(f"watertight={wt} winding={m.is_winding_consistent} bodies={bodies} euler={m.euler_number}")

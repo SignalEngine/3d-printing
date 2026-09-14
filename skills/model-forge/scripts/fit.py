@@ -67,17 +67,26 @@ def main():
         print(f"interference footprint (mm): {np.round(bb[1]-bb[0], 2).tolist()}")
         sys.exit(0)
 
-    # No overlap: minimum surface-to-surface distance in BOTH directions,
-    # measured over DENSE SURFACE SAMPLES rather than mesh vertices — two
-    # faces can touch across their interior (no vertex anywhere near the
-    # contact patch) while still reporting a large vertex-to-surface gap.
+    # No overlap: minimum surface-to-surface distance in BOTH directions.
+    # Query points = mesh vertices UNION dense surface samples — vertices
+    # alone can miss a contact patch that falls between them (corner/edge
+    # touch), and samples alone can miss a true corner-vertex contact (a
+    # random sample lands near but not exactly on the vertex, undercounting
+    # a touching corner as a small gap). Fixed RNG seed so the sampled half
+    # is repeatable run to run.
+    rng = np.random.default_rng(0)
     n_samples = 4000
-    samples_a, _ = trimesh.sample.sample_surface_even(A, n_samples)
-    samples_b, _ = trimesh.sample.sample_surface_even(B, n_samples)
-    _, dist_a_to_b, _ = B.nearest.on_surface(samples_a)
-    _, dist_b_to_a, _ = A.nearest.on_surface(samples_b)
+    samples_a, _ = trimesh.sample.sample_surface_even(A, n_samples, seed=rng)
+    samples_b, _ = trimesh.sample.sample_surface_even(B, n_samples, seed=rng)
+    points_a = np.vstack([A.vertices, samples_a])
+    points_b = np.vstack([B.vertices, samples_b])
+    _, dist_a_to_b, _ = B.nearest.on_surface(points_a)
+    _, dist_b_to_a, _ = A.nearest.on_surface(points_b)
     min_gap = float(min(dist_a_to_b.min(), dist_b_to_a.min()))
-    touching = dist_a_to_b < a.contact_eps
+    # Contact area stays sample-only (area-weighted): mixing in vertices
+    # would over-represent low-poly regions and skew the area estimate.
+    _, sample_dist_a_to_b, _ = B.nearest.on_surface(samples_a)
+    touching = sample_dist_a_to_b < a.contact_eps
     contact_area = float(touching.mean() * A.area)
 
     print("RESULT: CLEARANCE")

@@ -48,3 +48,44 @@ Scope: extend slice_gate.py with a cost/quote block and optional limit flags; ad
   CHECK: bash -c 'grep -q "text_check.py" skills/model-forge/SKILL.md && grep -q "slice_gate.py" skills/model-forge/SKILL.md && grep -qi "iso view" skills/model-forge/SKILL.md && echo SKILL_DOC_OK'
   EXPECT: SKILL_DOC_OK
   EVIDENCE: manual; command run directly, printed `SKILL_DOC_OK`, exit 0.
+
+# Gates: model-forge issue #2 fixes + needs-supports check
+
+OWNS: skills/model-forge/scripts/features.py, skills/model-forge/scripts/fit.py, skills/model-forge/scripts/verify_model.py, skills/model-forge/scripts/slice_gate.py, skills/model-forge/tests/run_gates.sh, skills/model-forge/SKILL.md
+
+Scope: fix issue #2 items 1-3 (thin-floor blind hole misread as through, corner/edge contact misread as gap, first-fit hole matching order bug), add a "needs supports" WARN to verify_model.py, add `--supports none|tree|normal` to slice_gate.py. Per vault/Plans/2026-09-14-model-forge-issue-2.md.
+
+- [x] F1: features.py probes 0.02mm (not 0.2mm) past each cylinder end, so a 0.1mm blind-hole floor reads as blind, not through
+  CHECK: bash skills/model-forge/tests/run_gates.sh features
+  EXPECT: FEATURES_GATE_OK
+  EVIDENCE: manual; RED before fix: Box(20,20,10) with Ø4 hole 9.9mm deep from +Z (0.1mm floor) → `face=through Z`, gate assertion `FAIL: expected exit 0, got 1`. GREEN after: `face=+Z`, `ok: 0.1mm-floor blind hole classifies as +Z (exit 0)`. Existing through-hole and plate+boss cases (`hole through Z despite boss`) still pass unchanged.
+
+- [x] F2: fit.py distance queries use mesh vertices ∪ surface samples (both directions, fixed RNG seed), so corner/edge-only contact reads a real near-zero gap, repeatably
+  CHECK: bash skills/model-forge/tests/run_gates.sh fit
+  EXPECT: FIT_GATE_OK
+  EVIDENCE: manual; RED before fix: two 20x20x10 boxes touching at one corner → `minimum gap` varied 0.1997/0.3028/0.3516mm across 3 runs (matches issue #2's reported 0.16-0.26mm, changing each run). GREEN after: `corner-touch gaps over 3 runs: [0.0, 0.0, 0.0]`. Crossed-bars (gap 0.0, area 4.54mm²) and 0.5mm-separated-bars (gap 0.5, area 0.0) cases unchanged and still pass.
+
+- [x] F3: features.py --expect matching sorts expected and found diameters within each face group before matching, instead of list order
+  CHECK: bash skills/model-forge/tests/run_gates.sh features
+  EXPECT: FEATURES_GATE_OK
+  EVIDENCE: manual; RED before fix: found diameters in BREP order [4.1, 3.9] on face +Z, expected [4.0, 4.2] tol 0.15 → `FAIL: expected exit 0, got 1` (greedy list-order match paired 4.0→4.1, then 4.2 had nothing left within tolerance). GREEN after: `ok: sorted-diameter first-fit matches 3.9->4.0 and 4.1->4.2 (exit 0)`. A genuinely missing third expected hole (Ø5.0) still FAILs: `ok: genuinely missing hole still FAILs (exit 1)`.
+
+- [x] F4: verify_model.py WARNs "needs supports" when the part, sliced in its current orientation (section_multiplane, dz=0.4), has a layer with >50mm² unsupported by the buffered layer below (50° self-supporting angle), or a mid-air island >2mm² with nothing below it
+  CHECK: bash skills/model-forge/tests/run_gates.sh supports
+  EXPECT: SUPPORTS_GATE_OK
+  EVIDENCE: manual; RED before implementation: closed-top tube (r_out 26, r_in 23, h 60, 3mm roof) → no "needs supports" text anywhere in verify_model.py output (`FAIL: expected 'needs supports' WARN`). GREEN after: `needs supports — largest unsupported area 1593mm^2 at z=27.2` (roof spans z 27-30) — WARN only, `RESULT: PASS`, exit 0 (supports are a valid choice, not a hard fail). Same tube with no roof (open both ends): no "needs supports" WARN, `ok: open tube PASS (exit 0)`.
+
+- [x] F5: slice_gate.py takes --supports none|tree|normal (default none), overrides enable_support/support_type on the OrcaSlicer process settings, prints whether supports were on, and reports the filament delta against a no-support baseline slice when available
+  CHECK: bash skills/model-forge/tests/run_gates.sh slice_supports
+  EXPECT: SLICE_SUPPORTS_GATE_OK
+  EVIDENCE: manual; RED before implementation: `--supports tree` → argparse error, unrecognised argument, exit 2. GREEN after: closed-top tube with `--supports tree` → `supports: tree`, `filament delta vs no supports: +8.3g`, `RESULT: PASS`, exit 0.
+
+- [x] F6: full gate runner passes end to end with the new gates wired in, nothing previously green regresses; run twice for repeatability
+  CHECK: bash skills/model-forge/tests/run_gates.sh all
+  EXPECT: ALL_GATES_OK
+  EVIDENCE: manual; two consecutive full runs both print CHECKER_GATE_OK, RENDER_GATE_OK, FEATURES_GATE_OK, FIT_GATE_OK, SLICE_GATE_OK, QUOTE_GATE_OK, TEXT_GATE_OK, SUPPORTS_GATE_OK, SLICE_SUPPORTS_GATE_OK, DOCS_GATE_OK, ALL_GATES_OK, exit 0.
+
+- [x] F4b: verify_model.py needs-supports output stays usable on a real part — at most 3 support lines (largest unsupported area, largest mid-air island, one summary of smaller islands), islands <20mm^2 (bridges, thread crescents, small through-hole tops) folded into the summary instead of each getting their own line
+  CHECK: bash skills/model-forge/tests/run_gates.sh supports
+  EXPECT: SUPPORTS_GATE_OK
+  EVIDENCE: manual. Real-part repro (brain review, d042747): `verify_model.py /root/3d-printing/models/poop-bag-holder/holder_v3.3mf --bodies 5` printed 120 'needs supports' lines (helical-thread crescents at z 0.8-10.8 ~12-14mm^2 each, bone-hole bridge tops at z 21.6/29.6/35.6/43.6/49.6/57.6 ~3-12mm^2 each), burying the real 1543mm^2@z=65.2 roof warning as line 1 of 120. After fix: 3 lines — `largest unsupported area 1543mm^2 at z=65.2`, `largest mid-air island 1622mm^2 at z=65.2`, `10 smaller island(s) <=256mm^2 across other layers (likely bridges or threads; check the render)`; the 158mm^2 clip base at z~32.8 stays counted inside that 10 (not filtered to zero). Synthetic gate case (Ø4 radial through-hole wall pattern + roof, `run_gates.sh supports`): RED on the pre-fix code (restored from HEAD for the check) — 7 lines, five spurious ~7.2mm^2 bridge islands. GREEN after fix — 2 lines, `ok: hole-pattern tube PASS (WARN only) (exit 0)`. Closed-top tube still WARNs, open tube still doesn't (`gate_supports` unchanged assertions still pass). Full `run_gates.sh all` green twice.
