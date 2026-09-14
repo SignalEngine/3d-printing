@@ -44,12 +44,14 @@ def find_holes(part):
         depth = float(fmax[idx] - fmin[idx])
         name = AXIS_NAMES[idx]
 
-        # Probe 0.2mm beyond each end of the cylinder along its own axis: a
+        # Probe 0.02mm beyond each end of the cylinder along its own axis: a
         # point NOT inside the solid there means that end is an opening —
         # independent of the part's overall bounding box (a boss/feature
         # elsewhere in the part must not change this hole's classification).
-        probe_min = loc_arr.copy(); probe_min[idx] = fmin[idx] - 0.2
-        probe_max = loc_arr.copy(); probe_max[idx] = fmax[idx] + 0.2
+        # 0.02mm keeps the probe inside a thin blind floor (issue #2: 0.2mm
+        # overshot a 0.1mm floor and read the hole as through).
+        probe_min = loc_arr.copy(); probe_min[idx] = fmin[idx] - 0.02
+        probe_max = loc_arr.copy(); probe_max[idx] = fmax[idx] + 0.02
         open_min = not part.is_inside(tuple(probe_min))
         open_max = not part.is_inside(tuple(probe_max))
         if open_min and open_max:
@@ -90,14 +92,23 @@ def main():
         sys.exit(0)
 
     expected = json.load(open(a.expect))
-    unmatched_expected = list(expected)
-    unmatched_found = list(holes)
-    for exp in list(unmatched_expected):
-        for h in list(unmatched_found):
-            if h["face"] == exp["face"] and abs(h["diameter"] - exp["diameter"]) <= exp.get("tol", a.tol):
-                unmatched_expected.remove(exp)
-                unmatched_found.remove(h)
-                break
+    unmatched_expected = []
+    unmatched_found = []
+    # Match within each face group by diameter order (smallest-to-smallest),
+    # not list order — two near-equal diameters on one face otherwise
+    # false-FAIL depending on which found the scan happens to hit first.
+    faces = {h["face"] for h in holes} | {e["face"] for e in expected}
+    for face in faces:
+        exp_group = sorted((e for e in expected if e["face"] == face), key=lambda e: e["diameter"])
+        found_group = sorted((h for h in holes if h["face"] == face), key=lambda h: h["diameter"])
+        remaining_found = list(found_group)
+        for exp in exp_group:
+            match = next((h for h in remaining_found if abs(h["diameter"] - exp["diameter"]) <= exp.get("tol", a.tol)), None)
+            if match is not None:
+                remaining_found.remove(match)
+            else:
+                unmatched_expected.append(exp)
+        unmatched_found.extend(remaining_found)
 
     ok = True
     for exp in unmatched_expected:

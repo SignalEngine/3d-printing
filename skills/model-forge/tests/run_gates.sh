@@ -183,6 +183,42 @@ print('offset hole center:', c, 'ok' if ok else 'BAD')
 sys.exit(0 if ok else 1)
 " || { echo "FAIL: offset hole centre not within 0.01mm of [-8,0,z]"; FAIL=1; }
 
+    note "features.py: blind hole with a 0.1mm floor must classify as blind (+Z), not through Z"
+    "$PY" -c "
+from build123d import *
+with BuildPart() as bp:
+    Box(20,20,10)
+    with BuildSketch(bp.faces().sort_by(Axis.Z)[-1]):
+        Circle(2)
+    extrude(amount=-9.9, mode=Mode.SUBTRACT)
+export_step(bp.part, '$TMP/thinfloor.step')
+"
+    echo '[{"diameter":4.0,"face":"+Z","tol":0.1}]' > "$TMP/expect_thinfloor.json"
+    "$PY" "$S/scripts/features.py" "$TMP/thinfloor.step" --expect "$TMP/expect_thinfloor.json" >"$TMP/feat_thinfloor.out" 2>&1
+    assert_exit "0.1mm-floor blind hole classifies as +Z" 0 $?
+    grep -q "face=+Z" "$TMP/feat_thinfloor.out" || { echo "FAIL: expected face=+Z (blind), see:"; cat "$TMP/feat_thinfloor.out"; FAIL=1; }
+
+    note "features.py: --expect matching is first-fit by sorted diameter within a face, not list order"
+    "$PY" -c "
+from build123d import *
+with BuildPart() as bp:
+    Box(30,30,10)
+    with BuildSketch(bp.faces().sort_by(Axis.Z)[-1]):
+        with Locations((-5,-5)):
+            Circle(4.1/2)
+        with Locations((5,5)):
+            Circle(3.9/2)
+    extrude(amount=-3, mode=Mode.SUBTRACT)
+export_step(bp.part, '$TMP/twoholes.step')
+"
+    echo '[{"diameter":4.0,"face":"+Z","tol":0.15},{"diameter":4.2,"face":"+Z","tol":0.15}]' > "$TMP/expect_twoholes.json"
+    "$PY" "$S/scripts/features.py" "$TMP/twoholes.step" --expect "$TMP/expect_twoholes.json" >"$TMP/feat_twoholes.out" 2>&1
+    assert_exit "sorted-diameter first-fit matches 3.9->4.0 and 4.1->4.2" 0 $?
+
+    echo '[{"diameter":4.0,"face":"+Z","tol":0.15},{"diameter":4.2,"face":"+Z","tol":0.15},{"diameter":5.0,"face":"+Z","tol":0.15}]' > "$TMP/expect_missing.json"
+    "$PY" "$S/scripts/features.py" "$TMP/twoholes.step" --expect "$TMP/expect_missing.json" >"$TMP/feat_missing.out" 2>&1
+    assert_exit "genuinely missing hole still FAILs" 1 $?
+
     [ "$FAIL" = 0 ] && echo FEATURES_GATE_OK
 }
 
@@ -234,6 +270,24 @@ area = float(re.search(r'contact area.*?: ([\d.]+)', out).group(1))
 print('separated bars gap', gap, 'area', area)
 sys.exit(0 if (0.45 <= gap <= 0.55 and area == 0) else 1)
 " || { echo "FAIL: separated bars expected gap 0.45-0.55 and contact 0"; FAIL=1; cat "$TMP/fit_sep.out"; }
+
+    note "fit.py: corner-touching boxes report a near-zero gap, repeatable across 3 runs"
+    "$PY" -c "
+from build123d import *
+export_stl(Box(20,20,10), '$TMP/cornerA.stl')
+export_stl(Pos(20,20,10) * Box(20,20,10), '$TMP/cornerB.stl')
+"
+    for i in 1 2 3; do
+        "$PY" "$S/scripts/fit.py" "$TMP/cornerA.stl" "$TMP/cornerB.stl" >"$TMP/fit_corner_$i.out" 2>&1
+    done
+    "$PY" -c "
+import re, sys
+outs = [open('$TMP/fit_corner_%d.out' % i).read() for i in (1,2,3)]
+gaps = [float(re.search(r'minimum gap: ([\d.]+)', o).group(1)) for o in outs]
+print('corner-touch gaps over 3 runs:', gaps)
+ok = all(g <= 0.01 for g in gaps) and len(set(gaps)) == 1
+sys.exit(0 if ok else 1)
+" || { echo "FAIL: corner-touch gap not <=0.01mm or not identical across 3 runs"; FAIL=1; cat "$TMP/fit_corner_1.out"; }
 
     [ "$FAIL" = 0 ] && echo FIT_GATE_OK
 }
@@ -368,6 +422,59 @@ export_stl(bp.part, '$TMP/overlap.stl')
     [ "$FAIL" = 0 ] && echo TEXT_GATE_OK
 }
 
+gate_supports() {
+    note "verify_model.py: closed-top tube (46mm-scale roof) WARNs needs supports, naming the roof z"
+    "$PY" -c "
+from build123d import *
+with BuildPart() as bp:
+    Cylinder(26, 60)
+    with Locations((0,0,-1.5)):
+        Cylinder(23, 57, mode=Mode.SUBTRACT)
+export_stl(bp.part, '$TMP/tube_roof.stl')
+with BuildPart() as bp2:
+    Cylinder(26, 60)
+    Cylinder(23, 60, mode=Mode.SUBTRACT)
+export_stl(bp2.part, '$TMP/tube_open.stl')
+"
+    "$PY" "$S/scripts/verify_model.py" "$TMP/tube_roof.stl" >"$TMP/supports_roof.out" 2>&1
+    assert_exit "closed-top tube WARN-only, still PASS" 0 $?
+    grep -qi "needs supports" "$TMP/supports_roof.out" || { echo "FAIL: expected 'needs supports' WARN"; FAIL=1; cat "$TMP/supports_roof.out"; }
+    "$PY" -c "
+import re, sys
+out = open('$TMP/supports_roof.out').read()
+m = re.search(r'needs supports.*?(\d+(?:\.\d+)?)\s*mm\^?2.*?z[= ]([\d.\-]+)', out, re.I)
+if not m:
+    print('FAIL: could not parse area/z from WARN line'); sys.exit(1)
+area, z = float(m.group(1)), float(m.group(2))
+print(f'roof unsupported area={area} at z={z}')
+sys.exit(0 if (area >= 1000 and 25 <= z <= 30) else 1)
+" || { echo "FAIL: expected unsupported area >=1000mm^2 near z=27-30"; FAIL=1; cat "$TMP/supports_roof.out"; }
+
+    note "verify_model.py: same tube with no roof (open both ends) must NOT warn needs supports"
+    "$PY" "$S/scripts/verify_model.py" "$TMP/tube_open.stl" >"$TMP/supports_open.out" 2>&1
+    assert_exit "open tube PASS" 0 $?
+    grep -qi "needs supports" "$TMP/supports_open.out" && { echo "FAIL: open tube should not warn needs supports"; FAIL=1; cat "$TMP/supports_open.out"; }
+
+    [ "$FAIL" = 0 ] && echo SUPPORTS_GATE_OK
+}
+
+gate_slice_supports() {
+    note "slice_gate.py: --supports tree slices the closed-top tube and reports supports were on"
+    "$PY" -c "
+from build123d import *
+with BuildPart() as bp:
+    Cylinder(26, 60)
+    with Locations((0,0,-1.5)):
+        Cylinder(23, 57, mode=Mode.SUBTRACT)
+export_stl(bp.part, '$TMP/tube_roof2.stl')
+"
+    "$PY" "$S/scripts/slice_gate.py" "$TMP/tube_roof2.stl" --supports tree >"$TMP/slice_supports.out" 2>&1
+    assert_exit "closed-top tube slices with --supports tree" 0 $?
+    grep -qi "support" "$TMP/slice_supports.out" || { echo "FAIL: expected slice_gate.py to report supports state"; FAIL=1; cat "$TMP/slice_supports.out"; }
+
+    [ "$FAIL" = 0 ] && echo SLICE_SUPPORTS_GATE_OK
+}
+
 gate_docs() {
     note "docs: bd_warehouse patterns documented and importable"
     grep -q "bd_warehouse.thread import IsoThread" "$S/references/build123d-patterns.md" || { echo "FAIL: threads not documented"; FAIL=1; }
@@ -393,9 +500,11 @@ case "${1:-all}" in
     slice) gate_slice ;;
     quote) gate_quote ;;
     text) gate_text ;;
+    supports) gate_supports ;;
+    slice_supports) gate_slice_supports ;;
     docs) gate_docs ;;
     all)
-        gate_checker; gate_render; gate_features; gate_fit; gate_slice; gate_quote; gate_text; gate_docs
+        gate_checker; gate_render; gate_features; gate_fit; gate_slice; gate_quote; gate_text; gate_supports; gate_slice_supports; gate_docs
         [ "$FAIL" = 0 ] && echo ALL_GATES_OK
         ;;
     *) echo "unknown gate: $1" >&2; exit 2 ;;

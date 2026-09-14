@@ -81,6 +81,43 @@ def main():
         except Exception as e:
             warns.append(f"Thin-wall check skipped ({e}).")
 
+    # Needs-supports check: slice the part in its CURRENT orientation and
+    # look for area with nothing under it — the overhang-normal-angle check
+    # above misses a flat horizontal roof over a hollow cavity (its normal
+    # points straight up, so it never registers as "overhang"), which is
+    # exactly what turned a real print to spaghetti. WARN, not FAIL — supports
+    # are a valid choice, this just makes sure the choice gets made.
+    if wt:
+        try:
+            from shapely.ops import unary_union
+            dz = 0.4
+            zmin, zmax = float(m.bounds[0][2]), float(m.bounds[1][2])
+            heights = np.arange(zmin + dz, zmax, dz)
+            reach = dz * np.tan(np.radians(50))  # max self-supporting overhang per layer
+            worst_area, worst_z = 0.0, None
+            islands = []
+            if len(heights):
+                sections = m.section_multiplane(plane_origin=[0, 0, 0], plane_normal=[0, 0, 1], heights=heights.tolist())
+                prev_poly = None
+                for z, path in zip(heights, sections):
+                    poly = unary_union(path.polygons_full) if (path is not None and path.polygons_full) else None
+                    if prev_poly is not None and poly is not None and not poly.is_empty:
+                        unsupported = poly.difference(prev_poly.buffer(reach))
+                        if unsupported.area > worst_area:
+                            worst_area, worst_z = unsupported.area, float(z)
+                        island = poly.difference(prev_poly.buffer(1e-6))
+                        for geom in getattr(island, "geoms", [island]):
+                            if geom.area > 0.5:
+                                islands.append((geom.area, float(z)))
+                    prev_poly = poly
+            if worst_z is not None and worst_area > 50:
+                warns.append(f"needs supports — largest unsupported area {worst_area:.0f}mm^2 at z={worst_z:.1f}")
+            for area, z in islands:
+                if area > 2:
+                    warns.append(f"needs supports — mid-air island {area:.1f}mm^2 starting at z={z:.1f} (nothing below to attach to)")
+        except Exception as e:
+            warns.append(f"needs-supports check skipped ({e}).")
+
     # --- REPORT ---
     print(f"file: {a.path}")
     print(f"watertight={wt} winding={m.is_winding_consistent} bodies={bodies} euler={m.euler_number}")

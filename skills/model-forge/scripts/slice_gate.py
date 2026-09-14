@@ -49,6 +49,8 @@ def main():
     ap.add_argument("--max-grams", type=float, default=None)
     ap.add_argument("--price", type=float, default=None, help="proposed sale price, GBP")
     ap.add_argument("--min-gbp-per-hour", type=float, default=10.0)
+    ap.add_argument("--supports", choices=["none", "tree", "normal"], default="none",
+                     help="enable supports for this slice (default none)")
     a = ap.parse_args()
 
     if not os.path.exists(ORCA_BIN):
@@ -87,9 +89,20 @@ def main():
                 print(f"FAIL: profile not found: {p}")
                 sys.exit(1)
 
+        settings = f"{machine};{process}"
+        if a.supports != "none":
+            import json
+            merged = json.load(open(process))
+            merged["enable_support"] = "1"
+            merged["support_type"] = f"{a.supports}(auto)"
+            support_process = os.path.join(outdir, "process_with_supports.json")
+            with open(support_process, "w") as f:
+                json.dump(merged, f)
+            settings = f"{machine};{support_process}"
+
         cmd = [
             ORCA_BIN, "--datadir", os.path.join(outdir, "datadir"),
-            "--load-settings", f"{machine};{process}",
+            "--load-settings", settings,
             "--load-filaments", filament,
             "--slice", "0",
             "--export-3mf", "sliced.3mf",
@@ -112,6 +125,7 @@ def main():
         fil_cm3 = re.search(r"filament used \[cm3\]\s*=\s*([\d.]+)", gcode)
         print(f"file: {a.model}")
         print(f"profile: A1 {a.nozzle}nozzle / {a.process} / {a.filament}")
+        print(f"supports: {a.supports}")
         time_str = time_m.group(1).strip() if time_m else "unknown"
         print(f"estimated print time: {time_str}")
         fil = f"{fil_g.group(1)}g" if fil_g else (f"{fil_cm3.group(1)}cm3" if fil_cm3 else "unknown")
@@ -130,6 +144,40 @@ def main():
             grams = float(fil_cm3.group(1)) * 1.24
         else:
             grams = None
+
+        if a.supports != "none" and grams is not None:
+            # Best-effort: re-slice with supports off to report the filament
+            # delta. Skip silently if the baseline slice itself fails.
+            try:
+                base_out = os.path.join(outdir, "baseline")
+                os.makedirs(base_out, exist_ok=True)
+                base_cmd = [
+                    ORCA_BIN, "--datadir", os.path.join(outdir, "datadir"),
+                    "--load-settings", f"{machine};{process}",
+                    "--load-filaments", filament,
+                    "--slice", "0",
+                    "--export-3mf", "sliced.3mf",
+                    "--outputdir", base_out,
+                    os.path.abspath(a.model),
+                ]
+                if shutil.which("xvfb-run"):
+                    base_cmd = ["xvfb-run", "-a"] + base_cmd
+                base_proc = subprocess.run(base_cmd, capture_output=True, text=True, timeout=120)
+                base_gcode_path = os.path.join(base_out, "plate_1.gcode")
+                if base_proc.returncode == 0 and os.path.exists(base_gcode_path):
+                    base_gcode = open(base_gcode_path, "r", errors="ignore").read()
+                    base_fil_g = re.search(r"filament used \[g\]\s*=\s*([\d.]+)", base_gcode)
+                    base_fil_cm3 = re.search(r"filament used \[cm3\]\s*=\s*([\d.]+)", base_gcode)
+                    if base_fil_g:
+                        base_grams = float(base_fil_g.group(1))
+                    elif base_fil_cm3:
+                        base_grams = float(base_fil_cm3.group(1)) * 1.24
+                    else:
+                        base_grams = None
+                    if base_grams is not None:
+                        print(f"filament delta vs no supports: +{grams - base_grams:.1f}g")
+            except Exception:
+                pass  # delta is informational only
 
         fails = []
         if hours is not None:
