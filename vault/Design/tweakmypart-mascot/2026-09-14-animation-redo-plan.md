@@ -24,6 +24,12 @@ Research: `vault/Research/2026-09-14-mascot-animation-research.md`.
 7. **Story split into single-beat clips:** door opens (hinged, stays attached) → hand reaches in through the open door → lifts the part out → looks at it (subtle smile) → door swings shut with the chamber empty. Walk-off and walk-in as real steps with no forced black frames; fade to black in post.
 8. **Chat clips 8 s with 2-3 beats** instead of 5 s with one verb; idles as 2-3 short variants shuffled so repetition is not visible within 90 s.
 
+## Test result (14 Sep, approved by James: "Approve B's approach, roll out")
+
+Test B (weight-bearing pose + beat prompts + short negative, cfg 0.5) moved his legs: lean, knee bend, a foot re-planted, return. Test A with the same prompt mostly stood still, so 2 seeds per clip stay worthwhile. The G-code composite tracked the chest window in both (template-match score median 0.88 / 0.64, no lost frames). Remaining issues: the keyframe still showed a parked print head above the drawn nozzle (next keyframe removes the head), and the face flattened briefly in B's head turn.
+
+Pipeline: `toolpath_render.py` (G-code → glowing print loop) and `composite_print.py` (OpenCV bezel tracking + screen blend into the build-plate box), both in the session scratchpad until the site build copies them into the repo.
+
 ## Order and cost
 
 1. Test ONE clip end to end first: new keyframe (~$0.12) + idle A with every prompt fix (2 seeds, ~$1.80) + composited printing (script, no fal cost). Show James before anything else is spent.
