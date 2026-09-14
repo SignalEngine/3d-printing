@@ -8,3 +8,4 @@ models/poop-bag-holder/viewer.html
 models/poop-bag-holder/iframe-host.html
 orcaslicer/
 *.log
+result.json
