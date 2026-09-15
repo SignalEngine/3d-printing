@@ -270,3 +270,11 @@ Site: https://printtweak-production.up.railway.app (Clerk dev instance, Convex p
 | 2 | same knob | **ready** | 2 min 20 s | $0.31 | 3MF, STEP, GLB, front render stored; quote 0.4 h, 1 g, print + post £19.00; tablet preview showed the knob, downloads and tweak box present. |
 
 Found on the way: `convex/testSetup.ts` broke the first Convex push (PR #9); Chrome picture-in-picture controls show on the mascot video; the "point" mascot renders as a second tiny robot; a failure in our own checks is reported to the user as "we couldn't make this" (should read as our fault + auto-retry). Test login: Clerk user `james+clerk_test@powleads.com` (dev code 424242), allowlisted in Convex.
+
+| 3 | knob (test account) | ready | 3 min | $0.41 | recorded run of the UX pass |
+| 4 | trophy "CONGRATULATION" (text) | **ready** | 15 min | $1.95 | text check passed |
+| 5 | trinket box 51x51x28.3, lidded | failed: `checks: verify_model` ×2 | 19 min | $2.49 | AI reported built; host watertight check failed both attempts |
+| 6 | Netgate 10" 1U bracket | failed: `checks: slice_gate` | 22 min | $3.56 | slice failed on the host |
+| 7 | pill box, 5 parts | failed: `verify_model, slice_gate` | 14 min | $1.62 | multi-part |
+
+Batch read (15 Sep): single-body parts pass; multi-part or assembly parts fail the host checks after the sandbox claims built. Fixes merged the same day: sandbox self-check before `built` with one repair turn (PR #14), failed outputs retained under `/var/lib/printtweak/failed`, plain-English log lines (PR #13), retry status fix (PR #12). Unverified: whether a job `timeout` also stops the container (the `timeout` wraps the docker client). Day total ≈ $12 of subscription usage.
