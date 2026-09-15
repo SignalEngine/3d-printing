@@ -1898,3 +1898,6 @@ Refuted, no action: refund on a declined tweak (spec: refusals don't use a try; 
 - **Placeholder scan:** no TBD/TODO; every code step has code.
 - **Type consistency:** `reportResult` args (`outcome`, `costUsd`, `quote{hours,grams,costFloorGbp}`, `files{threeMf,step,glb,front}`) match between `convex/worker.ts`, `worker/worker.py` and tests; `claimNext` return keys match `process()` usage; `printQuote` shape matches Task 2/7 usage.
 - **Known limits carried from the spec:** mirrored text passes `text_check.py`; mesh edits on uploads are less reliable; VPS RAM (~3 GB free) means one job at a time; no physical print yet (print the pill box and knob before launch).
+
+
+**Next session (James, chosen 15 Sep night):** repeatability run — rerun all 5 requests end to end (~$10), fix what is flaky, record times/costs as the baseline. Then: domain + live keys; multi-part tweak flow; mascot polish.
