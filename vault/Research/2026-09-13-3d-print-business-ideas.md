@@ -286,3 +286,4 @@ Later on 15 Sep: the image rebuilt for the log/self-check changes lost `libmspac
 
 Also 15 Sep evening: daily cap raised £15 → £40 (PR #20) after testing hit it; pieces count + per-piece print refusal (PR #21); tests no longer page Telegram (PR #18). Next session (James): keep hardening assemblies, Netgate bracket first, aim 5 of 5.
 | 10 | trinket box (vision sheet fix, PR #22) | **ready**: trinket-box + trinket-lid | 10.5 min | $1.26 | box 1.94 h, lid 1.11 h. Day tally: 4 of 5 real requests delivered (knob, trophy, pill box, trinket box); Netgate bracket not yet rerun. |
+| 11 | Netgate 10" 1U bracket (fixed pipeline) | **ready**: 2 pieces | 17.8 min | $2.77 | 2.1 h / 15.1 g each. **Day tally: 5 of 5 real requests delivered live** (knob, trophy, pill box, trinket box, Netgate bracket). Total spend on the day ≈ $30 of subscription usage across all runs incl. failures. |
