@@ -278,3 +278,5 @@ Found on the way: `convex/testSetup.ts` broke the first Convex push (PR #9); Chr
 | 7 | pill box, 5 parts | failed: `verify_model, slice_gate` | 14 min | $1.62 | multi-part |
 
 Batch read (15 Sep): single-body parts pass; multi-part or assembly parts fail the host checks after the sandbox claims built. Fixes merged the same day: sandbox self-check before `built` with one repair turn (PR #14), failed outputs retained under `/var/lib/printtweak/failed`, plain-English log lines (PR #13), retry status fix (PR #12). Unverified: whether a job `timeout` also stops the container (the `timeout` wraps the docker client). Day total ≈ $12 of subscription usage.
+
+Later on 15 Sep: the image rebuilt for the log/self-check changes lost `libmspack.so.0`, so OrcaSlicer would not start inside the sandbox and every job failed its own slice check (knob rerun $1.17, a pill-box rerun stopped early). Fixed in PR #15 (`libmspack0` in the Dockerfile; host now also retains outputs when the sandbox itself reports a check failure). Lesson: after any image rebuild, run `slice_gate.py` inside the image before the worker restarts (added to the go-live notes).
