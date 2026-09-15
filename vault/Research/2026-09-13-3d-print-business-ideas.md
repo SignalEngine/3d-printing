@@ -282,3 +282,6 @@ Batch read (15 Sep): single-body parts pass; multi-part or assembly parts fail t
 Later on 15 Sep: the image rebuilt for the log/self-check changes lost `libmspack.so.0`, so OrcaSlicer would not start inside the sandbox and every job failed its own slice check (knob rerun $1.17, a pill-box rerun stopped early). Fixed in PR #15 (`libmspack0` in the Dockerfile; host now also retains outputs when the sandbox itself reports a check failure). Lesson: after any image rebuild, run `slice_gate.py` inside the image before the worker restarts (added to the go-live notes).
 
 | 8 | pill box, 5 parts (multi-part pipeline, PR #17) | **ready**: tray + lid ×4 | 28 min | $3.62 | tray 8.9 h / 74.5 g, lid 1.5 h / 11.8 g each; page shows per-part 3MF/STEP + zip; tray alone exceeds the 8 h print-refusal rule |
+| 9 | trinket box, lidded (multi-part pipeline) | failed: `vision check disagreed twice` | 17 min | $2.18 | retained renders show a correct box + lift-off lid (box 2.0 h/16 g, lid 0.9 h/7 g); the judge saw one part only. Fixed in PR #22 (labelled sheet of every part); rerun follows. |
+
+Also 15 Sep evening: daily cap raised £15 → £40 (PR #20) after testing hit it; pieces count + per-piece print refusal (PR #21); tests no longer page Telegram (PR #18). Next session (James): keep hardening assemblies, Netgate bracket first, aim 5 of 5.
