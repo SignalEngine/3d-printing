@@ -258,3 +258,15 @@ James picked "fix the pipeline gaps". Merged as SignalEngine/3d-printing PR #3 (
 ## Side tests
 - Relief vs lithophane: print 5 diverse pet photos both ways, post blind, ask "what is this?".
 - T-Rex skull: sell only if own design or a commercial licence is bought.
+
+
+## TweakMyPart live test (15 Sep 2026, personal mode on Railway)
+
+Site: https://printtweak-production.up.railway.app (Clerk dev instance, Convex prod `valiant-sockeye-361`, worker on the VPS with James's subscription token).
+
+| Run | Request | Result | Time queued → done | Cost | Notes |
+|---|---|---|---|---|---|
+| 1 | knob (15 mm, M5 hole, dome) | failed: `checks: render` | 4.5 min | $0.73 | Model was built; f3d crashed under systemd's minimal env (no `HOME`). Fixed in PR #10 (`Environment=HOME=/root`). |
+| 2 | same knob | **ready** | 2 min 20 s | $0.31 | 3MF, STEP, GLB, front render stored; quote 0.4 h, 1 g, print + post £19.00; tablet preview showed the knob, downloads and tweak box present. |
+
+Found on the way: `convex/testSetup.ts` broke the first Convex push (PR #9); Chrome picture-in-picture controls show on the mascot video; the "point" mascot renders as a second tiny robot; a failure in our own checks is reported to the user as "we couldn't make this" (should read as our fault + auto-retry). Test login: Clerk user `james+clerk_test@powleads.com` (dev code 424242), allowlisted in Convex.
