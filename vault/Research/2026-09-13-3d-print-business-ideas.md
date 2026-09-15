@@ -285,3 +285,4 @@ Later on 15 Sep: the image rebuilt for the log/self-check changes lost `libmspac
 | 9 | trinket box, lidded (multi-part pipeline) | failed: `vision check disagreed twice` | 17 min | $2.18 | retained renders show a correct box + lift-off lid (box 2.0 h/16 g, lid 0.9 h/7 g); the judge saw one part only. Fixed in PR #22 (labelled sheet of every part); rerun follows. |
 
 Also 15 Sep evening: daily cap raised £15 → £40 (PR #20) after testing hit it; pieces count + per-piece print refusal (PR #21); tests no longer page Telegram (PR #18). Next session (James): keep hardening assemblies, Netgate bracket first, aim 5 of 5.
+| 10 | trinket box (vision sheet fix, PR #22) | **ready**: trinket-box + trinket-lid | 10.5 min | $1.26 | box 1.94 h, lid 1.11 h. Day tally: 4 of 5 real requests delivered (knob, trophy, pill box, trinket box); Netgate bracket not yet rerun. |
