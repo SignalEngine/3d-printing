@@ -17,6 +17,28 @@ ORCA_BIN = os.path.join(ORCA_DIR, "bin", "orca-slicer")
 PROFILES = os.path.join(ORCA_DIR, "resources", "profiles", "BBL")
 
 
+def flatten_profile(path, outdir):
+    """Merge a BBL system profile with its `inherits` parents (same directory, child wins) into one
+    json under outdir and return that path. Orca's CLI loads a profile file as-is, so without this
+    every inherited value (bed size, skirt, brim, temperatures) silently falls back to a default."""
+    import json
+    chain, p = [], path
+    while p:
+        with open(p) as f:
+            d = json.load(f)
+        chain.append(d)
+        parent = d.get("inherits")
+        p = os.path.join(os.path.dirname(path), f"{parent}.json") if parent else None
+    merged = {}
+    for d in reversed(chain):
+        merged.update(d)
+    merged.pop("inherits", None)
+    out = os.path.join(outdir, "flat-" + os.path.basename(path))
+    with open(out, "w") as f:
+        json.dump(merged, f)
+    return out
+
+
 def load_any(path):
     if path.lower().endswith((".step", ".stp")):
         from build123d import import_step, export_stl
@@ -88,6 +110,10 @@ def main():
             if not os.path.exists(p):
                 print(f"FAIL: profile not found: {p}")
                 sys.exit(1)
+        # Orca's CLI does not resolve a system profile's `inherits` chain (16 Sep 2026: the A1 machine
+        # json inherits printable_area 256x256, but the CLI sliced on the 200x200 default bed, so wide
+        # parts failed with -102/-50). Flatten each profile into one json before loading it.
+        machine, process, filament = (flatten_profile(p, outdir) for p in (machine, process, filament))
 
         settings = f"{machine};{process}"
         if a.supports != "none":
