@@ -1,6 +1,6 @@
 # TweakMyPart: the brief step — questions + 2D storyboard before the 3D build (spec + builder handover)
 
-James (16 Sep, recording 16:51): "It started instantly, building without asking any questions… it should say, here's a 2D render of what it could look like — extremely cheap — and once they're happy and all the questions have been asked and approved, then it goes into this." Chosen: **always**, for every request.
+James (16 Sep, recording 16:51): "It started instantly, building without asking any questions… it should say, here's a 2D render of what it could look like — extremely cheap — and once they're happy and all the questions have been asked and approved, then it goes into this." Chosen: **always**, for every request. Spec approved by James 16 Sep (schematic sketch with dimensions, questions with defaults, Approve and build). Builds after the working-page layout PR merges.
 
 ## Flow
 1. Customer submits the request (unchanged form) → design `status: "brief"` (new), a `jobs` row of `kind: "brief"`.

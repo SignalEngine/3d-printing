@@ -1908,4 +1908,6 @@ Refuted, no action: refund on a declined tweak (spec: refusals don't use a try; 
 
 **16 Sep late:** the allowlist refusal was the address, not the claims — James's production Clerk accounts are Gmail (`jamestaylor1+3dprint@…`, `jamestaylor@…`), the list only had powleads; both added to `ALLOWED_EMAILS`/`ADMIN_EMAILS` on prod. The refusal message now names the signed-in address and verified state (#34). Landing from his second recording: mascot 500 px overlapping the hero's bottom edge, positioned against the section (#35, #37, #38 — the first cut resolved against the knob-card wrapper), iso example renders (#36). Dev runner scripts now live in `scripts/dev/` (the session scratchpad was wiped once).
 
-**Open:** James's first real run through the working page (his feedback next); design-gate P2/P3 polish; vision verdict retention + judge sees assumptions; multi-part tweak flow.
+**16 Sep night:** James's first real run worked end to end (trinket box, 2 parts, versions on the tablet, ready) but the page failed him: heading 'Building your lidded', steps/log below the fold, mascot small, tablet mode small with a black box and unclickable controls, and 'it started instantly without asking'. Two plans: working/ready page layout (`2026-09-16-tweakmypart-working-page-layout-plan.md`, builder running) and the brief step (`2026-09-16-tweakmypart-brief-step-plan.md`, approved, builds next).
+
+**Open after those:** design-gate P2/P3 polish; vision verdict retention + judge sees assumptions; multi-part tweak flow.
