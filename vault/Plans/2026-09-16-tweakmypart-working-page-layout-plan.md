@@ -1,0 +1,28 @@
+# TweakMyPart: working + ready page, James's first real run (builder handover)
+
+You are the BUILDER. Build only this, then stop and report. Repo `SignalEngine/printtweak`, worktree on branch `build/working-page-layout`, cut from `origin/master`. Real `node_modules` (check `[ -L node_modules ]` first). Never touch `/root/printtweak`, the service, Convex env, or run `convex deploy`/`convex dev`. `run-limited` for heavy commands. `GATES.md` at the worktree root before code (`/unlazy tree N`), committed last. Load `impeccable`'s `reference/craft-floor.md` and the `emil-design-eng` skill before UI code. Run `python3 /root/.claude/scripts/surface-sweep.py WorkingPage ReadyPage TabletPreview Mascot firstNoun StepsCard WhatsDoing --out spec/surfaces.md` and account for every hit.
+
+## Why (James, two recordings, 16 Sep 16:51 and 16:56 — the first real run through the working page)
+Quotes: "Building your lidded — I didn't ever put that as a title." "You have to scroll down to find out what it's doing… these should be up here… this should be all in one area." "Why is he again so small?" "Nothing's really happening… it's telling me nothing of what it's doing." "Rendering a preview but I can't see it." Ready page tablet mode: "kind of cool but it needs to be completely full screen… this background's meant to be invisible… he's not grabbing these things… I can't click on any of these."
+
+## 1. Working page = one screen, mascot dominant (`components/design/WorkingPage.tsx`, `app/globals.css`)
+- Desktop (≥1024 px): a full-viewport-height stage (`min-height: calc(100vh - header)`), no page scroll needed for the essentials. Left ~55%: the mascot filling the height (`height: min(78vh, 820px)`, width auto), feet on the stage's bottom edge. Right ~45%, vertically centred, one column in this order: the tablet card (viewer), the version chips, the steps rail (queued → designing → checking → ready, current pulsing), then "What it's doing" (last 4 lines, newest highlighted). The request text and the "Change something while it works" composer sit under the stage (scroll for those only).
+- Mobile: stage stacks: tablet, chips, rail, log, then the mascot at ~50vh below them.
+- Heading: "Building your part" until a version has a real name (then that name, hyphens → spaces; never `vN`); drop `firstNoun`'s adjective guessing entirely. Subline stays (`version N · mm:ss · usually X–Y min`).
+- Before the first version (the "nothing is happening" minutes): the tablet shows the live log inside the screen — the last 3 "What it's doing" lines typing in monospace over the scan line — so the tablet itself is never blank; the mascot is in `printing` state (chest printing) not `working`; the rail shows "Designing" pulsing with the elapsed counter beside it.
+- "Rendering a preview" stage: while `stage === "rendering"` show the last version on the tablet with a "checking the preview" scan line; never a blank screen.
+
+## 2. Ready page = tablet mode full screen, honest and clickable (`components/design/ReadyPage.tsx`, `components/mascot/TabletPreview.tsx`, `components/mascot/Mascot.tsx`)
+- On ready, after the `done` beat, the page goes into tablet mode automatically and it fills the stage (not a 380 px box): the mascot's tablet transform clip scales to the stage height; the viewer screen box and the dials scale with it (percent-based hotspots already exist — keep them relative to the clip's rendered size).
+- The black rectangle: the `Mascot` wrapper paints `background: #000` with `mix-blend-mode: screen` — on a dark gradient stage the black box still reads as a box. Fix: no background on the wrapper; keep the blend on the video only, or use the clips' transparency if the webm has alpha (check `public/mascot/*.webm` — if VP9 with alpha, use it; else `mix-blend-mode: screen` on the `<video>` alone with a transparent wrapper). Verify against the dark stage in the recording, not on black.
+- Clickable: the dials, the version chips and the "Back" control must receive pointer events — the mascot wrapper currently has `pointer-events: none` on the landing only, but in tablet mode the transform video sits above the controls; put the controls in a layer above the video (`z-index`) and prove it with a Playwright click in the fixture page.
+- "He's not grabbing these things": the parts should sit on the tablet screen, not float beside him — the viewer's model fills the screen box; the chips row sits directly under the screen inside the tablet's bezel area.
+- Quote/downloads/composer: a side panel to the right of the tablet at desktop (not under it), stacked on mobile.
+
+## 3. Proof (mandatory — the last build's recordings caught three defects the tests could not)
+- Unit tests for: heading fallback, log-in-tablet before the first version, tablet mode auto-entry, controls clickable (jsdom pointer events on the layered controls), no `#000` wrapper background.
+- Recordings via the fixture page (`NEXT_PUBLIC_DEV_FIXTURES=1 run-limited npx next dev -p 3999`, `node scripts/record-motion.mjs`, reduce-motion OFF): `spec/motion/working-desktop.webm` (30 s, play mode), `working-mobile.webm`, `ready-desktop.webm` (tablet mode entered, a dial dragged, a chip clicked). Frame-review them yourself (/watch) and name what you saw at which timestamp in the report; the brain watches them again.
+- `run-limited npx vitest run`, `npx tsc --noEmit`, `run-limited npx next build` green.
+
+## Hard rules
+No self-review, merge or push. Report RED/GREEN, file:line, recording paths with timestamps, and anything not verified. No new dependencies. Keep every input labelled, focus visible, contrast ≥ 4.5:1. Do not touch the landing page or the worker.
