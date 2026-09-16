@@ -1910,4 +1910,6 @@ Refuted, no action: refund on a declined tweak (spec: refusals don't use a try; 
 
 **16 Sep night:** James's first real run worked end to end (trinket box, 2 parts, versions on the tablet, ready) but the page failed him: heading 'Building your lidded', steps/log below the fold, mascot small, tablet mode small with a black box and unclickable controls, and 'it started instantly without asking'. Two plans: working/ready page layout (`2026-09-16-tweakmypart-working-page-layout-plan.md`, builder running) and the brief step (`2026-09-16-tweakmypart-brief-step-plan.md`, approved, builds next).
 
-**Open after those:** design-gate P2/P3 polish; vision verdict retention + judge sees assumptions; multi-part tweak flow.
+**16 Sep late evening:** layout rebuild live (#39: one-screen working page, full-stage tablet mode, black box fixed by blending the tablet clips). Brief step live (#40: Haiku brief job, questions + SVG sketch, approveBrief; jury P3s fixed) + legibility (#41: paper card, to-scale drawing rules). Live proof: knob brief in 83 s, approved with defaults, built to ready with the answers appended; trinket brief in 128 s with a readable to-scale sketch (edge labels still clip at the viewBox margin).
+
+**Open:** James's test of brief + new pages; brief latency (83–128 s, target 60 s) and edge-label clipping; design-gate P2/P3 polish; vision verdict retention + judge sees assumptions; multi-part tweak flow.
