@@ -300,3 +300,6 @@ Root causes found: (1) sandbox reported "no model produced" although the exporte
 | 18 | pill box, 5 parts (rerun) | **ready**: tray + lid ×4 | 10.5 min | $1.30 | vs 28 min / $3.62 on 15 Sep |
 
 **Baseline after the 16 Sep fixes** (bed size + salvage): knob 6.8 min, trinket 10.3 min / $1.37, Netgate 9.4 min / $0.95, pill box 10.5 min / $1.30 — 4 of 5 ready, all under 11 min. Trophy (text) is the open flake: text-check feedback must reach the agent inside the sandbox.
+| 19 | trophy "CONGRATULATION" (rerun, PR #25: lettering in prompt + sandbox text check) | **ready** | 28.9 min | $2.78 | 1.0 h / 19 g. Attempt 1 built a clean single-line trophy (text check passed, sliced 1.5 h / 36 g) but the vision judge sent it back; attempt 2 passed. The agent's `assumptions.txt` explains the deviation (14 letters at 30 mm cannot fit a 256 mm bed in one row with the sandbox fonts, so ~17 mm letters). **5 of 5 ready on the fixed pipeline.** |
+
+Open after the repeatability run (16 Sep): (a) the vision judge's verdict is not retained or shown ("retrying" only) — keep it with the failed attempt and log one line; (b) hand the judge `assumptions.txt` so a stated, justified deviation (letter size vs bed) is judged as such, and show those assumptions on the Ready page; (c) trophy time is 2× the others purely from that judge retry.
