@@ -14,7 +14,7 @@ PY=/root/3d-printing/.venv/bin/python
 S=/root/.claude/skills/model-forge/scripts
 # (re)install: $PY -m pip install build123d trimesh manifold3d matplotlib rtree shapely networkx lxml bd_warehouse
 # networkx+lxml are required for trimesh to LOAD .3mf (missing = verify crashes)
-# bd_warehouse adds threads/fasteners/gears (see references/build123d-patterns.md)
+# bd_warehouse adds fasteners/gears (see references/build123d-patterns.md); printed threads: scripts/thread.py, NOT bd_warehouse IsoThread
 ```
 Work files go in `/root/3d-printing/models/<name>/`. Below, read `python3 scripts/…` as `$PY $S/…`.
 - **build123d** — parametric BREP CAD (OpenCASCADE). Primary modelling tool.
