@@ -29,3 +29,11 @@ Sandbox runs of the fixture request (`kind: "brief"`, `printtweak-job:latest` wi
 
 ## Hard rules
 No self-review, merge or push. Report RED/GREEN, file:line, cost/time medians, recording timestamps, anything not verified; the prompt and run_job changed (image rebuild). No new dependencies. Do not change the brief model or thinking settings.
+
+## Addendum (James's live run, 21 Sep 13:30) — typed answers must count as answers
+What happened: he answered the measurement questions by typing in the composer ("Oh it's 155m for first question", "10.29"). Each message went through **Change something → reviseBrief**, the whole brief re-ran and asked the same measurements again (3 revisions), and the sketch did not explain what the numbers meant.
+Required, in this build:
+1. **While a question is pending, the composer answers it.** Placeholder "Your answer — e.g. 155 mm"; Send records the text as that question's answer (numbers with or without "mm" accepted; an option question matches an option case-insensitively, else keeps the text) and advances to the next question — exactly like tapping "Use this". No re-run.
+2. **Changing the approach is explicit**: a small "Change the approach" link under the questions (and the existing "Change something" chip after the sketch) is what triggers `reviseBrief`. Free text while questions are pending never revises.
+3. **reviseBrief keeps what is known**: the revise text and any answers already given are passed to the brief job (`request` gains "Known so far: <q>: <answer>…"), and `brief_prompt.md` says "do not ask again for anything under Known so far — reuse it".
+4. The measurement diagram is the explanation: for "distance between the inner faces of the two side panels" the diagram must show the two panels from above with the arrow between their inner faces and the label "inside face to inside face". Test it on this exact request (`REQ` = the yarn-caddy text in `vault/Research/2026-09-13-3d-print-business-ideas.md` row 21's design j9706c2t) and put the resulting diagram SVGs in the report.
