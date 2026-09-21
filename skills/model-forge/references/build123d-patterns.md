@@ -80,21 +80,27 @@ with BuildSketch(part.faces().sort_by(Axis.Z)[-1]):
 extrude(amount=-0.6, mode=Mode.SUBTRACT)   # deboss prints cleaner than emboss on top faces
 ```
 
-### bd_warehouse: threads, fasteners, gears (installed in the venv)
-Install once: `$PY -m pip install bd_warehouse` (already in this venv — see SKILL.md Step 2).
-Use these instead of hand-rolling thread helixes, screw heads, or involute gear
-profiles — they're maintained, dimensionally-correct implementations.
-
-**Threads (only ≥M8 — smaller printed threads round off; use heat-set inserts instead):**
+### Printed threads: `scripts/thread.py` (never bd_warehouse IsoThread)
+bd_warehouse `IsoThread` never tessellates watertight (a 21 Sep run burned $2 in verify loops on it). Use the helper: a
+swept trapezoidal profile with truncated crest and root, chamfered ends, one valid solid by construction.
 ```python
-from bd_warehouse.thread import IsoThread
-male = IsoThread(major_diameter=8, pitch=1.25, length=10, external=True)
-# Internal (female) thread: external=False builds the thread RIDGES. Cut the hole at major_diameter,
-# then ADD the thread solid inside it. Subtracting it only carves a ~0.2 mm groove in the wall
-# (verified 2026-09-13: M8 in a Ø8 bore, subtract -73.8 mm3 of groove, add +80 mm3 of ridges).
-female = Pos(0, 0, -5) * IsoThread(major_diameter=8, pitch=1.25, length=10, external=False)
-nut_body = (Box(20, 20, 10) - Cylinder(4, 10)) + female
+import sys; sys.path.insert(0, "/opt/model-forge/scripts")     # or $S in the venv
+from thread import external_thread, internal_thread, bolt, nut, seat_z, export_3mf
+b = bolt(10, 3, 40)                                  # M10x3 bolt: hex head z -7..0, thread z 0..40, right-hand
+n = Pos(0, 0, seat_z(14, 3)) * nut(10, 3, 8)         # hex nut, 0.4 mm clearance, seated on the thread
+export_3mf(b, "bolt.3mf"); export_3mf(n, "nut.3mf")  # fine deflection so the thread gap measures true
+# your own body (wing nut, knob, sleeve): subtract the cutter
+body = Cylinder(10, 8, align=(Align.CENTER, Align.CENTER, Align.MIN))
+knob = body - Pos(0, 0, -6) * internal_thread(10, 3, 8 + 12)   # cutter past both faces in whole leads (6 = 2 x lead 3)
+rod = external_thread(12, 3, 30, starts=2, hand="left")       # 2-start, left-hand rod
 ```
+- **Rule:** printed threads only at major >= 8 mm and pitch >= 2 mm (2.5+ with a 0.4 clearance); 0.4 mm clearance for PLA;
+  the helper chamfers both ends. It RAISES below that — use a heat-set insert, a pin, or a ratchet strip and say so.
+- `internal_thread()` is the CUTTER (void = male + clearance): subtract it. `nut()` does that for a hex nut.
+- **Phase:** a thread is a helix, so a nut sits in phase on its bolt only at z = k x lead (lead = pitch x starts); `seat_z(z, pitch, starts)`
+  rounds for you. Shift a cutter only by whole leads. Put that position in assembly.json; a half-lead error is INTERFERE in fit.py.
+- Declare each thread in checks.json with pitch, starts, hand, major and `clearance_mm: 0.4`, identical on both sides.
+- Self-check: `python3 thread.py demo --out /tmp/x` (add `--all` for M8x2.5, M10x3, M12x3 2-start).
 
 **Fasteners — model real screws/nuts to check clearance holes and head pockets, don't print the fastener itself:**
 ```python
