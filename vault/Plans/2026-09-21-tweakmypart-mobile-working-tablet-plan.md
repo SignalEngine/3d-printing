@@ -1,0 +1,21 @@
+# TweakMyPart: working page on a phone — he holds the tablet (builder handover)
+
+You are the BUILDER. Build only this, then stop and report. Repo `SignalEngine/printtweak`, worktree on branch `build/mobile-working-tablet`, cut from `origin/master` (≥ 785aacf). Real `node_modules` (check `[ -L node_modules ]`; `next dev --webpack` in a worktree if Turbopack rejects a symlink). Never touch `/root/printtweak`, the service, Convex env, or run `convex deploy`/`convex dev` against prod (anonymous codegen only). `run-limited` for heavy commands. `GATES.md` before code (`/unlazy tree N`), committed last. Load `impeccable`'s `reference/craft-floor.md` and the `emil-design-eng` skill before UI code. Run `python3 /root/.claude/scripts/surface-sweep.py working-stage WorkingPreviewCard TabletPreview working-mascot-area StepsCard WhatsDoing VersionChips --out spec/surfaces.md` and account for every hit.
+
+## Why (James, 21 Sep 15:45, on his phone while the caddy built)
+"I'm on the page where it's building, this looks bad on mobile." The phone layout today (fixture at 390 px): three nested rounded boxes (stage frame → tablet card → viewer box), the viewer fills the whole first screen, the version chips / rail / log follow as more cards, and the mascot is the fifth thing down. He chose: **the same picture as the chat page — the mascot on top holding the tablet, the model on HIS tablet screen.**
+
+## Phone layout (≤ 720 px) — `components/design/WorkingPage.tsx`, `app/globals.css`, `components/mascot/TabletPreview.tsx`
+1. **Heading row** unchanged ("Building your part", `version N · m:ss · usually ~X min`).
+2. **Stage = the mascot in tablet mode**, full width, ~46vh tall, no frame around him (same treatment as the chat stage: no card border, no background box): reuse `TabletPreview` (the tablet-mode clip and screen hotspot the ready page already uses) with the working content on the screen: the latest version's model (`ModelViewer`, `fill`) when a GLB exists; before the first version, the live log lines typing in monospace over the scan line (what `WorkingPreviewCard` shows today); during `stage === "rendering"` the last version with the "checking the preview" scan line. The screen is tappable → the existing full-screen viewer. He is `printing` before the first version, `working` after, `presenting` beat on each new version (as today).
+3. **Under him, one compact strip** (one card, not three): the rail as a single line of four dots with the current step bold and the elapsed counter beside it (`● Designing 3:10`), then the last two "What it's doing" lines (newest highlighted). Then the **version chips** row. Then the composer ("Change something while it works") and the request text as today.
+4. Nothing nested: on a phone `.working-stage` has no border/background/padding of its own; the only bordered things are the strip card and the composer. No horizontal overflow at 360 px.
+5. **Desktop (> 720 px) unchanged** — do not touch the desktop grid; gate it with a screenshot diff of the fixture at 1280 px before/after (pixel-identical).
+
+## Tests and proof
+- Unit: at phone width the page renders `TabletPreview` with the model/log screen and no `WorkingPreviewCard`; the strip shows the current step + elapsed + last two lines; chips present; desktop width renders as before (jsdom: use `matchMedia` stub / the existing `useIsPhone` hook if there is one, else a CSS-only approach with both DOMs rendered and hidden — pick whichever the codebase already does for the chat stage, and say which).
+- Fixture `/dev/motion?state=working&play=1` at 390×844: record `spec/motion/working-mobile-tablet.webm` (reduce-motion OFF, 30 s, versions arriving), frame-review with timestamps: the first frame shows him with the log on his tablet; a version lands on the screen; the strip updates. Also a still at 360×780 with `scrollWidth === 360`.
+- `run-limited npx vitest run`, `npx tsc --noEmit`, `run-limited npx next build` green.
+
+## Hard rules
+No self-review, merge or push. Report RED/GREEN, file:line, recording timestamps, anything not verified. No new dependencies. Do not change the worker, Convex, the chat page or the ready page. Keep every control labelled, focus visible, contrast ≥ 4.5:1.
