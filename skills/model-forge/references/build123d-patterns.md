@@ -84,7 +84,7 @@ extrude(amount=-0.6, mode=Mode.SUBTRACT)   # deboss prints cleaner than emboss o
 bd_warehouse `IsoThread` never tessellates watertight (a 21 Sep run burned $2 in verify loops on it). Use the helper: a
 swept trapezoidal profile with truncated crest and root, chamfered ends, one valid solid by construction.
 ```python
-import sys; sys.path.insert(0, "/opt/model-forge/scripts")     # or $S in the venv
+import sys; sys.path.insert(0, "/opt/model-forge/scripts")     # TweakMyPart sandbox; on this box use ~/.claude/skills/model-forge/scripts ($S)
 from thread import external_thread, internal_thread, bolt, nut, seat_z, export_3mf
 b = bolt(10, 3, 40)                                  # M10x3 bolt: hex head z -7..0, thread z 0..40, right-hand
 n = Pos(0, 0, seat_z(14, 3)) * nut(10, 3, 8)         # hex nut, 0.4 mm clearance, seated on the thread

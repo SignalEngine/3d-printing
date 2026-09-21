@@ -99,7 +99,8 @@ def _threaded(major_mm, pitch_mm, length_mm, starts, hand, flank_deg, grow, trim
     if trim:
         env = chamfer(env.edges(), min(env_r - root - grow, length_mm / 2 - 0.01))
     out = _one(Pos(0, 0, -over) * body & env, "trim")
-    low = 0.95 * math.pi * (root + grow) ** 2 * length_mm * (0.4 if hollow else 1.0)   # the core alone, less chamfer and bore
+    core_area = math.pi * (root + grow) ** 2 - (math.pi * (root + grow - 1.2) ** 2 if hollow else 0.0)  # the analytic core (annulus when hollow)
+    low = (0.85 if hollow else 0.95) * core_area * length_mm   # the core alone, less the end chamfers
     if not low < out.volume < math.pi * r_out ** 2 * length_mm:
         raise RuntimeError(f"thread trim gave a wrong volume for M{major_mm:g}x{pitch_mm:g} — try a different length")
     return out
@@ -122,6 +123,8 @@ def external_thread(major_mm, pitch_mm, length_mm, starts=1, hand="right", clear
 def internal_thread(major_mm, pitch_mm, length_mm, starts=1, hand="right", clearance_mm=0.4, flank_deg=30):
     """Female thread CUTTER, z 0..length, flat ends: subtract it from your body. Extend it past the faces you
     cut through in whole leads (shift by -k*lead) so the thread phase still matches the bolt."""
+    if clearance_mm < 0:
+        raise ValueError("clearance_mm must be >= 0 on the female side (0.4 mm for PLA)")
     _check(major_mm, pitch_mm, length_mm, starts, hand, flank_deg)
     return _threaded(major_mm, pitch_mm, length_mm, starts, hand, flank_deg, abs(clearance_mm) + MESH_MARGIN_MM, False)
 
@@ -141,6 +144,8 @@ def bolt(major_mm, pitch_mm, length_mm, starts=1, hand="right", head=None, flank
 
 def nut(major_mm, pitch_mm, height_mm, starts=1, hand="right", clearance_mm=0.4, af_mm=None, flank_deg=30):
     """Hex nut z 0..height, threaded through. Seat it on a bolt at z = k*lead (seat_z)."""
+    if clearance_mm < 0:
+        raise ValueError("clearance_mm must be >= 0 on the female side (0.4 mm for PLA)")
     lead = pitch_mm * starts
     over = lead * math.ceil(1.0 / lead)
     cutter = Pos(0, 0, -over) * internal_thread(major_mm, pitch_mm, height_mm + 2 * over, starts, hand,

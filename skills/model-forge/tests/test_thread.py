@@ -111,12 +111,18 @@ class Fit(unittest.TestCase):
         self.assertTrue(kind == "INTERFERE" or gap < 0.3, f"a half-lead phase error slipped through: {kind} {gap}")
 
     def test_sabotage_zero_clearance_nut_is_caught(self):
-        n = self.nut("tight", Pos(0, 0, T.seat_z(4, 3)) * T.nut(10, 3, 6, clearance_mm=-0.02))   # cutter shrinks to +0
+        n = self.nut("tight", Pos(0, 0, T.seat_z(4, 3)) * T.nut(10, 3, 6, clearance_mm=0.0))   # no clearance at all
         kind, gap = fit(self.bolt_path, n)
         self.assertTrue(kind == "INTERFERE" or gap < 0.1, f"a no-clearance nut slipped through: {kind} {gap}")
 
 
 @unittest.skipIf(os.environ.get("SKIP_SLOW"), "slow")
+class Refusals(unittest.TestCase):
+    def test_negative_clearance_is_refused(self):
+        with self.assertRaises(ValueError):
+            T.nut(10, 3, 6, clearance_mm=-0.3)
+
+
 class Demo(unittest.TestCase):
     def test_demo_all_three_threads(self):
         r = subprocess.run([sys.executable, os.path.join(SCRIPTS, "thread.py"), "demo", "--all", "--out",
