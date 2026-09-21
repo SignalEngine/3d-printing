@@ -64,7 +64,7 @@ def main():
     ap.add_argument("--nozzle", default="0.4")
     ap.add_argument("--process", default="0.20mm Standard @BBL A1")
     ap.add_argument("--filament", default="Bambu PLA Basic @BBL A1")
-    ap.add_argument("--gbp-per-kg", type=float, default=18.0)
+    ap.add_argument("--gbp-per-kg", type=float, default=12.0)  # matte black PLA, James 21 Sep 2026 (was 18)
     ap.add_argument("--gbp-per-hour", type=float, default=0.30,
                      help="estimated machine cost: electricity + wear")
     ap.add_argument("--max-hours", type=float, default=None)
