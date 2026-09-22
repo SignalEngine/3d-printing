@@ -18,6 +18,14 @@ changes are proven before they reach tweakmypart.com.
 - Signed-in tests: `CLERK_SECRET_KEY_STAGING=$(cat ~/.config/tweakmypart-clerk-dev-sk) PT_BASE_URL=<staging url> npx playwright test e2e/staging-authed.spec.ts`; seed the persona with `scripts/staging-seed-users.mjs`.
 - Staging shows a STAGING banner and is noindex; live does not (checked after the merge).
 
+**Signed-in tests (printtweak #81, 2026-09-22):** 3/3 pass against staging. `e2e/auth.ts` signs in by loading the
+app, waiting for `window.Clerk.loaded`, then `Clerk.client.signIn.create({ strategy: "ticket", ticket })` and
+`setActive`. A `?__clerk_ticket=` URL does not work here: the app has no SignIn component (it uses Clerk's hosted
+portal), so the URL form lands on the sign-in page. All e2e files use an absolute `PT_BASE_URL`.
+
+**Railway gotcha:** the CLI acts on whatever environment the folder is linked to. Always pass `--environment staging`
+when setting staging variables; one key once landed on a stray copy of the staging service in production.
+
 **Gotchas:**
 - The staging worker runs whatever commit `stage-deploy` last checked out into `/root/printtweak-staging`, not master.
 - The Clerk development secret and Stripe test keys are set by James; staging cannot sign anyone in until the Clerk key is on Railway staging.
