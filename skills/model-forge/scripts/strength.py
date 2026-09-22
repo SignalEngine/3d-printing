@@ -38,7 +38,8 @@ def check(row: dict) -> tuple[bool, str]:
 
     if deflection is not None:
         strain = cantilever_strain_pct(deflection, thickness, length)
-        limit = STRAIN_LIMIT[material][repeated]
+        # An arm printed upright bends across its layer lines: half the strain budget (mechanisms.md rule 21).
+        limit = STRAIN_LIMIT[material][repeated] * (0.5 if layers == "across" else 1.0)
         ok = strain <= limit
         return ok, f"Clip bends {strain:.2f}% ({material} limit {limit:g}%) (estimated)"
 
@@ -71,6 +72,14 @@ def _selftest() -> None:
     ok_across, _ = check({"feature": "beam", "length_mm": 30, "thickness_mm": 4, "width_mm": 15,
                            "material": "PLA", "layers": "across", "repeated": False, "deflection_mm": None, "force_n": 20})
     assert ok_along and not ok_across
+
+    # Same bend, same clip: allowed along the layers, refused when the arm prints upright (half the budget).
+    row = {"feature": "cantilever", "length_mm": 20, "thickness_mm": 1.5, "width_mm": 10,
+           "material": "PLA", "layers": "along", "repeated": False, "deflection_mm": 2.5, "force_n": None}
+    ok_flat, _ = check(row)
+    ok_up, text_up = check({**row, "layers": "across"})
+    assert ok_flat and not ok_up, (ok_flat, ok_up, text_up)
+    assert "limit 1%" in text_up, text_up
     print("SELF-CHECK OK")
 
 
