@@ -22,8 +22,8 @@ Clearance table for plain fits lives in `fdm-design-rules.md` (press 0.05–0.1,
 14. Print-in-place hinge: ≥ 0.4 mm gap all round, ≥ 0.2 mm (one layer) Z gap, cone-shaped knuckle ends (45°) so nothing bridges into the gap.
 15. Lay hinge and pin axes horizontal on the bed, never vertical (a vertical barrel bridges every layer through the gap and fuses).
 16. 45° chamfer (0.4 mm) on the bottom edge of every knuckle against elephant's foot.
-17. Ball-and-socket: prefer a C-shaped socket that flexes open (PETG) over a printed-closed gap; socket opening faces up.
-18. Interlocking rings / chain links: 0.4 mm small, up to 0.7 mm for large rotating ring-on-ring contact.
+17. Ball-and-socket: prefer a C-shaped socket that flexes open (PETG) over a printed-closed gap; socket opening faces up. A proven snap-fit ball joint models the ball and socket TOUCHING (0 mm) and relies on the plastic flexing — do not design a clearance gap into a snap-in joint (measured 22 Sep).
+18. Interlocking rings / chain links: **0.7 mm** where rings rotate against each other (measured on a proven 4-ring print-in-place spinner, 22 Sep: 0.71–0.73 mm between all four rings); 0.4 mm for links that only hang and articulate.
 19. Clearance grows with size: ~0.4 mm for features ≤ 20 mm, up to ~1 mm at ~50 mm for nested "impossible" objects (rot, one source).
 
 ## 3. Snap fits and living hinges
@@ -46,7 +46,7 @@ Clearance table for plain fits lives in `fdm-design-rules.md` (press 0.05–0.1,
 
 ## 6. Print-in-place and "impossible" objects
 32. Default moving gap 0.4 mm (0.3 mm only if the customer says their printer is tuned); never below 0.15 mm.
-33. Gyroscope / nested gimbal rings: rotation axis vertical, rings concentric with ≥ 0.4 mm radial gap (curved gaps fuse below ~0.25 mm); pivots as biconic (double-cone, 45°) pins sitting in matching cone sockets with 0.4 mm gap; each ring ≥ 2 mm thick. Tell the customer to twist each ring free once cool, and that a drop of oil helps.
+33. Gyroscope / nested gimbal rings: rotation axis vertical, rings concentric with a **0.7 mm** radial gap (measured, rule 18; curved surfaces fuse below ~0.25 mm); pivots as biconic (double-cone, 45°) pins sitting in matching cone sockets with 0.4 mm gap; each ring ≥ 2 mm thick. Tell the customer to twist each ring free once cool, and that a drop of oil helps.
 34. Gear bearing (planetary, herringbone): all flank clearances 0.25–0.3 mm; sun, planets and ring the same module; planet count divides (ring + sun) teeth.
 35. Captive parts inserted mid-print (nut, magnet, bearing): pocket with the part's clearance, top of the part at least one layer below the next layer, pause by LAYER number (height ÷ 0.2); put the layer number and part in the print notes.
 36. Horizontal holes and cavities: teardrop top (45°) or a 1–2 layer sacrificial bridge that is drilled out afterwards.
