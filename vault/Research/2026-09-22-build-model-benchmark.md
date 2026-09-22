@@ -28,3 +28,20 @@ Follow-up options (not started): route single-part, no-mechanics requests to Dee
 **Preview judge** (request + first front render, 11 real renders + 4 swapped pairs; NOTE: production also passes the answers, assumptions and a multi-part sheet, so absolute scores here are low for everyone): Haiku 4.5 10/15 ($0.017), Qwen3-VL 235B 9/15 ($0.003), 32B 9/15 ($0.001). All caught the swapped (wrong-object) pairs; the misses are false rejections of good parts. No quality edge; Haiku already costs ~$0.001 per check.
 
 **Verdict:** keep Sonnet for the questions step (it is the customer's first impression, and saving $0.12 per design is small next to the $1–3 build) and Haiku for the judge. Qwen3-VL 235B is the one to revisit if brief volume makes $0.13 matter — pair it with the TypeSafe ruled-out filter, which targets exactly its failure.
+
+## Addendum 2 — fair rerun (22 Sep, budget cap fixed)
+
+James asked whether the test was fair. It was not quite: the Claude harness prices unknown models at Claude rates, so its budget cap stopped GLM's strut ("over budget" at a harness-counted $4.06, real $0.71) and Qwen's pill box early. Fix: `DESIGN_MAX_BUDGET_USD` override (bench only; prod default unchanged), real OpenRouter spend guard + 60 turns kept. Reran the four failed cells:
+
+| cell | before | fair rerun |
+|---|---|---|
+| GLM-5.2 / 3-part strut | stopped by the mispriced cap | **PASS** — 31 min, real **$1.36** (Sonnet: 30 min, $2.68) |
+| Qwen3 Coder / pill box | stopped by the cap | built, preview judge rejected — 16 min, $0.65 |
+| DeepSeek V4 / bracket | quit after 13 turns | **PASS** — 2.2 min, **$0.07** |
+| DeepSeek V4 / strut | quit after 8 turns | quit again after 22 turns, $0.14 |
+
+GLM's original pill box lost only to a judge-container crash; its renders (round box + matching lid) look right to me — counted as a pass by the brain's look, not the judge.
+
+**Corrected tally (n=1):** GLM-5.2 4/4, real OpenRouter ≈ $2.06 total (≈ $0.51 per build) vs Sonnet 4/4 at $4.69 API-equivalent ($1.17). DeepSeek 3/4 (no multi-part mechanism). Qwen3 Coder 1/4.
+
+**Revised verdict:** GLM-5.2 is a real candidate at ~half the API cost, same speed. Caveats: n=1; today Sonnet runs on the Max subscription (£0 marginal), so the saving only exists once builds are paid on the API; the harness is Claude-tuned. Next step if wanted: 2 more repeats of GLM on all four (~$5) before routing any real traffic, then GLM-first with Sonnet fallback on failure. Spend so far ≈ $5.6 of the $15 cap.
