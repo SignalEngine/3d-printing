@@ -28,5 +28,6 @@ when setting staging variables; one key once landed on a stray copy of the stagi
 
 **Gotchas:**
 - The staging worker runs whatever commit `stage-deploy` last checked out into `/root/printtweak-staging`, not master.
+- **Sandbox image (22 Sep):** the staging worker runs `PRINTTWEAK_JOB_IMAGE=printtweak-job:staging` (line in `worker-staging.env`; the setting ships with the ask-before-changing PR — until that merges, only that branch's worker reads it). `stage-deploy` does NOT build the image. For a change to `worker/job/*` (prompts, run_job.py), build it from the branch: copy `worker/job` to a scratch dir, add `/root/3d-printing/skills/model-forge` and `/root/3d-printing/orcaslicer`, then `docker build -t printtweak-job:staging <dir>`. Never use `setup_network.sh` for staging: it rebuilds `:latest` and restarts the live proxy.
 - The Clerk development secret and Stripe test keys are set by James; staging cannot sign anyone in until the Clerk key is on Railway staging.
 - Design and research: `~/.claude/stack-research/staging-environments-2026-09-22.md` (LaunchEngine gets the same pattern next).
