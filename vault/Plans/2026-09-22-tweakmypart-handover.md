@@ -8,7 +8,15 @@ Written so a fresh session can pick this up cold. Read this, then `git pull` in 
 - **Billing: James's Claude subscription, NOT the API key** (James, 22 Sep 21:00 — "nobody else is on the site"). The proxy container runs with NO `ANTHROPIC_API_KEY`; `/etc/printtweak/proxy.env` is renamed `.disabled`; `/etc/printtweak/worker.env` has `PRINTTWEAK_AUTH=oauth`. **To switch back when real customers arrive:** rename the file back, recreate the proxy with `--env-file`, `docker network connect --alias proxy printtweak-jobs printtweak-proxy`, set `PRINTTWEAK_AUTH=api`, restart both lanes. The API key ran out of credit at ~18:20 today; James topped it up, so it works if switched back.
 - **Proxy gotcha:** after recreating the proxy container you MUST run `docker network connect --alias proxy printtweak-jobs printtweak-proxy` or every job times out. `worker/setup_network.sh` does it; a hand-rolled `docker run` does not.
 
-## In flight, not merged
+## Mechanisms pack — SHIPPED (#88, merged 22 Sep 23:0x)
+Live and verified after deploy: Convex deployed, sandbox image rebuilt (`strength.py` + the gears prompt
+are inside it), both worker lanes active, a real model request proven through the proxy, site 200.
+**Proven on staging before merge:** `Gears mesh: 2:3, 0.25 mm backlash, turns freely` on two real gears,
+and `Clip bends 0.40% (PLA limit 0.5%)` + `pill-box fits pill-lid: gap 0 mm` on a real snap-fit box.
+The jury saw only docs on this diff (the generated surfaces spec crowds out the code, as on #79); the
+cross-lineage review over three rounds plus the brain's own reading was the authority.
+
+### What it was (for context)
 **Branch `build/mechanisms-pack`** in two worktrees:
 - `/root/wt-pt-mech` (printtweak) — 5 commits, head `91663ea`. Gear-mesh gate + snap-fit strength gate + the fixes below.
 - `/root/wt-3dp-mech` (3d-printing) — **already merged to master** (`strength.py`, `mechanisms.md`), because the host gate reads the shared path `/root/3d-printing/skills/model-forge/`.
@@ -20,11 +28,9 @@ What it adds:
 - **Undeclared multi-part designs now FAIL** (sandbox and host). `{"unrelated": true}` states parts that never touch. A snap-fit pill box shipped on 22 Sep with zero checks because silence used to pass.
 - **The retry is told what the first attempt failed** (`previousFailures` in request.json → the prompt). It used to rebuild from the identical request and repeat the mistake.
 
-**Gates so far:** verify-build PASS (vitest 510, worker pytest 416, tsc clean). review-gate (claude) ran three rounds: P1 merge-order, P1 flipped gear, P1 tooth phase — all fixed, plus P2s. **The jury has NOT run on the final diff — run it once before merge.**
-
-**Blocking merge:** the staging proof. Two seeded builds must show real gear and strength lines:
-- gear pair `j979qcd7zseshe5gcdkmz21mv18ew68y`, snap-lid `j97ewgb52hxeyxgwgrbfhr1sn98ew65a` (staging Convex `prod:reliable-hamster-614`).
-- Evidence already obtained: the strength gate fired on a real part — *"Clip bends 0.44% (PLA limit 0.5%)"*. The gear sweep has not yet run on a real build (two attempts died for unrelated reasons: an empty API balance, then a proxy restart mid-run).
+**Lesson for the next staging proof:** a fixture that asks for gears AND a frame AND a crank fails on the
+frame before the gear check ever runs (three attempts, ~$10 of subscription time). Prove one gate with the
+smallest part that exercises it — "two meshing spur gears, no frame" passed first time.
 
 ## How to run a staging test (the rule: nothing goes live unproven)
 ```
