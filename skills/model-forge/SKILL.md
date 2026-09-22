@@ -23,6 +23,7 @@ Work files go in `/root/3d-printing/models/<name>/`. Below, read `python3 script
 - Read `references/fdm-design-rules.md` before setting any dimension that mates, flexes, or bears load.
 - For incoming STL/3MF/STEP files, read `references/mesh-editing.md` first (includes Bambu 3MF anatomy + in-place patching).
 - For any interactive/visual deliverable (HTML viewer, preview page), read `references/interactive-deliverables.md` — headless-browser input simulation is MANDATORY before delivery, not just rendering.
+- For gears, hinges, snap fits, bearings, springs/flexures, cams or print-in-place mechanisms, read `references/mechanisms.md` first, and declare every meshing gear pair and every loaded snap/clip/arm in `checks.json` (`gears`, `loads`) — the host re-measures both.
 
 ## Step 0 — Interrogate the request (before any code)
 Missing requirements are the top cause of reprints. If any of these are unknown and matter for the part, ask (use tappable options on mobile; batch into ONE round of questions, max 3):
