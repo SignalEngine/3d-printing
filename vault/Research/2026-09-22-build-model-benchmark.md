@@ -59,3 +59,18 @@ GLM's original pill box lost only to a judge-container crash; its renders (round
 **All GLM runs (9):** 7 pass, 2 fail (78 %). Real spend ≈ $7.9 → **≈ $1.13 per successful build**, with huge variance (the same knob cost $0.04 once and $1.17 the next time). Sonnet: 4/4, $1.17 API-equivalent. Caveat: the usage-counter delta includes any other OpenRouter use on the key during the runs (one jury run overlapped knob r2).
 
 **Final verdict: stay on Sonnet 5.** Once repeated, GLM is not cheaper per good build and is less reliable; the first-round cheap numbers were luck. Total benchmark spend ≈ $12.2 of the $15 cap. Harness stays in the repo (`worker/tests/bench`, PRs #74/#75) for a re-test when new models ship.
+
+## Addendum 4 — Gemini on James's free Google AI Studio key (22 Sep)
+
+Routed through OpenRouter BYOK (a test call confirmed `is_byok: true`, $0). First attempt: all runs failed instantly with 0 tokens (the free quota refusing the first request; a hand-run a minute later worked). Rerun, stopped by the $3 cap after 4 runs:
+
+| model | knob | pill box | real OpenRouter $ |
+|---|---|---|---|
+| Gemini 3.1 Pro preview | pass, 2.1 min | pass, 6.2 min | $0.17 + $0.83 |
+| Gemini 3.8 Flash | pass, 8.7 min | fail — host mechanics gate: box/lid thread mismatch | $0.72 + $1.03 |
+
+**The free key did not make builds free:** $3.40 was charged on OpenRouter for 4 runs — inferred to be OpenRouter falling back to its paid Google capacity when the free quota rate-limited the build's rapid requests (not verified per request; the activity API was not available). A build is 30–60 requests in a few minutes; a free key cannot carry that, let alone for many users. **Free Gemini builds are not viable.** Gemini 3.1 Pro (paid) is the most promising non-Claude builder seen so far (2/2 simple parts, knob at $0.17 vs Sonnet $0.55) — n=2, bracket and strut untested.
+
+**Spend note:** total benchmark OpenRouter spend ≈ **$15.6, about $0.60 over the $15 James approved** — the cap is checked before each run, so the last Gemini run overshot it.
+
+**Impact on the freemium plan:** there is no free build engine. Realistic free tier = chat, photo reading, concepts and measurements free (≈ £0.11–0.56 per active free user a month on Sonnet), every build priced (cost + 40 %) or covered by a Premium monthly allowance.
