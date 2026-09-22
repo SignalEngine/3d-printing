@@ -56,7 +56,7 @@ Then the lander refresh, written from these tiers.
 - A Premium user's builds debit credit; at zero credit they see the 20%-off price.
 - The admin cost page shows margin per build and per subscriber.
 
-## Decisions for James (recommended defaults above)
+## Decisions (approved by James, 22 Sep: all three defaults)
 1. Premium price and credit: £9.99 with £12 of credit?
 2. Welcome build: yes, first build free up to £3?
 3. Free question-round cap: 10 a month?
