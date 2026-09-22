@@ -14,3 +14,17 @@ James asked; cap $15. Harness: `worker/tests/bench` (PR #74): the real sandbox j
 Caveats: n=1 per cell; the GLM pill-box run needs a re-run (harness bug: the vision judge container failed); DeepSeek "no model produced" in under two minutes on two requests looks like a tool-use/format failure on the Anthropic-compatible path rather than a modelling failure — worth one look before ruling it out for single-part work. Renders and job dirs: `spec/bench/renders/`, `/tmp/pt-bench/`.
 
 Follow-up options (not started): route single-part, no-mechanics requests to DeepSeek behind a flag with Sonnet fallback on failure (saves ~$0.2 per knob-class build); re-benchmark quarterly.
+
+## Addendum — Qwen3-VL in the photo slots (22 Sep, ~$0.16 spent)
+
+**Questions step on James's caddy photo + his three messages** (brief_prompt as system, no tools, parsed with the real `parse_brief`):
+
+| model | time | cost | concepts |
+|---|---|---|---|
+| Claude Sonnet 5 | 120 s | $0.128 | 3/3 respect "clip on, no holes, pull in": bridge clip + screw, hook brackets + turnbuckle, ratchet strap round both walls. Clean sketches, diagrams on every measurement |
+| Qwen3-VL 235B instruct | 77 s | $0.005 | 2/3 sound; #3 "spring clip presses against the inner faces to pull them together" is physically backwards (pushes out — what he ruled out). Sketches usable |
+| Qwen3-VL 32B instruct | 45 s | $0.002 | #3 asks "the diameter of the hole where the clip attaches" — ignores "no holes"; one sketch was an invalid SVG |
+
+**Preview judge** (request + first front render, 11 real renders + 4 swapped pairs; NOTE: production also passes the answers, assumptions and a multi-part sheet, so absolute scores here are low for everyone): Haiku 4.5 10/15 ($0.017), Qwen3-VL 235B 9/15 ($0.003), 32B 9/15 ($0.001). All caught the swapped (wrong-object) pairs; the misses are false rejections of good parts. No quality edge; Haiku already costs ~$0.001 per check.
+
+**Verdict:** keep Sonnet for the questions step (it is the customer's first impression, and saving $0.12 per design is small next to the $1–3 build) and Haiku for the judge. Qwen3-VL 235B is the one to revisit if brief volume makes $0.13 matter — pair it with the TypeSafe ruled-out filter, which targets exactly its failure.
