@@ -3,9 +3,9 @@
 James, 22 Sep: open it up so others can sign up, once the paid path is ready. Chosen: open fully, not a waitlist and not a free beta on his subscription.
 
 ## Build work (the brain dispatches and verifies)
-- [ ] **Freemium build 1** — Stripe pay-per-build and the welcome build (in progress, build-1201).
-- [ ] **Freemium build 2** — 10 free question rounds a month, complex warning above £6 and refusal above £15, a pricing page, the paywall copy.
-- [ ] **Open sign-ups switch** — `OPEN_SIGNUPS=true` lets any verified email use the product; `ALLOWED_EMAILS` stays for the private mode. A refused address still gets the current clear message.
+- [x] **Freemium build 1** — Stripe pay-per-build and the welcome build (in progress, build-1201).
+- [x] **Freemium build 2** — 10 free question rounds a month, complex warning above £6 and refusal above £15, a pricing page, the paywall copy.
+- [x] **Open sign-ups switch** (built, off) — `OPEN_SIGNUPS=true` lets any verified email use the product; `ALLOWED_EMAILS` stays for the private mode. A refused address still gets the current clear message.
 - [ ] **Worker on an Anthropic API key** — the job proxy injects `ANTHROPIC_API_KEY` from `/etc/printtweak/worker.env` instead of forwarding James's Claude login token. Question rounds, builds and the preview judge all move over; the admin cost page is then real money.
 - [ ] **Privacy and terms pages** — `/privacy` and `/terms`, linked in the footer and at sign-up, from the drafts below after James edits them.
 - [ ] **Launch smoke test** — a stranger account (fresh Gmail) signs up, gets the welcome build, pays for a second build in Stripe live mode with a real card, and a forced failure refunds.
