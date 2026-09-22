@@ -179,9 +179,10 @@ def main():
         else:
             grams = None
 
-        if a.supports != "none" and grams is not None:
-            # Best-effort: re-slice with supports off to report the filament
-            # delta. Skip silently if the baseline slice itself fails.
+        if a.supports != "none" and support_blocks > 0 and grams is not None:
+            # Best-effort: re-slice with supports off to report the filament delta — only when the
+            # slicer actually emitted support material (one slice, not two, when it needed none).
+            # Skip silently if the baseline slice itself fails.
             try:
                 base_out = os.path.join(outdir, "baseline")
                 os.makedirs(base_out, exist_ok=True)
