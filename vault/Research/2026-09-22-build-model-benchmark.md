@@ -45,3 +45,17 @@ GLM's original pill box lost only to a judge-container crash; its renders (round
 **Corrected tally (n=1):** GLM-5.2 4/4, real OpenRouter ≈ $2.06 total (≈ $0.51 per build) vs Sonnet 4/4 at $4.69 API-equivalent ($1.17). DeepSeek 3/4 (no multi-part mechanism). Qwen3 Coder 1/4.
 
 **Revised verdict:** GLM-5.2 is a real candidate at ~half the API cost, same speed. Caveats: n=1; today Sonnet runs on the Max subscription (£0 marginal), so the saving only exists once builds are paid on the API; the harness is Claude-tuned. Next step if wanted: 2 more repeats of GLM on all four (~$5) before routing any real traffic, then GLM-first with Sonnet fallback on failure. Spend so far ≈ $5.6 of the $15 cap.
+
+## Addendum 3 — GLM-5.2 repeats (22 Sep, stopped by the $7 cap after 5 of 8 runs)
+
+| run | result | real OpenRouter $ | min |
+|---|---|---|---|
+| knob r2 | pass | 1.17 | 9.1 |
+| pill box r2 | pass | 2.50 | 9.7 |
+| bracket r2 | pass | 0.81 | 8.3 |
+| strut r2 | **fail** (no model) | 0.80 | 17.0 |
+| knob r3 | **fail** (host mechanics gate: hole sizes wrong) | 0.58 | 10.0 |
+
+**All GLM runs (9):** 7 pass, 2 fail (78 %). Real spend ≈ $7.9 → **≈ $1.13 per successful build**, with huge variance (the same knob cost $0.04 once and $1.17 the next time). Sonnet: 4/4, $1.17 API-equivalent. Caveat: the usage-counter delta includes any other OpenRouter use on the key during the runs (one jury run overlapped knob r2).
+
+**Final verdict: stay on Sonnet 5.** Once repeated, GLM is not cheaper per good build and is less reliable; the first-round cheap numbers were luck. Total benchmark spend ≈ $12.2 of the $15 cap. Harness stays in the repo (`worker/tests/bench`, PRs #74/#75) for a re-test when new models ship.
