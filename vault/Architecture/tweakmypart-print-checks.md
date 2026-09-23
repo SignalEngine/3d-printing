@@ -1,6 +1,6 @@
 # TweakMyPart: host print checks: strength, supports, restart recovery
 
-Live since 23 Sep 2026 (printtweak #89–#92, #94–#96; 3d-printing #8).
+Live since 23 Sep 2026 (printtweak #89–#92, #94–#96, #99, #100; 3d-printing #8–#10).
 
 ## Strength follows the print direction (#90)
 - `checks.json` `loads` rows declare `axis` = the arm's length direction in the part's own coordinates. Parts
@@ -19,6 +19,21 @@ Live since 23 Sep 2026 (printtweak #89–#92, #94–#96; 3d-printing #8).
 - Ready page: one "Checked:" line per part, either "prints without supports" or "needs tree supports (about N g)".
 - Staging proof (23 Sep): T-shaped post, attempt 1 needed supports (0.6 h, 6 g). The retry printed support-free
   (0.3 h, 3.8 g).
+
+## Model card: uploads are measured before planning (#99, 3d-printing #9/#10) — change engine step 1
+- `skills/model-forge/scripts/model_card.py` (runs in /root/3d-printing/.venv, <= 60 s, memory-capped worker): per part bbox,
+  volume, watertight, bodies, 3 largest flat faces (where a name fits), gears; close pairs + gaps; 3MF Title/Designer/License;
+  a labelled contact sheet PNG. Heavy meshes are decimated; a 97 MB mesh skips geometry and says so in `limits`.
+- `worker/card.py` in process_brief writes model_card.json + model_sheet.png for the brief; the brief prompt must not ask for
+  sizes the card has. Staging proof: the hinged box's option now cites "the 56 x 53 mm face" with 0 "Could not confirm"
+  (the spike asked the customer to measure the lid and hinge).
+- **No-Derivatives licences** (License metadata matching ND / NoDerivatives) are declined before planning with a plain reason,
+  no build queued, the round given back. Staging proof: a CC BY-ND 4.0 copy of the box was declined.
+- Real third-party test models live OUTSIDE git in /var/lib/printtweak/test-models (hinged-box.3mf, frankenstein-switch.3mf).
+
+## Large uploads + retry reasons (#100)
+- Agent SDK `max_buffer_size` 16 MB (a 3.7 MB 3MF upload crashed the job twice at the 1 MB default); the prompt forbids reading
+  raw mesh. Each gate's own FAIL line (or its name) reaches the retry's `previousFailures`.
 
 ## Supports retry respects the customer (#95)
 - A part needs supports only at >= 1 g (`SUPPORT_RETRY_THRESHOLD_G`), judged per part. Below that: "prints without
