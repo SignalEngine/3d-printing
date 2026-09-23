@@ -91,6 +91,8 @@ def gear_teeth(mesh, samples=2048):
     if section is None:
         return None
     planar, _ = section.to_planar()
+    if not planar.entities:  # a degenerate cross-section has no outline to count teeth on (jury P3)
+        return None
     pts = np.vstack([np.asarray(e.discrete(planar.vertices)) for e in planar.entities])
     c = pts.mean(axis=0)
     v = pts - c

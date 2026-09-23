@@ -161,6 +161,8 @@ def flat_faces(mesh, top=FLAT_FACES):
         area = float(mesh.facets_area[i])
         normal = mesh.facets_normal[i]
         w = mesh.area_faces[idx]
+        if w.sum() <= 0:  # all-degenerate facet: no meaningful centroid (jury P3)
+            continue
         centroid = (mesh.triangles_center[idx] * w[:, None]).sum(axis=0) / w.sum()
         pts = np.unique(mesh.vertices[mesh.faces[idx]].reshape(-1, 3), axis=0)
         p2 = trimesh.transform_points(pts, trimesh.geometry.plane_transform(centroid, normal))[:, :2]
