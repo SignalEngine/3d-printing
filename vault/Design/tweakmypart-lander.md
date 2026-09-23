@@ -5,7 +5,7 @@ Plan + 7 review rounds: `docs/2026-09-23-lander-tour-plan.md`, `docs/2026-09-23-
 
 ## What it is
 - Desktop (≥1024 px): content left, sticky stage right with the mascot at ≥80% of viewport height. `components/lander/useActiveSection.ts` picks the section; `lib/landerGuide.ts` maps section → mascot clip + speech bubble. Examples section swaps him for `TabletPreview`: the real GLB on his tablet, parts fly plate → assembly, gears turn (`ModelViewer` `spin` prop, speeds from `lib/gearSpin.ts`).
-- Mobile: big waving robot in the first screen; tablet card with example pills; small poster "peeks" per section.
+- Mobile: big waving robot in the first screen; tablet card with example pills. Each later section opens with a large still of Tweak and his line beside him in the page flow (PR after #101). The fixed floating guide was removed after James saw it cover content and look transparent on his phone.
 - Logo: robot head, `components/Logo.tsx`, favicon `app/icon.svg`.
 - Hero form → `/design/new?q=…`; NewChat seeds its composer from `q` (never auto-sends).
 - **Rule (James): the bubble never covers his face.** Head boxes live in `TabletPreview.tsx` (`HEAD_BOX`, `TABLET_HEAD_BOX`); `lib/bubblePosition.ts` places the bubble above him and shrinks the frame on short windows. Tests cover 1024×600 → 1440×900 in both poses.
@@ -23,3 +23,10 @@ Real output of the product's concept step (bench `kind: brief`, request "a hook 
 - The shared `ModelViewer` default part tint is now warm tan (James approved; changes the ready/working pages too).
 - **Phone scroll jank = the live 3D tablet (confirmed on James's phone, 23 Sep).** A temporary `?diag` overlay with per-suspect switches proved it: smooth with 3D off. Fix: on phones the tablet shows `still.png` while scrolling; "Spin it in 3D" mounts the live viewer (no WebGL until tapped). Desktop keeps live 3D at pixel ratio ≤1.5. Lesson: headless SwiftShader numbers pointed the right way but only the device proved it; build the switch-board diag on round one.
 - Staging Convex holds the unmerged fins schema (`fins3mf`); pushing another branch's Convex to staging fails schema validation. Web-only staging deploy: `railway up --project 2bea4410-… --environment staging --service printtweak-staging --ci <worktree>`.
+
+## Phone review rounds 9–11 (PR #101, 23 Sep)
+- Mascot is named **Tweak**. The phone hero plays `hello` once, then idles without the arm-across-chest `idle-3` clip. `components/mascot/Mascot.tsx` uses `endedRef` so React StrictMode cannot re-pick a clip that is still playing and interrupt the wave.
+- Chat concepts are labelled sketches from the real brief flow (#98). The chat steps have large numbered headings and short supporting lines. Adapt examples were replaced with changes visible in a before/after view; the lightbox lets visitors rotate real GLBs. Pricing cells are links; the closer uses a dark band.
+- `scripts/lander/turntables.mjs` pre-renders 36-frame WebP turn sprites for adapt pairs and workshop tiles, and 8-second MP4 assembly/turn loops for featured examples. The phone tablet plays a loop until “Spin it in 3D” mounts WebGL. The screw-jar lid screws on in its loop. The stills renderer hides development overlays so the Next “N” badge is absent from posters.
+- Basket wheel was removed; rack and pinion was added after the gear gate fix (#97). The gear pair starts handle-front (`yaw0`). Tapping the live 3D tablet after “Spin it in 3D” opens the large lightbox, as do adapt pairs and workshop tiles. A real sideways drag stops auto-turn; vertical scrolling does not.
+- The round-11 floating phone guide was retired in the following lander change: `components/lander/SectionGuide.tsx` uses `listening`, `presenting` and `point` stills beside section lines. The image uses `mix-blend-mode: screen` on an opaque ground to remove its black poster background without fading the robot. No fixed mascot, video or WebGL is added to ordinary phone scrolling.
