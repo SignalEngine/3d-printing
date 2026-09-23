@@ -16,7 +16,16 @@ Told to the TweakMyPart session in chat on 23 Sep.
 - The free first build (`usedFreeTry`) and the paid build flow via Stripe (verified on staging 23 Sep).
 - No feedback UI and no build-credit concept beyond the free first try. Not yet checked: whether admin can grant a free build.
 
-## Open decisions (for James)
+## Decided (James, 23 Sep)
+- Order: AFTER remix + revise (those first).
+- Reward: feedback lands in an admin list; James taps "Grant free build" on useful ones.
+- Placement: a small "Feedback" tab on every page, plus a one-time prompt after a build is ready or fails
+  ("How did that go? Tell us and get a free build").
+- Questions: where did you hear about us (picker + other), how was it (1–5, plus what went wrong when low or failed),
+  what would you make with it, what's missing (features and UI).
+- Needs a build-credit concept (none exists beyond `usedFreeTry`).
+
+## Open decisions (were)
 - Who decides that feedback is "useful" (auto rule / AI judge / James approves in admin), and the cap (first N users only?).
 - Where the drawer lives: every page, or only after a build / on the ready page.
 - One short form vs questions that change depending on where the user is (after a failed build: "what went wrong").
