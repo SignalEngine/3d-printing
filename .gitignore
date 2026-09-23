@@ -11,3 +11,4 @@ orcaslicer/
 result.json
 # raw mascot clips are large; web versions + story preview are committed
 vault/Design/tweakmypart-mascot/clips/[0-9]-*.mp4
+__pycache__/
