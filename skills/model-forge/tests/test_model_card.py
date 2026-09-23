@@ -68,6 +68,22 @@ class Stacked(unittest.TestCase):
 
 
 class Orphans(unittest.TestCase):
+    def test_an_alarm_during_a_render_kills_the_group_too(self):
+        """Review P3: the worker's own alarm (not a subprocess timeout) cut the render and left xvfb/f3d running.
+        A sabotaged `except subprocess.TimeoutExpired` was once pushed because no test covered this path."""
+        import signal
+        class Boom(Exception): pass
+        def ring(*a): raise Boom()
+        old = signal.signal(signal.SIGALRM, ring); signal.alarm(1)
+        try:
+            with self.assertRaises(Boom):
+                mc.run_group(["sh", "-c", "sleep 3171 & sleep 3172"], 20)
+        finally:
+            signal.alarm(0); signal.signal(signal.SIGALRM, old)
+        time.sleep(0.5)
+        left = subprocess.run(["pgrep", "-f", "sleep 317[12]"], capture_output=True, text=True).stdout.split()
+        self.assertEqual(left, [], "render group survived the alarm")
+
     def test_timeout_kills_group(self):
         with self.assertRaises(subprocess.TimeoutExpired):
             mc.run_group(["sh", "-c", "sleep 300 & sleep 301"], 1)
