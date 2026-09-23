@@ -94,3 +94,20 @@ class Orphans(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class RealGear(unittest.TestCase):
+    """The Frankenstein switch's part named 'Gear' is a real 20-tooth gear. A guard written as `if not planar.entities`
+    (a numpy array) raised inside a try and silently turned every gear into 'no gear' (23 Sep)."""
+    FILE = "/var/lib/printtweak/test-models/frankenstein-switch.3mf"
+
+    @unittest.skipUnless(os.path.exists(FILE), "REAL TEST MODEL MISSING: frankenstein-switch.3mf")
+    def test_the_real_gear_is_found(self):
+        with tempfile.TemporaryDirectory() as d:
+            out = os.path.join(d, "c.json")
+            subprocess.run([sys.executable, os.path.join(os.path.dirname(mc.__file__), "model_card.py"), self.FILE, "--json", out],
+                           check=True, capture_output=True, timeout=120)
+            card = json.load(open(out))
+        gears = [p["gear"] for p in card["parts"] if p.get("gear")]
+        self.assertTrue(gears, "no gear found")
+        self.assertEqual(gears[0]["teeth"], 20)
