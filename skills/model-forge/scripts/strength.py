@@ -6,7 +6,8 @@ part's real geometry separately and passes the declared numbers here.
 Usage: strength.py --row '{"feature": "cantilever", "length_mm": 20, "thickness_mm": 1.5, "width_mm": 10,
                             "material": "PLA", "layers": "along", "repeated": false,
                             "deflection_mm": 1.0, "force_n": null}'
-Exactly one of deflection_mm / force_n must be non-null.
+Exactly one of deflection_mm / force_n must be non-null. `layers` ("along"|"across") is the caller's own
+call — worker/mechanics.py derives it from the part's declared print-direction axis, not asked for here.
 
 Prints one line starting "PASS: " or "FAIL: ", ending with "(estimated)". Exit 0 on PASS, 1 on FAIL.
 
@@ -36,12 +37,14 @@ def check(row: dict) -> tuple[bool, str]:
     length, thickness, width = row["length_mm"], row["thickness_mm"], row["width_mm"]
     deflection, force = row.get("deflection_mm"), row.get("force_n")
 
+    orientation = "upright" if layers == "across" else "flat"
+
     if deflection is not None:
         strain = cantilever_strain_pct(deflection, thickness, length)
         # An arm printed upright bends across its layer lines: half the strain budget (mechanisms.md rule 21).
         limit = STRAIN_LIMIT[material][repeated] * (0.5 if layers == "across" else 1.0)
         ok = strain <= limit
-        return ok, f"Clip bends {strain:.2f}% ({material} limit {limit:g}%) (estimated)"
+        return ok, f"Clip bends {strain:.2f}% ({material} limit {limit:g}%, printed {orientation}) (estimated)"
 
     stress = bending_stress_mpa(force, length, width, thickness)
     strength = MATERIAL_MPA[material] * (0.5 if layers == "across" else 1.0)
@@ -49,8 +52,8 @@ def check(row: dict) -> tuple[bool, str]:
     margin = allowable / stress if stress > 0 else float("inf")
     ok = stress <= allowable
     if ok:
-        return True, f"Arm holds {force:.0f} N with {margin:.1f}× margin (estimated)"
-    return False, f"Arm needs {stress:.1f} MPa under {force:.0f} N, only {allowable:.1f} MPa allowed (estimated)"
+        return True, f"Arm holds {force:.0f} N with {margin:.1f}× margin, printed {orientation} (estimated)"
+    return False, f"Arm needs {stress:.1f} MPa under {force:.0f} N, only {allowable:.1f} MPa allowed, printed {orientation} (estimated)"
 
 
 def _selftest() -> None:

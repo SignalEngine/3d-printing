@@ -27,9 +27,9 @@ Clearance table for plain fits lives in `fdm-design-rules.md` (press 0.05–0.1,
 19. Clearance grows with size: ~0.4 mm for features ≤ 20 mm, up to ~1 mm at ~50 mm for nested "impossible" objects (rot, one source).
 
 ## 3. Snap fits and living hinges
-20. Cantilever strain ε = 1.5·t·y / L² (t root thickness, y deflection, L length). Allowable: PLA 2 % one-time / 1 % repeated; PETG 4 % / 2 % (conservative end of 2–3 % and 3–5 % sources). Declare every clip, catch, hook or arm in `checks.json` `loads`; the host computes it.
+20. Cantilever strain ε = 1.5·t·y / L² (t root thickness, y deflection, L length). Allowable: PLA 2 % one-time / 1 % repeated; PETG 4 % / 2 % (conservative end of 2–3 % and 3–5 % sources). Declare every clip, catch, hook or arm in `checks.json` `loads`, with `axis` = the arm's length direction as modelled/printed (not `layers` — the host derives that itself); the host computes it.
 21. L/t ratio: 8–10 for PLA, 5–8 for PETG. Fillet the root (radius ≥ 0.5 t).
-22. Print snap arms flat or on their side so the arm bends within layers; if it must print upright, halve the allowable strain.
+22. The host derives along/across from the declared `axis`: if the arm rises more than 30° off the bed (bends across its layer lines) the allowable strain is automatically halved. Prefer printing snap arms flat or on their side so they bend within layers.
 23. Retaining face ≤ 45° = opens by hand; 60–90° = permanent. Lead-in 30–45°.
 24. Living hinges: PETG (or PP/TPU) only, never PLA for anything that flexes more than a few times; 0.4–0.6 mm thick, layers parallel to the bend line.
 
