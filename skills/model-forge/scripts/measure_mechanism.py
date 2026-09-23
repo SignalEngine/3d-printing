@@ -40,7 +40,7 @@ def bodies(path, min_volume_mm3=1.0):
     # read as 0.000 mm "gaps" that are not joints at all. Keep one of each (volume + centre, to 0.01 mm).
     seen, unique = set(), []
     for b in out:
-        key = (round(float(b.volume), 2), tuple(np.round(b.bounds.mean(axis=0), 2)))
+        key = (round(float(b.volume), 2), tuple(np.round(b.bounds, 2).ravel()))  # full bounds: a rotated twin is a real part (review P3)
         if key in seen:
             continue
         seen.add(key); unique.append(b)

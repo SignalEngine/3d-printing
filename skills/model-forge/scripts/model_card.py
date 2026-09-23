@@ -45,7 +45,7 @@ def run_group(cmd, timeout, **kw):
     _render_pgid = p.pid
     try:
         p.communicate(timeout=timeout)
-    except subprocess.TimeoutExpired:
+    except subprocess.TimeoutExpired:  # SABOTAGE the worker's own alarm (Deadline) must kill the render group (review P3)
         kill_group()
         p.wait()
         raise
