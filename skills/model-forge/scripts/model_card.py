@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 """MODEL CARD: measure an uploaded 3MF/STL/OBJ before anything is planned around it.
 
-Usage: python3 model_card.py model.3mf --json card.json [--sheet sheet.png] [--timeout 60]
+Usage: python3 model_card.py model.3mf --json card.json [--sheet sheet.png] [--source-dir DIR] [--tiles-dir DIR] [--timeout 60]
 
 Card = per part (unique mesh; `instances` says how many copies sit on the plate): name, bbox, volume,
 watertight, body count, its 3 biggest FLAT faces (where a name/label can go), gear teeth when it is one;
 pairs of parts closer than 3 mm (smallest gap, touching); 3MF metadata (title, designer, licence,
 description); `limits` = anything that timed out, failed or was measured on a decimated copy.
+--source-dir writes each part's canonical mesh as DIR/<slug>.stl plus DIR/parts.json (name, slug, file, 4x4 instance
+transforms); --tiles-dir keeps each part's render as DIR/<slug>.png. Every card part carries its `slug`.
 The whole run finishes inside --timeout seconds: a phase that would overrun is skipped and named in `limits`.
 """
 import argparse, html, json, os, re, shutil, signal, subprocess, sys, tempfile, time, zipfile
@@ -117,17 +119,18 @@ def bambu_part_names(path):
 
 
 def load_parts(path):
-    """[(name, canonical mesh, [placed mesh per instance])], one entry per unique geometry."""
+    """[(name, canonical mesh, [placed mesh per instance], [4x4 transform per instance])], one entry per unique geometry."""
     loaded = trimesh.load(path)
     if not isinstance(loaded, trimesh.Scene):
-        return [("part-1", loaded, [loaded])]
+        return [("part-1", loaded, [loaded], [np.eye(4)])]
     names = bambu_part_names(path)
-    by_geom = {}
+    by_geom, poses = {}, {}
     for node in loaded.graph.nodes_geometry:
         transform, gname = loaded.graph[node]
         g = loaded.geometry[gname]
         if isinstance(g, trimesh.Trimesh):
             by_geom.setdefault(gname, []).append(g.copy().apply_transform(transform))
+            poses.setdefault(gname, []).append(np.array(transform, dtype=float))
     out, used = [], {}
     for n, (gname, placed) in enumerate(by_geom.items(), 1):
         m = re.match(r"\d+", gname)
@@ -136,7 +139,22 @@ def load_parts(path):
         used[name] = used.get(name, 0) + 1
         if used[name] > 1:
             name = f"{name} {used[name]}"
-        out.append((name, loaded.geometry[gname], placed))
+        out.append((name, loaded.geometry[gname], placed, poses[gname]))
+    return out
+
+
+def slugify(names):
+    """Unique file-safe slug per name: lowercase, runs of non [a-z0-9] -> '-', trimmed, <= 40 chars, dupes get -2, -3."""
+    out, used = [], set()
+    for n in names:
+        base = re.sub(r"[^a-z0-9]+", "-", n.lower()).strip("-")[:40].strip("-") or "part"
+        slug, k = base, 1
+        while slug in used:
+            k += 1
+            suffix = f"-{k}"
+            slug = base[:40 - len(suffix)].rstrip("-") + suffix
+        used.add(slug)
+        out.append(slug)
     return out
 
 
@@ -173,12 +191,12 @@ def flat_faces(mesh, top=FLAT_FACES):
     return out
 
 
-def build_sheet(parts, out_png, deadline, limits):
+def build_sheet(parts, slugs, out_png, tiles_dir, deadline, limits):
     from PIL import Image, ImageDraw
     tmp = Path(tempfile.mkdtemp(prefix="model-card-"))
     tiles = []
     try:
-        for name, canon, placed in parts[:MAX_SHEET_PARTS]:
+        for (name, canon, placed, _), slug in zip(parts[:MAX_SHEET_PARTS], slugs):
             left = deadline - time.monotonic()
             if left < 4:
                 limits.append(f"sheet: stopped after {len(tiles)} of {len(parts)} parts (time)")
@@ -193,12 +211,14 @@ def build_sheet(parts, out_png, deadline, limits):
                 limits.append(f"sheet: render of '{name}' timed out")
                 continue
             if png.exists():
+                if tiles_dir:
+                    shutil.copyfile(png, Path(tiles_dir) / f"{slug}.png")
                 tiles.append((name, len(placed), Image.open(png).convert("RGB")))
             else:
                 limits.append(f"sheet: no render for '{name}'")
         if len(parts) > MAX_SHEET_PARTS:
             limits.append(f"sheet: shows the first {MAX_SHEET_PARTS} of {len(parts)} parts")
-        if not tiles:
+        if not tiles or not out_png:
             return
         w, h, cols = 480, 360, min(4, len(tiles))
         rows = (len(tiles) + cols - 1) // cols
@@ -214,23 +234,33 @@ def build_sheet(parts, out_png, deadline, limits):
         shutil.rmtree(tmp, ignore_errors=True)
 
 
-def make_card(card, path, sheet_png, timeout):
+def make_card(card, path, sheet_png, timeout, source_dir=None, tiles_dir=None):
     t0 = time.monotonic()
     limits = card["limits"]
     parts = load_parts(path)
     if not parts:
         limits.append("no solid parts found")
         return
-    total = sum(len(c.faces) for _, c, _ in parts)
+    slugs = slugify([p[0] for p in parts])
+    if source_dir:   # the customer's REAL meshes, written before any decimation
+        sd = Path(source_dir)
+        sd.mkdir(parents=True, exist_ok=True)
+        for (name, canon, _, poses), slug in zip(parts, slugs):
+            canon.export(sd / f"{slug}.stl")
+        (sd / "parts.json").write_text(json.dumps([{"name": p[0], "slug": s, "file": f"{s}.stl", "instances": [t.tolist() for t in p[3]]}
+                                                   for p, s in zip(parts, slugs)]))
+    if tiles_dir:
+        Path(tiles_dir).mkdir(parents=True, exist_ok=True)
+    total = sum(len(c.faces) for _, c, _, _ in parts)
     if total > HEAVY_FACES:
         try:
-            parts = [(n, decimate(c), [decimate(p) for p in placed]) for n, c, placed in parts]
+            parts = [(n, decimate(c), [decimate(p) for p in placed], t) for n, c, placed, t in parts]
             limits.append(f"heavy mesh ({total} faces): measured on a decimated copy (tolerance {DECIMATE_TOL_MM} mm)")
         except Exception as e:
             limits.append(f"decimation failed ({type(e).__name__}); measured at full size")
     labelled, seen = [], set()   # (label, placed mesh) per instance, for the pair scan
-    for name, canon, placed in parts:
-        row = {"name": name, "instances": len(placed), "bbox_mm": [round(float(x), 2) for x in placed[0].extents],
+    for (name, canon, placed, _), slug in zip(parts, slugs):
+        row = {"name": name, "slug": slug, "instances": len(placed), "bbox_mm": [round(float(x), 2) for x in placed[0].extents],
                "position_mm": [round(float(x), 1) for x in placed[0].bounds.mean(axis=0)],
                "volume_cm3": round(abs(float(canon.volume)) / 1000, 2), "watertight": bool(canon.is_watertight)}
         for key, fn in (("bodies", lambda: int(canon.body_count)), ("flat_faces", lambda: flat_faces(placed[0])),
@@ -261,9 +291,9 @@ def make_card(card, path, sheet_png, timeout):
                                           "touching": gap < 0.05})
     except Deadline:
         limits.append(f"pairs skipped: timed out after {timeout} s")
-    if sheet_png:
+    if sheet_png or tiles_dir:
         try:
-            build_sheet(parts, sheet_png, t0 + timeout - 3, limits)
+            build_sheet(parts, slugs, sheet_png, tiles_dir, t0 + timeout - 3, limits)
         except Deadline:
             limits.append("sheet skipped: timed out")
         except Exception as e:
@@ -297,7 +327,7 @@ def run_worker(a):
         if big:
             card["limits"].append(f"geometry skipped: {big // 1_000_000} MB of mesh data is too big to measure in {a.timeout} s")
         else:
-            make_card(card, a.path, a.sheet, a.timeout - 12)
+            make_card(card, a.path, a.sheet, a.timeout - 12, a.source_dir, a.tiles_dir)
     except Deadline:
         card["limits"].append(f"card incomplete: timed out after {a.timeout} s")
     except MemoryError:
@@ -311,6 +341,8 @@ def main():
     ap.add_argument("path")
     ap.add_argument("--json", required=True)
     ap.add_argument("--sheet")
+    ap.add_argument("--source-dir")
+    ap.add_argument("--tiles-dir")
     ap.add_argument("--timeout", type=int, default=60)
     ap.add_argument("--worker", action="store_true")
     a = ap.parse_args()
@@ -318,7 +350,8 @@ def main():
         return run_worker(a)
     # supervise: a C-level parse that never returns to Python cannot be interrupted by the alarm, so the
     # measuring runs in a child that is killed at the hard limit
-    cmd = [sys.executable, __file__, a.path, "--json", a.json, "--timeout", str(a.timeout), "--worker"] + (["--sheet", a.sheet] if a.sheet else [])
+    cmd = [sys.executable, __file__, a.path, "--json", a.json, "--timeout", str(a.timeout), "--worker"] + (["--sheet", a.sheet] if a.sheet else []) \
+        + (["--source-dir", a.source_dir] if a.source_dir else []) + (["--tiles-dir", a.tiles_dir] if a.tiles_dir else [])
     try:
         p = subprocess.Popen(cmd, stderr=subprocess.PIPE, text=True, start_new_session=True)
         try:
