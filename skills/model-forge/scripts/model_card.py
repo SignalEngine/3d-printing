@@ -136,9 +136,11 @@ def load_parts(path):
         m = re.match(r"\d+", gname)
         name = names.get(m.group(0) if m else "", f"part-{n}")
         name = re.sub(r"\.(stl|step|stp|obj|3mf)$", "", name, flags=re.I)
-        used[name] = used.get(name, 0) + 1
-        if used[name] > 1:
-            name = f"{name} {used[name]}"
+        base, k = name, 1
+        while name in used:   # dedup on the FINAL name: ["Lid", "Lid", "Lid 2"] must not give two "Lid 2" (part plans key by name)
+            k += 1
+            name = f"{base} {k}"
+        used[name] = True
         out.append((name, loaded.geometry[gname], placed, poses[gname]))
     return out
 
@@ -201,7 +203,7 @@ def build_sheet(parts, slugs, out_png, tiles_dir, deadline, limits):
             if left < 4:
                 limits.append(f"sheet: stopped after {len(tiles)} of {len(parts)} parts (time)")
                 break
-            stl, png = tmp / "p.stl", tmp / f"{len(tiles)}.png"
+            stl, png = tmp / "p.stl", tmp / f"{slug}.png"
             canon.export(stl)
             try:
                 run_group(["xvfb-run", "-a", "f3d", str(stl), f"--output={png}", "--resolution=480,360",

@@ -122,6 +122,22 @@ class SourceExport(unittest.TestCase):
         self.assertEqual(mc.slugify(["Lid", "Lid 2", "Base Plate!", "lid", "***", "x" * 60]),
                          ["lid", "lid-2", "base-plate", "lid-3", "part", "x" * 40])
 
+    def test_part_names_are_unique_after_dedup(self):
+        # ["Lid", "Lid", "Lid 2"] used to give two "Lid 2" (dedup tracked the original name, not the final one)
+        scene = trimesh.Scene()
+        for i in range(3):
+            scene.add_geometry(trimesh.creation.box((1 + i, 1, 1)), geom_name=str(i + 1))
+        path = tempfile.mktemp(suffix=".3mf")
+        scene.export(path)
+        orig = mc.bambu_part_names
+        mc.bambu_part_names = lambda p: {"1": "Lid", "2": "Lid", "3": "Lid 2"}
+        try:
+            names = [p[0] for p in mc.load_parts(path)]
+        finally:
+            mc.bambu_part_names = orig
+        self.assertEqual(len(names), 3)
+        self.assertEqual(len(set(names)), 3, names)
+
     def test_real_files(self):
         import re
         for f in self.FILES:
