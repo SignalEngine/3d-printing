@@ -58,4 +58,4 @@ Every log line refreshes `stageAt`, so a live two-attempt build is never swept.
 - Host and sandbox image must ship together (the `checks.json` contract changed).
 - Rebuild only the job image when the proxy is unchanged: `setup_network.sh` also recreates the proxy, which
   breaks any running job container (other sessions run bench jobs on the same network).
-- Next: support fins download (`vault/Plans/2026-09-23-support-fins-option.md`), then stage 2 auto-orient.
+- Next: stage 2 auto-orient (reuse `worker/fins/engine` orient.js `suggestStrengthPose` — not vendored yet), then James prints a finned part.
