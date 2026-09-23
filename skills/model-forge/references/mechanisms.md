@@ -14,7 +14,7 @@ Clearance table for plain fits lives in `fdm-design-rules.md` (press 0.05–0.1,
 8. Shaft retention: D-flat (flat removes 20–25 % of the diameter, rot), hex, or a heat-set insert + grub screw. Never a plain round press fit — PLA creeps loose.
 9. Ratio = driven teeth / driver teeth; state it to the customer ("3:1, output turns 3× slower").
 10. Worms self-lock only below ~5° lead angle; above 12–15° expect back-driving (general machine design, not FDM-tested).
-11. Build every gear with its pitch axis on the part's own origin, pointing along +Z — the host measures centre distance and turns the pair about that axis, so an off-origin gear reads as the wrong distance.
+11. Build every gear with its pitch axis on the part's own origin, pointing along +Z — the host measures centre distance and turns the pair about that axis, so an off-origin gear reads as the wrong distance. A rack (straight gear) instead has its origin ON its pitch line, its length running along its own +X and its teeth pointing along +Y; the host checks it by sliding it along X against the pinion's turn, not by turning it.
 12. Use `bd_warehouse.gear` (SpurGear, HelicalGear, etc.) for involute profiles; do not hand-draw teeth.
 
 ## 2. Hinges, pins, ball joints, chains
