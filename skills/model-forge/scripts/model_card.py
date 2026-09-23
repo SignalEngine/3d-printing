@@ -24,6 +24,7 @@ MAX_SHEET_PARTS = 12
 FLAT_FACES = 3
 MAX_MESH_BYTES = 60_000_000   # uncompressed mesh XML; the 97 MB planetary spinner needed >10 GB to parse
 MEM_CAP_BYTES = 4 * 1024 ** 3
+META_HEAD_BYTES = 256 * 1024   # 3MF metadata sits before <resources>; never read further than this
 
 
 class Deadline(Exception):
@@ -32,6 +33,37 @@ class Deadline(Exception):
 
 def _alarm(signum, frame):
     raise Deadline()
+
+
+_render_pgid = None
+
+
+def run_group(cmd, timeout, **kw):
+    """subprocess.run in its own process group; on timeout the whole group (xvfb-run, Xvfb, f3d) is killed."""
+    global _render_pgid
+    p = subprocess.Popen(cmd, start_new_session=True, **kw)
+    _render_pgid = p.pid
+    try:
+        p.communicate(timeout=timeout)
+    except subprocess.TimeoutExpired:
+        kill_group()
+        p.wait()
+        raise
+    finally:
+        _render_pgid = None
+
+
+def kill_group():
+    if _render_pgid:
+        try:
+            os.killpg(_render_pgid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+
+
+def _term(signum, frame):   # supervisor's hard-timeout: take the render group down with the worker
+    kill_group()
+    os._exit(1)
 
 
 def clean_text(s, n=300):
@@ -44,15 +76,27 @@ def read_meta(path):
     """Title/Designer/License/Description from a 3MF's root <metadata>; {} for anything else."""
     if Path(path).suffix.lower() != ".3mf":
         return {}
+    found = {}
     try:
-        with zipfile.ZipFile(path) as z:
-            root = ET.fromstring(z.read("3D/3dmodel.model"))
+        # metadata precedes <resources>: parse only the head of the entry, never the mesh XML behind it
+        parser = ET.XMLPullParser(("start", "end"))
+        with zipfile.ZipFile(path) as z, z.open("3D/3dmodel.model") as f:
+            read = 0
+            while read < META_HEAD_BYTES:
+                chunk = f.read(65536)
+                if not chunk:
+                    break
+                read += len(chunk)
+                parser.feed(chunk)
+                for ev, el in parser.read_events():
+                    if el.tag.endswith("resources"):
+                        raise StopIteration
+                    if ev == "end" and el.tag.endswith("metadata") and el.get("name") in ("Title", "Designer", "License", "Description") and el.text:
+                        found[el.get("name")] = el.text
+    except StopIteration:
+        pass
     except Exception:
         return {}
-    found = {}
-    for el in root:
-        if el.tag.endswith("metadata") and el.get("name") in ("Title", "Designer", "License", "Description") and el.text:
-            found[el.get("name")] = el.text
     out = {k: clean_text(v, 300 if k == "Description" else 200) for k, v in found.items()}
     return {k: v for k, v in out.items() if v}
 
@@ -100,6 +144,8 @@ def decimate(mesh):
     import manifold3d
     man = manifold3d.Manifold(manifold3d.Mesh(vert_properties=np.array(mesh.vertices, dtype=np.float32),
                                               tri_verts=np.array(mesh.faces, dtype=np.uint32)))
+    if man.is_empty():   # manifold3d does not raise on a non-watertight mesh, it returns an empty solid
+        raise ValueError(f"not a manifold ({man.status().name})")
     small = man.simplify(DECIMATE_TOL_MM).to_mesh()
     return trimesh.Trimesh(np.array(small.vert_properties)[:, :3], np.array(small.tri_verts), process=False)
 
@@ -138,8 +184,9 @@ def build_sheet(parts, out_png, deadline, limits):
             stl, png = tmp / "p.stl", tmp / f"{len(tiles)}.png"
             canon.export(stl)
             try:
-                subprocess.run(["xvfb-run", "-a", "f3d", str(stl), f"--output={png}", "--resolution=480,360",
-                                "--up=+Z", "--camera-direction=-1,1,-1.2"], capture_output=True, timeout=min(20, left))
+                run_group(["xvfb-run", "-a", "f3d", str(stl), f"--output={png}", "--resolution=480,360",
+                          "--up=+Z", "--camera-direction=-1,1,-1.2"], min(20, left),
+                          stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             except subprocess.TimeoutExpired:
                 limits.append(f"sheet: render of '{name}' timed out")
                 continue
@@ -179,7 +226,7 @@ def make_card(card, path, sheet_png, timeout):
             limits.append(f"heavy mesh ({total} faces): measured on a decimated copy (tolerance {DECIMATE_TOL_MM} mm)")
         except Exception as e:
             limits.append(f"decimation failed ({type(e).__name__}); measured at full size")
-    labelled = []   # (label, placed mesh) per instance, for the pair scan
+    labelled, seen = [], set()   # (label, placed mesh) per instance, for the pair scan
     for name, canon, placed in parts:
         row = {"name": name, "instances": len(placed), "bbox_mm": [round(float(x), 2) for x in placed[0].extents],
                "position_mm": [round(float(x), 1) for x in placed[0].bounds.mean(axis=0)],
@@ -195,6 +242,10 @@ def make_card(card, path, sheet_png, timeout):
                 limits.append(f"{key} for '{name}' failed: {type(e).__name__}")
         card["parts"].append(row)
         for k, p in enumerate(placed, 1):
+            key = (round(abs(float(p.volume)), 2), tuple(np.round(p.bounds.ravel(), 2)))   # identical copy stacked in the same spot: not a joint
+            if key in seen:
+                continue
+            seen.add(key)
             labelled.append((name if len(placed) == 1 else f"{name} #{k}", p))
     try:
         for i in range(len(labelled)):
@@ -235,10 +286,12 @@ def run_worker(a):
     resource.setrlimit(resource.RLIMIT_AS, (MEM_CAP_BYTES, MEM_CAP_BYTES))
     # the alarm interrupts a Python-level phase; make_card records it in `limits` and moves on
     signal.signal(signal.SIGALRM, _alarm)
+    signal.signal(signal.SIGTERM, _term)
     signal.alarm(max(5, a.timeout - 12))
-    card = {"file": os.path.basename(a.path), "parts": [], "pairs": [], "meta": read_meta(a.path), "limits": []}
+    card = {"file": os.path.basename(a.path), "parts": [], "pairs": [], "meta": {}, "limits": []}
     big = too_big(a.path)
     try:
+        card["meta"] = read_meta(a.path)
         if big:
             card["limits"].append(f"geometry skipped: {big // 1_000_000} MB of mesh data is too big to measure in {a.timeout} s")
         else:
@@ -265,10 +318,21 @@ def main():
     # measuring runs in a child that is killed at the hard limit
     cmd = [sys.executable, __file__, a.path, "--json", a.json, "--timeout", str(a.timeout), "--worker"] + (["--sheet", a.sheet] if a.sheet else [])
     try:
-        r = subprocess.run(cmd, timeout=a.timeout, stderr=subprocess.PIPE, text=True)
-        err = "" if r.returncode == 0 else f"measuring crashed ({r.returncode}): {r.stderr.strip()[-160:]}"
-    except subprocess.TimeoutExpired:
-        err = f"card incomplete: killed after {a.timeout} s"
+        p = subprocess.Popen(cmd, stderr=subprocess.PIPE, text=True, start_new_session=True)
+        try:
+            _, stderr = p.communicate(timeout=a.timeout)
+            err = "" if p.returncode == 0 else f"measuring crashed ({p.returncode}): {stderr.strip()[-160:]}"
+        except subprocess.TimeoutExpired:
+            os.kill(p.pid, signal.SIGTERM)   # worker kills its render group, then exits
+            try:
+                p.wait(3)
+            except subprocess.TimeoutExpired:
+                pass
+            os.killpg(p.pid, signal.SIGKILL)
+            p.wait()
+            err = f"card incomplete: killed after {a.timeout} s"
+    except Exception as e:
+        err = f"measuring failed: {type(e).__name__}: {e}"[:200]
     if err:
         print(err, file=sys.stderr)
         Path(a.json).write_text(json.dumps({"file": os.path.basename(a.path), "parts": [], "pairs": [], "meta": read_meta(a.path), "limits": [err]}, indent=1))
