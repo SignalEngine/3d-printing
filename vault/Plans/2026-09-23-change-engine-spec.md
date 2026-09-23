@@ -80,7 +80,11 @@ If James sends the whistle and fox from MakerWorld, they are added as 6 and 7.
    part), shown as "Keeps: … · Changes: … · Remakes: …"; a bad plan drops the plan, never the brief; the chosen plan is
    a `Part plan:` line in the build request (guidance only until step 3's gates). Staging proof: hinged box + Frankenstein
    → witch both got per-part plans; first questions asked letter height / relief depth, no card sizes.
-   Follow-ups (James 23 Sep): (a) an `add` action for new parts ("Adds: Witch overlay"): the overlay option read
-   "Keeps: everything"; next PR. (b) plain part labels ("Lid", not "…v22-SOLID-1"): with step 3.
+   Follow-ups (James 23 Sep): (a) ~~an `add` action for new parts~~ DROPPED, see below. (b) plain part labels ("Lid",
+   not "…v22-SOLID-1"): with step 3.
+   **James, 23 Sep evening (after seeing the witch options):** a witch overlay is NOT the remix. The witch is the
+   ORIGINAL base plate reworked, re-cut so the plate itself reads as a witch. Line sketches cannot show that: options
+   for a remix must show a real picture of the customer's model (the card's render) with the change marked, not an SVG
+   line drawing. Remix options change the source parts; no add-on overlays. Folded into step 3.
 3. Build keep/edit/regenerate with the gates (3): about 1–2 sessions.
 4. Revise as a project plus the Change/Rethink UI (5), and pricing (4) once cost data exists: about 1–2 sessions.
