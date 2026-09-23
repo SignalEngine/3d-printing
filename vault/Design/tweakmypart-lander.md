@@ -1,6 +1,6 @@
 # TweakMyPart lander — the robot gives the tour (23 Sep 2026)
 
-Branch `build/lander-redesign` (printtweak). Comp: https://claude.ai/artifact/3JHaB9bjtmuX3WgfNWEKkY
+Branch `build/lander-redesign` (printtweak), merged as PR #93 (`d121202`, 23 Sep). Comp: https://claude.ai/artifact/3JHaB9bjtmuX3WgfNWEKkY
 Plan + 7 review rounds: `docs/2026-09-23-lander-tour-plan.md`, `docs/2026-09-23-lander-review-{1..7}.md`. Product record: `PRODUCT.md`.
 
 ## What it is
@@ -15,8 +15,11 @@ Plan + 7 review rounds: `docs/2026-09-23-lander-tour-plan.md`, `docs/2026-09-23-
 On the page (all passed every gate): 3-gear spinner, 3:1 gear pair with crank, screw-top jar, spool holder, basket wheel, cable clip, door hook, clip arm +10 mm (adapt), dog-paw jar keeping the original thread (adapt).
 Failed first attempt (not shown): full planetary gearbox (max turns), planetary fidget, rack & pinion, tube squeezer, allen-key stand (vision).
 
+## Chat sketches
+Real output of the product's concept step (bench `kind: brief`, request "a hook to hang my headphones under my desk") in `lib/landerBrief.json`, rendered as `<img>` data URLs via `lib/sanitizeSvg.ts`. The first version used dev-fixture placeholder SVGs; James: "I have no idea what's going on in them".
+
 ## Found while building
-- **Gear gate bug (live):** `worker/mechanics.py` centre distance is `m(za+zb)/2` for every pair, so ring gears (planetary) and racks always fail even when correct. Fix queued on its own branch (James, 23 Sep).
+- **Gear gate bug (live):** `worker/mechanics.py` centre distance is `m(za+zb)/2` for every pair, so ring gears (planetary) and racks always fail even when correct. Ring gears fixed on master by #92; racks still unhandled — `build/rack-gate` in progress.
 - The shared `ModelViewer` default part tint is now warm tan (James approved; changes the ready/working pages too).
-- Headless Chrome on the VPS has no GPU (SwiftShader): creating the tablet's WebGL context blocks the main thread ~7 s there. Not seen on real hardware yet — phone check on staging pending.
+- **Phone scroll jank = the live 3D tablet (confirmed on James's phone, 23 Sep).** A temporary `?diag` overlay with per-suspect switches proved it: smooth with 3D off. Fix: on phones the tablet shows `still.png` while scrolling; "Spin it in 3D" mounts the live viewer (no WebGL until tapped). Desktop keeps live 3D at pixel ratio ≤1.5. Lesson: headless SwiftShader numbers pointed the right way but only the device proved it; build the switch-board diag on round one.
 - Staging Convex holds the unmerged fins schema (`fins3mf`); pushing another branch's Convex to staging fails schema validation. Web-only staging deploy: `railway up --project 2bea4410-… --environment staging --service printtweak-staging --ci <worktree>`.
