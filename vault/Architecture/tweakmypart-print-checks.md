@@ -1,6 +1,6 @@
 # TweakMyPart: host print checks: strength, supports, restart recovery
 
-Live since 23 Sep 2026 (printtweak #89, #90, #91, #92; 3d-printing #8).
+Live since 23 Sep 2026 (printtweak #89–#92, #94–#96; 3d-printing #8).
 
 ## Strength follows the print direction (#90)
 - `checks.json` `loads` rows declare `axis` = the arm's length direction in the part's own coordinates. Parts
@@ -19,6 +19,27 @@ Live since 23 Sep 2026 (printtweak #89, #90, #91, #92; 3d-printing #8).
 - Ready page: one "Checked:" line per part, either "prints without supports" or "needs tree supports (about N g)".
 - Staging proof (23 Sep): T-shaped post, attempt 1 needed supports (0.6 h, 6 g). The retry printed support-free
   (0.3 h, 3.8 g).
+
+## Supports retry respects the customer (#95)
+- A part needs supports only at >= 1 g (`SUPPORT_RETRY_THRESHOLD_G`), judged per part. Below that: "prints without
+  supports", no retry, no fins. **Unproven by a print**: settle it with one real print of a 0.5–0.9 g part.
+- Before the retry, one TypeSafe judgment ("accepted") over the request (approach + answers): accepted -> ship attempt 1.
+  TypeSafe off/failing -> retry as before. Staging proof: the T-post (2.2 g, "supports are fine") shipped in about 2 min
+  with no redesign, where the jack took about 20 min with a redesign.
+- `_tail_log` sends "Still working on it — N min so far" after 60 s of silence (tests only, not yet seen live), and drops
+  narration that starts lowercase or has < 3 words (cut-off model remarks). Host check lines never pass through it.
+
+## Question answers survive a reload (#96)
+- `designs:saveAnswer` stores each answer in `brief.draftAnswers` as it is given (owner-only, brief stage, chosen
+  approach's question ids only, 200 chars). BriefChat seeds its progress from it. Staging proof: answered, reloaded,
+  and the answer was still shown with the next question live.
+
+## Staging deploys prove the commit (#94)
+- `/api/version` returns the build commit (Railway git SHA on live; `public/build-sha.txt` written by stage-deploy for
+  `railway up`). `stage-deploy.sh` polls it until it matches HEAD, and warns when another worktree deployed within 60 min
+  (`/tmp/tweakmypart-stage-last`). Live check: `curl https://tweakmypart.com/api/version`.
+- Staging is ONE shared site: another session's deploy replaced mine 2 min later on 23 Sep. Say on the session board
+  before deploying.
 
 ## Stale sweep keys on last activity (#90)
 `claimNext` fails a `running` job as `worker_lost` 40 min after `max(startedAt, stageAt)`, not after the claim.
