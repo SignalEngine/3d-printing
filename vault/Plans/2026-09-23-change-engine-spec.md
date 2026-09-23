@@ -76,5 +76,11 @@ If James sends the whistle and fox from MakerWorld, they are added as 6 and 7.
 ## Build order (each ships on its own after staging proof)
 1. Model card (1) plus merging measure_mechanism: about 1 session.
 2. Planning reads the card; per-part plan in options (2): about 1 session.
+   **SHIPPED 23 Sep (printtweak #102, prod 1e40200):** each concept carries `partPlan` (keep/edit/regenerate per card
+   part), shown as "Keeps: … · Changes: … · Remakes: …"; a bad plan drops the plan, never the brief; the chosen plan is
+   a `Part plan:` line in the build request (guidance only until step 3's gates). Staging proof: hinged box + Frankenstein
+   → witch both got per-part plans; first questions asked letter height / relief depth, no card sizes.
+   Follow-ups (James 23 Sep): (a) an `add` action for new parts ("Adds: Witch overlay"): the overlay option read
+   "Keeps: everything"; next PR. (b) plain part labels ("Lid", not "…v22-SOLID-1"): with step 3.
 3. Build keep/edit/regenerate with the gates (3): about 1–2 sessions.
 4. Revise as a project plus the Change/Rethink UI (5), and pricing (4) once cost data exists: about 1–2 sessions.
