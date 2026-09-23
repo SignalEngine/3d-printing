@@ -4,8 +4,18 @@ James, 23 Sep: "add support-fins as an option" → chose **full fins option now*
 Source: https://github.com/gittrahan/support-fins (MIT, pinned `8d3bd0e`), live at printfins.com.
 Builds on branch `build/orient-strength` (needs `supportGrams` per part from stage 1).
 
+## From the author's video (youtu.be/WGsi5SCurpM, watched 23 Sep)
+- **Tines are mandatory for a tipped part**: his cube fell over mid-print without them. Tines ON, always (stabilize mode).
+- **Bed pad ON** by default: without it the part has nothing to hold and falls or flies off.
+- **Deliver a 3MF with the fins as a separate object** (his `web/threemf.js`), so the customer can toggle fins
+  in the slicer and compare against slicer supports. Slice with supports OFF.
+- Measured by him: cube saved 3 g + 4 min with arguably better surface; flat bracket 25 h → 10 h, ~325 g saved.
+  The big wins come from TILTED strong orientations → stage 2 (auto-orient) is where fins pay most.
+- `web/orient.js suggestStrengthPose(topo, loadDir)` already scores orientations from a load direction —
+  reuse it in stage 2 instead of writing our own search.
+
 ## What the customer gets
-A part whose slice needs supports (`supportGrams > 0`) gets a second download: **"with built-in fins — print with
+A part whose slice needs supports (`supportGrams > 0`) gets a second download: a **3MF with the fins as a separate object — "with built-in fins, print with
 supports OFF"**, beside the normal 3MF/STEP. Credit line under it: "Fins by Support Fins (printfins.com)".
 Parts that print without supports get no fins download. The fins file is never the default.
 
@@ -22,24 +32,25 @@ Parts that print without supports get no fins download. The fins file is never t
 ## Build
 1. Vendor the 5 modules into `worker/fins/engine/` unmodified + his LICENSE + a README line with the pinned SHA.
    `worker/fins/run_fins.js`: Deno script, args `<in.stl> <out.stl>`, tilt 0 (parts print as modelled; stage 2 will
-   pass a rotation), mode `stabilize`, `bedPad: true`. Writes part+fins STL; prints one JSON line
+   pass a rotation), mode `stabilize`, `bedPad: true`. Writes a 3MF (part + fins as separate objects, via the vendored `threemf.js`; vendor it and its `zip.js` too) and a
+   combined STL for the host checks; prints one JSON line
    `{fins, unserved, seating}`. Run with `deno run --allow-read=<dir> --allow-write=<dir>` only (no net, no env),
    timeout 60 s.
 2. Host step in `worker/worker.py` `_ship` (after the winner is chosen): for each part with `supportGrams > 0`:
    STL of the part (export from its 3MF/STEP with the existing trimesh tooling) → run_fins → accept only if
    `unserved == 0`, seating is not `point`, output watertight, and `slice_gate.py <finned> --supports none` slices;
    plus port `check_gcode.py`'s test (fin walls present in the gcode). Any failure = no fins download for that part,
-   never a job failure. Upload as `finsStl`.
-3. Convex: `files.parts[].finsStl: v.optional(v.id("_storage"))` in schema + reportResult validator; `designs.get`
+   never a job failure. Upload the 3MF as `fins3mf`. Report fin grams vs slicer-support grams in the mechanics line.
+3. Convex: `files.parts[].fins3mf: v.optional(v.id("_storage"))` in schema + reportResult validator; `designs.get`
    (partDownloads) returns its URL. `components/PartDownloads.tsx`: when present, one extra link
    "With built-in fins (supports off)" + the credit line. No other UI change.
 4. Mechanics line for that part becomes "`<part>` needs tree supports (about N g) — or use the built-in fins download".
 
 ## Tests
-- run_fins on a fixture T-shape → unserved 0, watertight output; on a plain block → no overhangs, no fins file.
-- `_ship`: part with supportGrams>0 and a stubbed passing fins run → `finsStl` uploaded; failing fins run → no
-  finsStl, job still ready; supportGrams 0 → fins never run.
-- convex-test: reportResult accepts `finsStl`; designs.get returns its URL.
+- run_fins on a fixture T-shape → unserved 0, tines > 0 when tipped, pad present, watertight output; on a plain block → no overhangs, no fins file.
+- `_ship`: part with supportGrams>0 and a stubbed passing fins run → `fins3mf` uploaded; failing fins run → no
+  fins3mf, job still ready; supportGrams 0 → fins never run.
+- convex-test: reportResult accepts `fins3mf`; designs.get returns its URL.
 - PartDownloads renders the fins link only when present.
 
 ## Gates
