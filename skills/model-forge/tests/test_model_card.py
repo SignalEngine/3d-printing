@@ -111,3 +111,55 @@ class RealGear(unittest.TestCase):
         gears = [p["gear"] for p in card["parts"] if p.get("gear")]
         self.assertTrue(gears, "no gear found")
         self.assertEqual(gears[0]["teeth"], 20)
+
+
+class SourceExport(unittest.TestCase):
+    """--source-dir / --tiles-dir on the two real files: every part exported, instances[i] applied to <slug>.stl
+    reproduces the placed mesh, slugs unique + valid, one tile per part."""
+    FILES = ["/var/lib/printtweak/test-models/hinged-box.3mf", "/var/lib/printtweak/test-models/frankenstein-switch.3mf"]
+
+    def test_slugify(self):
+        self.assertEqual(mc.slugify(["Lid", "Lid 2", "Base Plate!", "lid", "***", "x" * 60]),
+                         ["lid", "lid-2", "base-plate", "lid-3", "part", "x" * 40])
+
+    def test_part_names_are_unique_after_dedup(self):
+        # ["Lid", "Lid", "Lid 2"] used to give two "Lid 2" (dedup tracked the original name, not the final one)
+        scene = trimesh.Scene()
+        for i in range(3):
+            scene.add_geometry(trimesh.creation.box((1 + i, 1, 1)), geom_name=str(i + 1))
+        path = tempfile.mktemp(suffix=".3mf")
+        scene.export(path)
+        orig = mc.bambu_part_names
+        mc.bambu_part_names = lambda p: {"1": "Lid", "2": "Lid", "3": "Lid 2"}
+        try:
+            names = [p[0] for p in mc.load_parts(path)]
+        finally:
+            mc.bambu_part_names = orig
+        self.assertEqual(len(names), 3)
+        self.assertEqual(len(set(names)), 3, names)
+
+    def test_real_files(self):
+        import re
+        for f in self.FILES:
+            self.assertTrue(os.path.exists(f), f"REAL TEST MODEL MISSING: {f}")
+            with tempfile.TemporaryDirectory() as d:
+                out, src, tiles = os.path.join(d, "c.json"), os.path.join(d, "src"), os.path.join(d, "tiles")
+                subprocess.run([sys.executable, SCRIPT, f, "--json", out, "--source-dir", src, "--tiles-dir", tiles, "--timeout", "90"],
+                               check=True, capture_output=True, timeout=150)
+                cardj = json.load(open(out))
+                entries = json.load(open(os.path.join(src, "parts.json")))
+                self.assertEqual([e["slug"] for e in entries], [p["slug"] for p in cardj["parts"]])
+                slugs = [e["slug"] for e in entries]
+                self.assertEqual(len(set(slugs)), len(slugs))
+                placed_all = {n: pl for n, _, pl, _ in mc.load_parts(f)}
+                for e in entries:
+                    self.assertRegex(e["slug"], r"^[a-z0-9]+(-[a-z0-9]+)*$")
+                    self.assertLessEqual(len(e["slug"]), 40)
+                    m = trimesh.load(os.path.join(src, e["file"]))
+                    placed = placed_all[e["name"]]
+                    self.assertEqual(len(e["instances"]), len(placed))
+                    for T, p in zip(e["instances"], placed):
+                        got = m.copy().apply_transform(np.array(T))
+                        self.assertLess(float(np.abs(got.bounds - p.bounds).max()), 0.01, (f, e["name"]))
+                    self.assertTrue(os.path.exists(os.path.join(tiles, e["slug"] + ".png")), (f, e["slug"]))
+                self.assertEqual(len(os.listdir(tiles)), len(entries))
