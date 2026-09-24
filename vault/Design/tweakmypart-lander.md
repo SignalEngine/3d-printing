@@ -31,3 +31,12 @@ Real output of the product's concept step (bench `kind: brief`, request "a hook 
 - Basket wheel was removed; rack and pinion was added after the gear gate fix (#97). The gear pair starts handle-front (`yaw0`). Tapping the live 3D tablet after “Spin it in 3D” opens the large lightbox, as do adapt pairs and workshop tiles. A real sideways drag stops auto-turn; vertical scrolling does not.
 - The round-11 floating phone guide was retired in PR #103 (`f22c552`, 24 Sep). `components/lander/SectionGuide.tsx` puts Tweak and his contrasting speech bubble in each phone section. The six sections use `listening`, `presenting`, `point`, `focus` and `thinking` poses; the examples bubble follows the selected example. MP4 loops load only when a guide enters view (35% threshold), pause offscreen and yield to still posters under reduced motion. The poster/video uses `mix-blend-mode: screen` on the page ground to remove its black background without fading Tweak. Desktop does not load these clips.
 - James's 24 Sep phone recording asked to remove the static “More from the workshop” gallery because it did not show motion or allow interaction. PR #103 removed it; the rotating, tappable featured examples remain. The gallery can return when there are real user examples to show.
+
+## Hero idea box + upload tiles (PR #105, 24 Sep)
+
+James: the first box should take an idea; uploading a photo or model is a main feature and needs obvious buttons; the hero must say both "tweak an existing part" and "idea factory".
+
+- H1 "Tweak a part you've got. / Or invent one from an idea.", eyebrow "AN IDEA FACTORY FOR 3D PRINTS".
+- Multi-line idea box directly under the H1 (phone mascot moved below it). "Add a photo" / "Upload a model" tiles + drag-and-drop, on phone and desktop.
+- File handoff to `/design/new`: a GET form can't carry a File and signed-out visitors go through Clerk's hosted sign-in (full reload), so `lib/pendingUpload.ts` parks it in IndexedDB under a UUID token that rides in `?upload=`. Submit awaits the write; `/design/new` takes it once, per token (two tabs keep their own); entries older than 1 h are pruned. If the write fails, the hero stays put and says so.
+- Live `37b4c36`, Railway deploy `fba152d5` SUCCESS; checked at 1440 and 390: both tiles visible above the fold, 0 overflow, 0 console errors.
