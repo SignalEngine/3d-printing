@@ -118,6 +118,9 @@ def bambu_part_names(path):
     return names
 
 
+MIRROR = np.diag([-1.0, 1.0, 1.0, 1.0])
+
+
 def load_parts(path):
     """[(name, canonical mesh, [placed mesh per instance], [4x4 transform per instance])], one entry per unique geometry."""
     loaded = trimesh.load(path)
@@ -129,19 +132,24 @@ def load_parts(path):
         transform, gname = loaded.graph[node]
         g = loaded.geometry[gname]
         if isinstance(g, trimesh.Trimesh):
-            by_geom.setdefault(gname, []).append(g.copy().apply_transform(transform))
-            poses.setdefault(gname, []).append(np.array(transform, dtype=float))
+            # a mirrored copy (det < 0) is a different physical print: its own group, the mirror baked into its mesh
+            key = (gname, bool(np.linalg.det(np.array(transform, dtype=float)[:3, :3]) < 0))
+            by_geom.setdefault(key, []).append(g.copy().apply_transform(transform))
+            poses.setdefault(key, []).append(np.array(transform, dtype=float) @ MIRROR if key[1] else np.array(transform, dtype=float))
     out, used = [], {}
-    for n, (gname, placed) in enumerate(by_geom.items(), 1):
+    for n, ((gname, mirrored), placed) in enumerate(by_geom.items(), 1):
         m = re.match(r"\d+", gname)
         name = names.get(m.group(0) if m else "", f"part-{n}")
         name = re.sub(r"\.(stl|step|stp|obj|3mf)$", "", name, flags=re.I)
+        if mirrored:
+            name = f"{name} (mirrored)"
         base, k = name, 1
         while name in used:   # dedup on the FINAL name: ["Lid", "Lid", "Lid 2"] must not give two "Lid 2" (part plans key by name)
             k += 1
             name = f"{base} {k}"
         used[name] = True
-        out.append((name, loaded.geometry[gname], placed, poses[gname]))
+        canon = loaded.geometry[gname].copy().apply_transform(MIRROR) if mirrored else loaded.geometry[gname]   # T @ g == (T @ M) @ (M @ g)
+        out.append((name, canon, placed, poses[(gname, mirrored)]))
     return out
 
 
