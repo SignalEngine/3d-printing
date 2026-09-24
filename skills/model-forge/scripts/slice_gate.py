@@ -71,6 +71,8 @@ def main():
     ap.add_argument("--max-grams", type=float, default=None)
     ap.add_argument("--price", type=float, default=None, help="proposed sale price, GBP")
     ap.add_argument("--min-gbp-per-hour", type=float, default=10.0)
+    ap.add_argument("--allow-open", action="store_true",
+                    help="slice a non-watertight mesh as-is (a customer's own kept part: never ours to repair); WARNs instead of FAILing")
     ap.add_argument("--supports", choices=["none", "tree", "normal"], default="none",
                      help="enable supports for this slice (default none)")
     a = ap.parse_args()
@@ -80,7 +82,9 @@ def main():
         sys.exit(1)
 
     m = load_any(a.model)
-    if not m.is_watertight:
+    if not m.is_watertight and a.allow_open:
+        print("WARN: mesh is not watertight — slicing it as-is (--allow-open: the customer's own part); OrcaSlicer repairs what it can.")
+    elif not m.is_watertight:
         print("FAIL: mesh is not watertight/manifold — refusing to slice. OrcaSlicer will slice a "
               "broken mesh WITHOUT complaint, so this gate catches it upstream. Fix the geometry "
               "(see verify_model.py) before slicing.")
