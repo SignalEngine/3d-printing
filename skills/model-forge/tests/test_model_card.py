@@ -138,6 +138,17 @@ class SourceExport(unittest.TestCase):
         self.assertEqual(len(names), 3)
         self.assertEqual(len(set(names)), 3, names)
 
+    def test_a_mirrored_copy_is_its_own_part_with_a_rigid_pose(self):
+        # the Frankenstein 3MF places one Handle Gear as a mirror image (det -1): position + rotation cannot express it
+        parts = mc.load_parts(self.FILES[1])
+        names = [p[0] for p in parts]
+        self.assertIn("Handle Gear (mirrored)", names)
+        for name, canon, placed, poses in parts:
+            self.assertGreater(canon.volume, 0, name)
+            for pm, t in zip(placed, poses):
+                self.assertAlmostEqual(float(np.linalg.det(np.array(t)[:3, :3])), 1.0, places=6)
+                self.assertLess(float(np.abs(canon.copy().apply_transform(t).bounds - pm.bounds).max()), 0.01, name)
+
     def test_real_files(self):
         import re
         for f in self.FILES:
