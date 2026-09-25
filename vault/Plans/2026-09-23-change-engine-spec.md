@@ -88,3 +88,11 @@ If James sends the whistle and fox from MakerWorld, they are added as 6 and 7.
    line drawing. Remix options change the source parts; no add-on overlays. Folded into step 3.
 3. Build keep/edit/regenerate with the gates (3): about 1–2 sessions.
 4. Revise as a project plus the Change/Rethink UI (5), and pricing (4) once cost data exists: about 1–2 sessions.
+
+## Reshape quality: the brief must make the look concrete (James, 25 Sep)
+Witch runs: a good witch appeared only when the chosen option spelled the look out (pointed hat + hooked-nose profile);
+vague options ("a witch outline") produced octagons/spikes and the look judge refunded them. James: "the idea is
+unclear and it's working to an impossible solution". Next change-engine PR: for a look/outline change, the brief's
+option describes the exact silhouette (named features, where they sit on the part, what must stay) and its sketch
+shows that outline on the real part, so the build works to a concrete target. The build side (silhouette guidance,
+self-render, facing-view judge) stays as it is.
