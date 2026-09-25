@@ -40,3 +40,11 @@ James: the first box should take an idea; uploading a photo or model is a main f
 - Multi-line idea box directly under the H1 (phone mascot moved below it). "Add a photo" / "Upload a model" tiles + drag-and-drop, on phone and desktop.
 - File handoff to `/design/new`: a GET form can't carry a File and signed-out visitors go through Clerk's hosted sign-in (full reload), so `lib/pendingUpload.ts` parks it in IndexedDB under a UUID token that rides in `?upload=`. Submit awaits the write; `/design/new` takes it once, per token (two tabs keep their own); entries older than 1 h are pruned. If the write fails, the hero stays put and says so.
 - Live `37b4c36`, Railway deploy `fba152d5` SUCCESS; checked at 1440 and 390: both tiles visible above the fold, 0 overflow, 0 console errors.
+
+## FAQ + honest print copy (PRs #106, #107, 25 Sep)
+
+- `#faq` between pricing and the closer: 10 native `<details>` questions from `lib/landerFaq.ts`, plus FAQPage JSON-LD built from the same list. Desktop stage has a `faq` guide id (`listening`, "Anything else, just ask me in the chat."); phones keep six section guides.
+- Every answer is sourced from code/terms. Review-gate caught four over-claims, now fixed: print-and-post is **coming soon** (no print checkout; ReadyPage shows it as coming soon); STEP only for parts designed from scratch (reworked meshes may be 3MF only); support fins "where he can"; the 8 h / 150 g limit applies only to print-and-post (`printQuote`, after the build), not to builds.
+- #107: the lander's "Printed and posted" pricing cell now says "coming soon"; the `/design/new` footer dropped "we refuse … before you wait" and "free in beta" (`PAYMENTS_ENABLED=true` in prod).
+- Live: `2cf0be3` (deploy `19d68cde`) and `a0a13ea` (deploy `4475225c`), both SUCCESS; FAQ checked at 390/1440, 0 overflow, 0 console errors.
+- Known P3, left: if a new account's brief job times out, the free welcome build is queued without showing its quote.
