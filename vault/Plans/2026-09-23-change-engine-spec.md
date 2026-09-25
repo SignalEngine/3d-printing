@@ -96,3 +96,21 @@ unclear and it's working to an impossible solution". Next change-engine PR: for 
 option describes the exact silhouette (named features, where they sit on the part, what must stay) and its sketch
 shows that outline on the real part, so the build works to a concrete target. The build side (silhouette guidance,
 self-render, facing-view judge) stays as it is.
+
+## Step 3 SHIPPED (25 Sep 2026, printtweak #104 → prod fdbe694; model-forge #11 #12 #13)
+- The build gets the customer's REAL parts (card --source-dir) and a structured partPlan. The host source gate:
+  - keep = swapped back to the source mesh + pose by construction; a left-out kept part is restored; printed as-is
+    (no watertight gate, slice --allow-open), flagged "your original, printed as-is";
+  - edit = unchanged outside the declared regions (both directions), or regions inferred from the geometry (8 mm
+    cells); clipped to the part; ≤ 80 % of the part and ≥ 20 % of the surface untouched; an unchanged edit fails;
+  - regenerate = must exist and ship a STEP; the mechanics gate measures it.
+- Kept/edited mesh parts ship no STEP (optional end to end). A mirrored copy is its own card part. Remixes may have up
+  to 12 parts. A keep/edit-only remix skips the mechanics gate (the fits are the original designer's). No support fins
+  on customer meshes (11 GB blow-up).
+- The look judge for a remix sees only the changed parts, each turned so its change faces the camera; attempt 2
+  hears the judge's reason.
+- Brief: plain part labels, real per-part renders on the option cards, omitted parts default to keep, a shortened
+  name matches its card part, never asks which part is which.
+- Staging proof: hinged box "JAMES on the lid" → ready (base as-is, JAMES following the lid's dome).
+- Known weak spot: big reshapes (the witch) pass only when the brief makes the look concrete → next PR.
+- DAILY_CAP_GBP env overrides the £40 cap per deployment (staging 150; prod unset).
