@@ -113,6 +113,34 @@ resolution, no islands). Until then the preview shows the square-tile result hon
   every chat-path fabric order failed "thin, flat structure". Proven on staging: a custom pumpkin → ready, 81 tiles.
   The chat path also refuses a too-small size ("32 mm loses the lobes").
 
+## Fabric by use + two reference files (James, 26 Sep 16:10)
+James: fabrics suit different jobs. Very flexible ones suit a dog coat or clothing; sturdy flat ones suit a coaster.
+So the customer should pick by USE, and the tile follows from that.
+
+| Use | Tile | Why |
+|---|---|---|
+| Flat and sturdy: coaster, patch, tag | square (pitch 10) | flat top, stiff |
+| Drapes: bookmark, strap, small wearables | drape (pitch 8, ours) | folds ±30° every pair |
+| Very flexible, curved: dog coat, clothing, hats | NEW triangle tile (to build) | triangles make hex, pentagon and square panels, so it bends over curves |
+| Finest silhouette detail: fidget mat, detailed shapes | NEW fine tile ~7 mm (to build) | smaller cell = more of the shape kept |
+
+Reference files (inbox-files 16:09; IDEA only, never copy geometry):
+- **TriFlex** by Rossero (MakerWorld US3928dbd1089b14):
+  - 96 triangular "flower" pieces, 12.8 x 12.1 x 4.0 mm, 180 mm hexagon, 0.24 layers;
+  - drapes the most, but its cells are coarse, so it shows the least silhouette detail;
+  - licence: MakerWorld Standard Digital File License, so we can't offer it or sell prints of it. Build our own
+    triangle tile.
+  - Its 3MF embeds a colour change after 2 layers, the "base colour shows through the gaps" two-tone. That's a cheap
+    second two-tone style (a swap at layer 3, all geometry unchanged). It also gave us the real Bambu
+    `custom_gcode_per_layer.xml` schema (`layer top_z type=2 extruder color gcode=tool_change`, mode
+    `MultiAsSingle`).
+- **Giant Fidget Fabric** by The Layer Co. (MakerWorld US1245351ac6dc39):
+  - 1301 tiles, 7 x 7 x 2.5 mm, full A1 bed, 0.2 layers;
+  - finest detail of anything so far (7 mm vs our 8/10);
+  - licence: CC BY-SA, "free to sell" per the designer. It credits the idea to @caleb_wride's Fidget Fabric, whose
+    licence we haven't checked.
+  - Build our own ~7 mm tile rather than depend on it (derivatives would have to be BY-SA).
+
 ## Detail + colour (James, 26 Sep; research notes)
 James's idea: add detail by pressing features into the fabric surface, plus colour with the AMS ("litho pane"?).
 - **Pressed-in detail:** relief on the TILE TOPS (the underside prints against the bed: raised is impossible there,
