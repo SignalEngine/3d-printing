@@ -80,6 +80,6 @@ worker/tests -p no:cacheprovider`), model-forge pytest if touched. Explicit-path
 
 ## Staging proof (brain)
 - Open `/design/fabric` on a 375 px phone viewport.
-- Pick a heart at 110 mm; the preview shows 56 tiles.
+- Pick a heart at 100 mm; the preview shows 56 tiles (the example heart is 100 mm wide).
 - Make it → ready in under 2 minutes, "56 linked tiles", one 3MF.
 - Design gate: `design-gate.sh <staging>/design/fabric --viewport mobile --flow ...`.
