@@ -142,3 +142,10 @@ James's idea: add detail by pressing features into the fabric surface, plus colo
   - The ready page ALSO states it: "At layer N (X mm), change to <colour 2>", with a picture.
 - **AMS unlocks per-region colour** (any pattern, the slicer swaps per layer; more purge waste and time). That's the
   per-tile colour phase, later.
+- **Silhouette SHIPPED** (26 Sep, model-forge #18 + printtweak #116 → prod 77d3a07):
+  - "Your own picture" (host trace: alpha / threshold / rembg u2net cut-out, no AI);
+  - "Describe a shape" (a small AI job draws one bold silhouette);
+  - the tiled preview is what prints; shapes losing > 30 % or splitting are blocked, with a suggested width;
+  - builds use the confirmed outline with no AI.
+  Staging proof: "a pumpkin" → ready (95 tiles); the test cat photo is refused at 120 mm (splits into 4), ready at 160
+  mm (148 tiles).
