@@ -286,8 +286,10 @@ def check_sheet(path, gap=DEFAULT_GAP):
     vmed = float(np.median(vols)) if vols else 0.0
     odd = [objs[i][0] for i, v in enumerate(vols) if v > 1.5 * vmed or v < 0.5 * vmed]
     if len(objs) >= 4 and odd:
-        res["fused_pairs"] += sum(1 for v in vols if v > 1.5 * vmed)
-        res["detail"] = f"not a sheet of equal tiles: {', '.join(odd[:3])}"
+        big = sum(1 for v in vols if v > 1.5 * vmed)
+        res["fused_pairs"] += big
+        # a doubled tile IS a fused pair: say it in the customer's words; anything else is not a tile sheet at all
+        res["detail"] = "the fabric's tiles are fused together" if big else f"not a sheet of equal tiles: {', '.join(odd[:3])}"
         return res
     feet = [float(np.ptp(m.bounds, axis=0)[:2].max()) for _, m in objs]
     ext = float(np.median(feet)) if feet else 1.0
