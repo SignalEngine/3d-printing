@@ -48,3 +48,10 @@ James: the first box should take an idea; uploading a photo or model is a main f
 - #107: the lander's "Printed and posted" pricing cell now says "coming soon"; the `/design/new` footer dropped "we refuse … before you wait" and "free in beta" (`PAYMENTS_ENABLED=true` in prod).
 - Live: `2cf0be3` (deploy `19d68cde`) and `a0a13ea` (deploy `4475225c`), both SUCCESS; FAQ checked at 390/1440, 0 overflow, 0 console errors.
 - Known P3, left: if a new account's brief job times out, the free welcome build is queued without showing its quote.
+
+## Fabric coming-soon section (PR #108, 26 Sep)
+
+- `#fabric` after the examples: COMING SOON eyebrow, "Fabric you can print.", two renders (90 mm round coaster, 69 tiles; 0.3/0.4/0.5 mm gap swatch), shape chips. Phones show the coaster only. Desktop stage guide id `fabric`.
+- Renders: model-forge 3MFs merged to one mesh (the viewer colours each node differently, which read as multi-colour) and rotated Z-up→Y-up (glTF), then shot through the `/dev/motion?state=lander-still` fixture; webp in `public/examples/fabric-*/still.webp`. No downloaded NASA fabric geometry used (licensed, reference only).
+- Fabric ordering (change engine phase 2) is NOT live. A page test fails if the section gets a link or button. When phase 2 ships: drop the eyebrow, add a "Design fabric" link, add a FAQ entry, and swap in a video of the printed swatch bending once James prints it.
+- Live `ce96ffa`, deploy `aad83a4c` SUCCESS; checked at 390/1440, 0 overflow, 0 console errors.
