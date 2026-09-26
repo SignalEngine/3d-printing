@@ -250,26 +250,38 @@ def _manifold(mesh):
 
 def check_sheet(path, gap=DEFAULT_GAP):
     """Measure a fabric 3MF as printed: one watertight body per object, no pair closer than gap - 0.05, none fused."""
-    scene = trimesh.load(path)
-    objs = []
-    for node in scene.graph.nodes_geometry:
-        T, gname = scene.graph[node]
-        objs.append((node, scene.geometry[gname].copy().apply_transform(T)))
-    res = {"ok": False, "tiles": len(objs), "bodies": len(objs), "min_gap_mm": None, "fused_pairs": 0, "detail": ""}
+    res = {"ok": False, "tiles": 0, "bodies": 0, "min_gap_mm": None, "fused_pairs": 0, "detail": ""}
+    try:
+        scene = trimesh.load(path)
+        objs = [(node, scene.geometry[scene.graph[node][1]].copy().apply_transform(scene.graph[node][0]))
+                for node in scene.graph.nodes_geometry]
+    except Exception as e:   # not a readable 3MF scene: say so in the JSON line, never crash (review P3)
+        res["detail"] = f"not a readable fabric 3MF: {type(e).__name__}"
+        return res
+    res["tiles"] = len(objs)
     bad = [n for n, m in objs if not m.is_watertight]
     if bad:
         res["detail"] = f"not watertight: {', '.join(bad[:3])}"
         return res
     for _, m in objs:                       # two tiles merged into one object = one object, several bodies
-        res["fused_pairs"] += max(0, len(m.split(only_watertight=False)) - 1)
+        n = len(m.split(only_watertight=False))
+        res["bodies"] += n
+        res["fused_pairs"] += max(0, n - 1)
     mans = [_manifold(m) for _, m in objs]
-    ext = max(float(np.ptp(m.bounds, axis=0)[:2].max()) for _, m in objs) if objs else 1.0
-    pitch = ext
-    if os.path.exists(path + ".json"):
-        try:
-            pitch = float(json.load(open(path + ".json")).get("pitch", ext))
-        except (ValueError, OSError):
-            pass
+    # the tile size comes from the GEOMETRY (median footprint), never from the sandbox's sidecar (review P2: a sidecar
+    # pitch of -1000 switched every pair off); every object must be tile-sized: two tiles fused into one solid are
+    # twice as big, and a stray shell or an ordinary part is not a tile at all
+    # equal tiles have equal VOLUME (both orientations are the same shape): a fused pair has ~2x, a stray shell ~0
+    vols = [abs(float(m.volume)) for _, m in objs]
+    vmed = float(np.median(vols)) if vols else 0.0
+    odd = [objs[i][0] for i, v in enumerate(vols) if v > 1.5 * vmed or v < 0.5 * vmed]
+    if len(objs) >= 4 and odd:
+        res["fused_pairs"] += sum(1 for v in vols if v > 1.5 * vmed)
+        res["detail"] = f"not a sheet of equal tiles: {', '.join(odd[:3])}"
+        return res
+    feet = [float(np.ptp(m.bounds, axis=0)[:2].max()) for _, m in objs]
+    ext = float(np.median(feet)) if feet else 1.0
+    pitch = max(feet) if feet else 1.0   # neighbour pruning from the measured tiles, never the sidecar
     grid = {}
     for i, (_, m) in enumerate(objs):       # neighbour pruning: bucket by centre, look at the 3 x 3 buckets around
         cx, cy = m.bounds.mean(axis=0)[:2]
@@ -292,8 +304,8 @@ def check_sheet(path, gap=DEFAULT_GAP):
                         if min_gap is None or d < min_gap:
                             min_gap = d
     res["min_gap_mm"] = None if min_gap is None else round(float(min_gap), 3)
-    if len(objs) < 2:
-        res["detail"] = "fewer than 2 bodies: not a fabric"
+    if len(objs) < 4:
+        res["detail"] = "fewer than 4 tiles: not a fabric"
     elif res["fused_pairs"]:
         res["detail"] = "the fabric's tiles are fused together"
     elif min_gap is not None and min_gap < gap - 0.05:
