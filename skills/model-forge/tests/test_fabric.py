@@ -542,6 +542,20 @@ class EngraveCut:
             self.assertGreater(info["engrave_clipped_tiles"], 0)
 
 
+    def test_no_pocket_narrower_than_a_printable_line(self):
+        """Trimming a design to each tile must not leave slivers under MIN_FEATURE (review P2); they are dropped + counted."""
+        t = TILES[self.TILE]
+        base, _ = fabric.build_sheet("rect:40,40", t["pitch"], t["height"], 0.4, tile=self.TILE)
+        inner = sec_of({(r, c): m for _, r, c, m in base}[1, 1]).offset(-fabric.RIM, m3d.JoinType.Miter).bounds()
+        x1, y0, y1 = inner[2], inner[1], inner[3]
+        base, eng, info = self._pair(poly_spec((x1 - 0.3, y0 - 5, x1 + 5, y1 + 5)))    # grazes tile (1,1)'s cuttable area by 0.3 mm
+        half = fabric.MIN_FEATURE / 2 - 0.02
+        for k, m in eng.items():
+            pocket = sec_of(base[k]) - sec_of(m)
+            opened = pocket.offset(-half, m3d.JoinType.Miter).offset(half, m3d.JoinType.Miter)
+            self.assertLess(pocket.area() - opened.area(), 0.05, f"tile {k}: a pocket sliver is under {fabric.MIN_FEATURE} mm")
+        self.assertGreater(info["engrave_dropped"], 0, "the sliver was not counted")
+
 class EngraveInputs(unittest.TestCase):
     def _build(self, mask, tile="drape", **kw):
         t = TILES[tile]

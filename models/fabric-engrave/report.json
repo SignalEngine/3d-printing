@@ -11,7 +11,7 @@
    78.94
   ],
   "engrave_clipped_tiles": 0,
-  "engrave_dropped": 0,
+  "engrave_dropped": 5,
   "min_bed_contact_mm2": 25.9,
   "check": {
    "ok": true,
@@ -34,7 +34,7 @@
    70.94
   ],
   "engrave_clipped_tiles": 0,
-  "engrave_dropped": 0,
+  "engrave_dropped": 3,
   "min_bed_contact_mm2": 25.9,
   "check": {
    "ok": true,
@@ -57,7 +57,7 @@
    94.94
   ],
   "engrave_clipped_tiles": 0,
-  "engrave_dropped": 0,
+  "engrave_dropped": 5,
   "min_bed_contact_mm2": 25.9,
   "check": {
    "ok": true,
@@ -80,8 +80,8 @@
    99.8
   ],
   "engrave_clipped_tiles": 0,
-  "engrave_dropped": 0,
-  "min_bed_contact_mm2": 55.4,
+  "engrave_dropped": 13,
+  "min_bed_contact_mm2": 64.1,
   "check": {
    "ok": true,
    "tiles": 74,
@@ -103,7 +103,7 @@
    86.94
   ],
   "engrave_clipped_tiles": 0,
-  "engrave_dropped": 0,
+  "engrave_dropped": 4,
   "min_bed_contact_mm2": 25.9,
   "check": {
    "ok": true,

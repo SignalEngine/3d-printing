@@ -246,7 +246,7 @@ def load_engrave(spec, width):
                      if spec.startswith("poly:") else json.load(open(spec))["polys"])
             polys = [Polygon(r) for r in rings]
     except (OSError, ValueError, KeyError, TypeError) as e:
-        raise ValueError(f"unreadable --engrave {spec[:60]!r}: use poly:\"x,y x,y|x,y ...\", a JSON file {{\"polys\": [...]}} or image:PATH") from e
+        raise ValueError(f"unreadable --engrave {spec[:60]!r} ({e}): use poly:\"x,y x,y|x,y ...\", a JSON file {{\"polys\": [...]}} or image:PATH") from e
     polys = [p if p.is_valid else p.buffer(0) for p in polys]
     polys = [p for p in polys if p.area > 0]
     if not polys:
@@ -306,9 +306,9 @@ def check_engrave_depth(depth):
 def engrave_sheet(tiles, mask, depth):
     """Cut `mask` (a shapely geometry, world frame) into the bed side of every tile, from z = 0 up to `depth`.
     Each tile keeps a RIM band inside its bed section (grip + bridges the pocket at layer 2); the mask is clipped further where a
-    tile would keep under MIN_CONTACT of bed contact or a pocket would be wider than MAX_POCKET. Returns (tiles, clipped tile count)."""
+    tile would keep under MIN_CONTACT of bed contact or a pocket would be wider than MAX_POCKET. Returns (tiles, clipped tile count, sliver pockets dropped)."""
     xm = _xsec(mask)
-    out, clipped = [], 0
+    out, clipped, slivers = [], 0, 0
     for name, r, c, m in tiles:
         man = _manifold(m)
         sec = man.slice(0.1)
@@ -322,12 +322,16 @@ def engrave_sheet(tiles, mask, depth):
                 cut = m3d.CrossSection()
                 break
         clipped += hit
+        if not cut.is_empty():   # trimming to the tile can leave slivers under MIN_FEATURE: open them away, count what goes
+            a0 = cut.area()
+            cut = cut.offset(-MIN_FEATURE / 2, m3d.JoinType.Miter).offset(MIN_FEATURE / 2, m3d.JoinType.Miter) ^ cut
+            slivers += a0 - cut.area() > 0.01   # counts each tile that lost a sliver
         if not cut.is_empty():
             m = _to_trimesh(man - cut.extrude(depth + 1).translate((0, 0, -1)))
             if not m.is_watertight or len(m.split(only_watertight=False)) != 1:
                 raise ValueError(f"tile {name} is not one solid body after the engrave")
         out.append((name, r, c, m))
-    return out, clipped
+    return out, clipped, slivers
 
 
 def bed_contact(mesh, z=0.1):
@@ -522,7 +526,8 @@ def build_sheet(spec, pitch, height, gap, origin=(0.0, 0.0), prefix="", lip_h=LI
         if mask.is_empty:
             raise ValueError("--engrave holds nothing a 0.4 mm nozzle can print (every piece is under 0.8 mm wide)")
         from shapely import affinity
-        tiles, clipped = engrave_sheet(tiles, affinity.translate(mask, *origin), engrave_depth)
+        tiles, clipped, slivers = engrave_sheet(tiles, affinity.translate(mask, *origin), engrave_depth)
+        dropped_eng += slivers
         extra = {"engrave": engrave, "engrave_depth": engrave_depth, "swap_layer": round(engrave_depth / LAYER_H) + 1,
                  "swap_z_mm": engrave_depth, "engrave_clipped_tiles": clipped, "engrave_dropped": dropped_eng, "engrave_trimmed_mm2": trimmed}
     allv = np.vstack([t[3].vertices for t in tiles])
@@ -674,7 +679,7 @@ def main(argv=None):
     ap.add_argument("--foot-in", type=float, default=None, help=f"first-layer relief inset per side, mm (default {FOOT_IN}; 0 = off)")
     ap.add_argument("--foot-h", type=float, default=None, help=f"first-layer relief height, mm (default {FOOT_H})")
     ap.add_argument("--engrave", metavar="SPEC", help='design cut into the face, one filament swap: poly:"x,y x,y|x,y ..." | FILE.json | image:PATH')
-    ap.add_argument("--engrave-depth", type=float, default=ENGRAVE_DEPTH, help=f"mm, a whole number of {LAYER_H} layers up to {ENGRAVE_MAX} (default {ENGRAVE_DEPTH})")
+    ap.add_argument("--engrave-depth", type=float, default=None, help=f"mm, a whole number of {LAYER_H} layers up to {ENGRAVE_MAX} (default {ENGRAVE_DEPTH})")
     ap.add_argument("--out")
     ap.add_argument("--swatch", action="store_true")
     ap.add_argument("--check", metavar="X.3mf")
@@ -685,6 +690,8 @@ def main(argv=None):
         return 0 if res["ok"] else 1
     if not a.out:
         ap.error("--out is required")
+    if a.engrave_depth is not None and not a.engrave:
+        ap.error("--engrave-depth needs --engrave")
     if a.swatch and a.engrave:
         ap.error("--engrave does not combine with --swatch")
     try:
@@ -702,7 +709,7 @@ def main(argv=None):
                 raise ValueError("swatch does not fit the bed")
         else:
             tiles, info = build_sheet(a.outline, a.pitch, a.height, a.gap, tile=a.tile, foot_in=a.foot_in, foot_h=a.foot_h,
-                                     engrave=a.engrave, engrave_depth=a.engrave_depth)
+                                     engrave=a.engrave, engrave_depth=ENGRAVE_DEPTH if a.engrave_depth is None else a.engrave_depth)
             tags = []
         export(tiles, tags, a.out)
         if a.tiles_glb:

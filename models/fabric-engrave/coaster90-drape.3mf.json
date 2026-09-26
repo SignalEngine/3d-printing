@@ -19,6 +19,6 @@
  "swap_layer": 2,
  "swap_z_mm": 0.2,
  "engrave_clipped_tiles": 0,
- "engrave_dropped": 0,
+ "engrave_dropped": 4,
  "engrave_trimmed_mm2": -0.0
 }
