@@ -176,6 +176,91 @@ class Swatch(unittest.TestCase):
 
 
 
+class Check(unittest.TestCase):
+    def _sheet(self, name, mutate=None, spec="circle:60"):
+        tiles, info = fabric.build_sheet(spec, 10.0, 3.0, 0.4)
+        if mutate:
+            tiles = mutate(tiles)
+        out = os.path.join(TMP, name)
+        fabric.export(tiles, [], out)
+        return out
+
+    def _run(self, path):
+        r = subprocess.run([sys.executable, os.path.join(SCRIPTS, "fabric.py"), "--check", path, "--gap", "0.4"],
+                           capture_output=True, text=True, timeout=300)
+        return r.returncode, json.loads(r.stdout)
+
+    def test_generated_circle_passes(self):
+        rc, res = self._run(self._sheet("ck-ok.3mf"))
+        self.assertTrue(res["ok"], res)
+        self.assertEqual(rc, 0)
+        self.assertEqual(res["bodies"], res["tiles"])
+        self.assertEqual(res["fused_pairs"], 0)
+        self.assertGreaterEqual(res["min_gap_mm"], 0.35)
+
+    def test_two_tiles_merged_into_one_object_fails(self):
+        def fuse(tiles):
+            (n0, r0, c0, m0), (_, _, _, m1) = tiles[0], tiles[1]
+            return [(n0, r0, c0, trimesh.util.concatenate([m0, m1]))] + tiles[2:]
+        rc, res = self._run(self._sheet("ck-fused.3mf", fuse))
+        self.assertFalse(res["ok"], res)
+        self.assertGreaterEqual(res["fused_pairs"], 1)
+        self.assertEqual(rc, 1)
+
+    def test_two_tiles_joined_into_one_solid_fails(self):
+        # review P2 repro: a 1 x 1 mm bridge makes tile r0c0 + r0c1 ONE solid (split() sees one piece)
+        def join(tiles):
+            (n0, r0, c0, m0), (_, _, _, m1) = tiles[0], tiles[1]
+            solid = trimesh.boolean.union([m0, m1, fabric._to_trimesh(fabric._box(9.5, 10.5, 1, 2, 0, 1.2))], engine="manifold")
+            return [(n0, r0, c0, solid)] + tiles[2:]
+        _, res = self._run(self._sheet("ck-joined.3mf", join, spec="rect:40,40"))
+        self.assertFalse(res["ok"], res)
+
+    def test_a_forged_sidecar_pitch_cannot_switch_the_check_off(self):
+        # review P2: {"pitch": -1000} used to skip every pair; the tile size now comes from the geometry
+        def overlap(tiles):
+            (n, r, c, m) = tiles[1]; m = m.copy(); m.apply_translation((-1.0, 0, 0))
+            return [tiles[0], (n, r, c, m)] + tiles[2:]
+        path = self._sheet("ck-forged.3mf", overlap, spec="rect:40,40")
+        with open(path + ".json", "w") as f:
+            json.dump({"tiles": 16, "gap": 0.4, "pitch": -1000}, f)
+        _, res = self._run(path)
+        self.assertFalse(res["ok"], res)
+
+    def test_a_non_3mf_prints_a_json_refusal(self):
+        bad = os.path.join(TMP, "not-a.3mf"); open(bad, "w").write("hello")
+        rc, res = self._run(bad)
+        self.assertFalse(res["ok"]) ; self.assertNotEqual(rc, 0)
+
+    def test_an_ordinary_two_body_part_is_not_fabric(self):
+        # review P3: a part with a stray shell + a sidecar claiming 2 tiles must not pass as "2 linked tiles"
+        body = trimesh.creation.box((40, 20, 10)); shell = trimesh.creation.box((2, 2, 2)); shell.apply_translation((25, 0, 0))
+        sc = trimesh.Scene(); sc.add_geometry(body, geom_name="a"); sc.add_geometry(shell, geom_name="b")
+        path = os.path.join(TMP, "ck-part.3mf"); sc.export(path)
+        _, res = self._run(path)
+        self.assertFalse(res["ok"], res)
+
+    def test_tiles_moved_closer_fails(self):
+        def squeeze(tiles):
+            out = []
+            for n, r, c, m in tiles:
+                m = m.copy()
+                m.apply_translation(((c - 3) * -0.2, 0, 0))     # each column 0.2 mm nearer the centre one
+                out.append((n, r, c, m))
+            return out
+        _, res = self._run(self._sheet("ck-close.3mf", squeeze))
+        self.assertFalse(res["ok"], res)
+        self.assertLess(res["min_gap_mm"], 0.35)
+
+    def test_200_sheet_under_a_minute(self):
+        import time
+        path = self._sheet("ck-big.3mf", spec="rect:200,200")
+        t0 = time.time()
+        rc, res = self._run(path)
+        self.assertLess(time.time() - t0, 60)
+        self.assertTrue(res["ok"], res)
+
+
 class Limits(unittest.TestCase):
     def test_a_gap_the_lip_cannot_catch_is_refused(self):
         # review P3: at gap >= the lip height the tiles slide apart; above 0.6 the bridge span passes 3.2 mm
