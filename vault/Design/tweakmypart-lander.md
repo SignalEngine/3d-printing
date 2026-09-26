@@ -55,3 +55,7 @@ James: the first box should take an idea; uploading a photo or model is a main f
 - Renders: model-forge 3MFs merged to one mesh (the viewer colours each node differently, which read as multi-colour) and rotated Z-up→Y-up (glTF), then shot through the `/dev/motion?state=lander-still` fixture; webp in `public/examples/fabric-*/still.webp`. No downloaded NASA fabric geometry used (licensed, reference only).
 - Fabric ordering (change engine phase 2) is NOT live. A page test fails if the section gets a link or button. When phase 2 ships: drop the eyebrow, add a "Design fabric" link, add a FAQ entry, and swap in a video of the printed swatch bending once James prints it.
 - Live `ce96ffa`, deploy `aad83a4c` SUCCESS; checked at 390/1440, 0 overflow, 0 console errors.
+
+## Examples section desktop-only (PR #110, 26 Sep)
+
+James: "large tweak looks bad on phone"; the examples list "doesn't make sense without the image next to it" on mobile, so remove it there. Real remixes and builds return once he has tested some. `#examples` stays mounted (so `useActiveSection`, which observes once, still tracks it after a tablet rotates past 1024px) but gets `.lander-desktop-only` (hidden <1024px) and mounts its contents only when `useIsDesktop() !== false`. Phones: hero, chat, adapt, fabric, checks, pricing, faq, cta. Live `051a4ca`, deploy `a546a981` SUCCESS.
