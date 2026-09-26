@@ -1,6 +1,8 @@
 {
  "tiles": 69,
  "tile": "square",
+ "foot_in": 0.3,
+ "foot_h": 0.4,
  "pitch": 10.0,
  "height": 3.0,
  "gap": 0.4,

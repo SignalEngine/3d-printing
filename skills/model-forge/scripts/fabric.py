@@ -32,10 +32,13 @@ BED = 256.0
 DEFAULT_GAP = 0.4        # placeholder until James's swatch print picks the real value
 DEFAULT_TILE = "square"   # prod (TweakMyPart host) calls fabric.py without --tile: it stays square until TweakMyPart switches its preview + price to drape
 TILE_PITCH = {"drape": 8.0, "square": 10.0}
-PLATE_T = 1.2            # plate + tab thickness (6 layers at 0.2)
+PLATE_T = 1.4            # plate + tab thickness (7 layers at 0.2; >= 0.8 mm above the 0.4 first-layer relief)
 TAB_W, LEG_W, BAR_U0, BAR_W, LIP_W = 2.0, 1.0, 0.6, 1.2, 1.0
 LIP_H = 1.2              # lip rise above the tab; must exceed gap to catch the bridge
 MIN_FEATURE = 0.8
+FOOT_H = 0.4             # first-layer relief: below this height the tile is inset...
+FOOT_IN = 0.3            # ...by this much per side, so first-layer squash ("elephant's foot") can't close the gap at the bed
+MIN_CONTACT = 25.0       # mm^2 of bed contact a tile keeps after the relief (a tile with less peels off the bed)
 
 
 def _box(x0, x1, y0, y1, z0, z1):
@@ -189,6 +192,35 @@ def drape_manifold(pitch, gap, present):
     return out
 
 
+def relieve_sheet(tiles, gap, foot_in=None, foot_h=None):
+    """First-layer relief, per tile, in world coordinates. Below z = foot_h a tile becomes its z = foot_h/2 section inset by
+    foot_in per side, PLUS every part of that section at least gap + 2*foot_in from all neighbours' sections (there the
+    squash cannot close the gap, so the tile keeps its full bed contact: a tile with too little contact peels off the bed)."""
+    foot_in = FOOT_IN if foot_in is None else foot_in
+    foot_h = FOOT_H if foot_h is None else foot_h
+    if foot_in <= 0 or foot_h <= 0:
+        return tiles
+    mans = {(r, c): _manifold(m) for _, r, c, m in tiles}
+    secs = {k: v.slice(foot_h / 2) for k, v in mans.items()}
+    need = gap + 2 * foot_in
+    out = []
+    for name, r, c, m in tiles:
+        man, sec = mans[(r, c)], secs[(r, c)]
+        near = [secs[(r + dr, c + dc)] for dr in (-1, 0, 1) for dc in (-1, 0, 1) if (dr or dc) and (r + dr, c + dc) in secs]
+        keep = sec.offset(-foot_in, m3d.JoinType.Miter)
+        if near:
+            far = sec - sum(near[1:], near[0]).offset(need, m3d.JoinType.Miter, 10)
+            keep = keep + far
+        slab = _box(-1e3, 1e3, -1e3, 1e3, -1, foot_h)
+        out.append((name, r, c, _to_trimesh((man - slab) + keep.extrude(foot_h))))
+    return out
+
+
+def bed_contact(mesh, z=0.1):
+    """Bed-contact area (mm^2) of a tile mesh: its section at z (default mid first layer)."""
+    return float(_manifold(mesh).slice(z).area())
+
+
 def _to_trimesh(man, rot90=False, shift=(0, 0)):
     mesh = man.to_mesh()
     v = np.asarray(mesh.vert_properties, dtype=float)[:, :3].copy()
@@ -335,7 +367,7 @@ def check_params(pitch, height, gap, tile=None):
         raise ValueError(f"gap {gap} too large: tiles would slide apart (max 0.6 mm)")
 
 
-def build_sheet(spec, pitch, height, gap, origin=(0.0, 0.0), prefix="", lip_h=LIP_H, tile=None):
+def build_sheet(spec, pitch, height, gap, origin=(0.0, 0.0), prefix="", lip_h=LIP_H, tile=None, foot_in=None, foot_h=None):
     """Returns (tiles, info). tiles: [(name, row, col, trimesh)]. pitch None = the tile's default; height applies to the
     square tile only (the drape tile's height is set by its rings)."""
     tile = tile or DEFAULT_TILE
@@ -366,8 +398,9 @@ def build_sheet(spec, pitch, height, gap, origin=(0.0, 0.0), prefix="", lip_h=LI
         mesh = _to_trimesh(cache[key], rot90=bool(typ),
                            shift=(origin[0] + c * pitch + pitch / 2, origin[1] + r * pitch + pitch / 2))
         tiles.append((f"{prefix}tile-r{r}-c{c}", r, c, mesh))
+    tiles = relieve_sheet(tiles, gap, foot_in, foot_h)
     allv = np.vstack([t[3].vertices for t in tiles])
-    info = {"tiles": len(tiles), "tile": tile, "pitch": pitch, "height": round(drape_dims(gap)["height"], 3) if tile == "drape" else height,
+    info = {"tiles": len(tiles), "tile": tile, "foot_in": FOOT_IN if foot_in is None else foot_in, "foot_h": FOOT_H if foot_h is None else foot_h, "pitch": pitch, "height": round(drape_dims(gap)["height"], 3) if tile == "drape" else height,
             "gap": gap, "outline": spec,
             "bbox": [round(float(v), 3) for v in (*allv.min(0)[:2], *allv.max(0)[:2])],
             "dropped_islands": dropped}
@@ -385,11 +418,11 @@ def tag_tile(n_dots, origin, prefix="tag"):
     return f"{prefix}-{n_dots}", _to_trimesh(base, shift=origin)
 
 
-def build_swatch(pitch, height, tile=None):
+def build_swatch(pitch, height, tile=None, foot_in=None, foot_h=None):
     gaps, tiles, patches, tags = (0.30, 0.40, 0.50), [], [], []
     for k, g in enumerate(gaps):
         x0 = k * 50.0
-        t, info = build_sheet("rect:40,40", pitch, height, g, origin=(x0, 0.0), prefix=f"g{g:.2f}-", tile=tile)
+        t, info = build_sheet("rect:40,40", pitch, height, g, origin=(x0, 0.0), prefix=f"g{g:.2f}-", tile=tile, foot_in=foot_in, foot_h=foot_h)
         tiles += t
         n = 3 + k
         patches.append({"gap": g, "dots": n, "origin": [x0, 0.0], "tiles": info["tiles"], "name": f"g{g:.2f}"})
@@ -512,6 +545,8 @@ def main(argv=None):
     ap.add_argument("--height", type=float, default=3.0, help="square tile only; the drape tile's height is set by its rings")
     ap.add_argument("--tiles-glb", metavar="X-tiles.glb")
     ap.add_argument("--gap", type=float, default=DEFAULT_GAP)
+    ap.add_argument("--foot-in", type=float, default=None, help=f"first-layer relief inset per side, mm (default {FOOT_IN}; 0 = off)")
+    ap.add_argument("--foot-h", type=float, default=None, help=f"first-layer relief height, mm (default {FOOT_H})")
     ap.add_argument("--out")
     ap.add_argument("--swatch", action="store_true")
     ap.add_argument("--check", metavar="X.3mf")
@@ -524,18 +559,19 @@ def main(argv=None):
         ap.error("--out is required")
     try:
         if a.swatch:
-            tiles, tags, patches = build_swatch(a.pitch, a.height, a.tile)
+            tiles, tags, patches = build_swatch(a.pitch, a.height, a.tile, a.foot_in, a.foot_h)
             allv = np.vstack([m.vertices for _, _, _, m in tiles] + [m.vertices for _, m in tags])
             info = {"swatch": True, "tile": a.tile, "pitch": a.pitch or TILE_PITCH[a.tile], "height": a.height, "tiles": len(tiles), "tags": len(tags),
                     "patches": patches, "gap": [p["gap"] for p in patches],
                     "bbox": [round(float(v), 3) for v in (*allv.min(0)[:2], *allv.max(0)[:2])],
-                    "outline": "3 x rect:40,40"}
+                    "outline": "3 x rect:40,40",
+                    "foot_in": FOOT_IN if a.foot_in is None else a.foot_in, "foot_h": FOOT_H if a.foot_h is None else a.foot_h}
             if a.tile == "drape":
                 info["height"] = round(max(drape_dims(g)["height"] for g in info["gap"]), 3)
             if info["bbox"][2] - info["bbox"][0] > BED or info["bbox"][3] - info["bbox"][1] > BED:
                 raise ValueError("swatch does not fit the bed")
         else:
-            tiles, info = build_sheet(a.outline, a.pitch, a.height, a.gap, tile=a.tile)
+            tiles, info = build_sheet(a.outline, a.pitch, a.height, a.gap, tile=a.tile, foot_in=a.foot_in, foot_h=a.foot_h)
             tags = []
         export(tiles, tags, a.out)
         if a.tiles_glb:

@@ -1,5 +1,6 @@
 {
  "units": "mm",
+ "tile": "square",
  "pitch_mm": 10.0,
  "gap_mm": 0.4,
  "tile_height_mm": 3.0,
@@ -939,5 +940,5 @@
    "tile-r8-c8"
   ]
  ],
- "note": "one glTF node per tile, named like tiles[].name, origin at the tile centre; links = neighbours joined by bridge+hooked tab (they hinge/slide within 0.4 mm and cannot separate)"
+ "note": "one glTF node per tile, named like tiles[].name, origin at the tile centre; links = neighbours joined by a bridge+hooked tab (they hinge within 0.4 mm and cannot separate)"
 }
