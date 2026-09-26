@@ -20,7 +20,7 @@ Only the largest connected group is kept (islands dropped, reported). Tabs/bridg
 are omitted. Sheet must fit 256 x 256 mm, else refused (exit 2).
 
 ## CLI
-`fabric.py --outline rect:W,H | circle:D | poly:"x,y x,y ..." | text:ABC --pitch 10 --height 3.0 --gap 0.4 --out f.3mf [--swatch]`
+`fabric.py --outline rect:W,H | rrect:W,H,R | circle:D | heart:W | poly:"x,y x,y ..." | text:ABC --pitch 10 --height 3.0 --gap 0.4 --out f.3mf [--swatch]`
 - Writes one 3MF object per tile (`tile-r<row>-c<col>`) and `<out>.json` (tiles, pitch, gap, outline, bbox).
 - `text:` letters are 5 pitches tall (FreeSans Bold); thin strokes lose cells, so expect dropped islands.
 - `--swatch`: three 40 x 40 patches at gap 0.30 / 0.40 / 0.50 (left to right, 10 mm apart) with an unlinked
