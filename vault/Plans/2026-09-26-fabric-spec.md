@@ -67,3 +67,17 @@ Tiles can't be pulled apart in any direction, but they slide and hinge within th
 ## Out of scope
 Shipping anyone else's tile geometry. Non-flat (draped or 3D-formed) fabric. Fabric inside other multi-part
 designs, for now.
+
+## Status
+- **Phase 1 SHIPPED** (26 Sep, model-forge #14): `scripts/fabric.py` square cross-link generator + gap swatch
+  (`models/fabric-swatch/`); James to print it and pick the gap (0.4 mm placeholder).
+- **Phase 2 SHIPPED** (26 Sep, model-forge #15 + printtweak #109 → prod 8f30504):
+  - the brief offers fabric items (one tile style, items/outlines differ);
+  - the sandbox always calls fabric.py;
+  - the host re-measures with `fabric.py --check` (tile size from the geometry, equal tile volumes, gap, fused pairs)
+    and expects `--bodies <tiles>`, slices with no supports, no fins;
+  - the ready page says "<N> linked tiles, <gap> mm gap".
+  Staging proof: a 90 mm round coaster → ready, 69 tiles, no supports, ~1.5 min build.
+- Lander: the "coming soon" section shipped (#108); the lander session (printtweak-1f) was told phase 2 is live and
+  switches it to "available".
+- Next: phase 2b straps (anchor ends), phase 3 pictures, phase 4 colours, phase 5 hex, phase 6 remix (card fixes).
