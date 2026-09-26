@@ -249,3 +249,32 @@ class FabricImage(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class ReviewFixes(unittest.TestCase):
+    def test_the_sheet_pitch_reaches_the_trace(self):
+        # review P2: image outlines were judged at pitch 10 whatever tile the sheet used
+        seen = {}
+        real = silhouette.trace
+        def spy(path, width_mm, pitch=10.0, **kw):
+            seen["pitch"] = pitch
+            return real(path, width_mm, pitch=pitch, **kw)
+        silhouette.trace = spy
+        try:
+            png = os.path.join(tempfile.mkdtemp(), "c.png")
+            img = Image.new("L", (400, 400), 255); ImageDraw.Draw(img).ellipse((20, 20, 380, 380), fill=0); img.save(png)
+            fabric.build_sheet(f"image:{png}@90", 8.0, None, 0.4, tile="drape")
+        finally:
+            silhouette.trace = real
+        self.assertEqual(seen["pitch"], 8.0)
+
+    def test_a_huge_picture_is_refused_before_it_is_decoded(self):
+        png = os.path.join(tempfile.mkdtemp(), "big.png")
+        Image.new("1", (6400, 6400), 1).save(png)          # 41 MP, a tiny file
+        r = silhouette.trace(png, 100)
+        self.assertFalse(r["ok"]); self.assertIn("too large", r["detail"])
+
+    def test_a_non_numeric_width_is_a_clean_refusal(self):
+        with self.assertRaises(ValueError) as e:
+            fabric.Outline("image:/tmp/x.png@abc")
+        self.assertIn("number of mm", str(e.exception))

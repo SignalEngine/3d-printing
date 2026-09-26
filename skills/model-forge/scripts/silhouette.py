@@ -32,8 +32,13 @@ class Refused(ValueError):
     """The picture cannot become a fabric; the message is what the customer is told."""
 
 
+MAX_DECODE_PX = 40_000_000   # refuse BEFORE decoding: a tiny file can claim 50000 x 50000 pixels (review P3: decompression bomb)
+
+
 def _load(path):
-    img = Image.open(path)
+    img = Image.open(path)              # lazy: reads the header only
+    if img.width * img.height > MAX_DECODE_PX:
+        raise Refused("that picture is too large; please send one under 40 megapixels")
     img.load()
     img = ImageOps.exif_transpose(img)
     if max(img.size) > MAX_PX:
@@ -122,7 +127,10 @@ def _outline(mask, width_mm):
     x0, x1, y0, y1 = xs.min(), xs.max() + 1, ys.min(), ys.max() + 1
     k = width_mm / (x1 - x0)
     pad = np.pad(mask[y0:y1, x0:x1].astype(float), 1)
-    contour = max(find_contours(pad, 0.5), key=len)      # (row, col), sub-pixel
+    contours = find_contours(pad, 0.5)
+    if not contours:
+        raise Refused("no clear shape found in that picture")
+    contour = max(contours, key=len)      # (row, col), sub-pixel
     poly = Polygon([((c - 1) * k, (y1 - y0 - (r - 1)) * k) for r, c in contour])   # image rows grow down, mm grow up
     if not poly.is_valid:
         poly = poly.buffer(0)
@@ -158,6 +166,8 @@ def trace(path, width_mm, pitch=10.0, method=None, model=DEFAULT_MODEL, mask_out
             raise Refused(f"the width must be between 1 and {BED:.0f} mm")
         try:
             img = _load(path)
+        except Refused:
+            raise                                # _load's own plain reason (e.g. too many pixels) reaches the customer
         except Exception as e:
             raise Refused("that file is not a picture we can read") from e
         gray = np.asarray(img.convert("L"))

@@ -201,7 +201,7 @@ def _to_trimesh(man, rot90=False, shift=(0, 0)):
 
 # ---------------------------------------------------------------- outlines
 class Outline:
-    def __init__(self, spec):
+    def __init__(self, spec, pitch=10.0):
         self.spec = spec
         kind, _, arg = spec.partition(":")
         self.mask = None
@@ -228,7 +228,11 @@ class Outline:
                 if not path:
                     path, w = arg, ""
                 import silhouette
-                r = silhouette.trace(path, float(w) if w else 100.0)
+                try:
+                    width = float(w) if w else 100.0
+                except ValueError:
+                    raise ValueError(f"image width must be a number of mm, got {w!r}") from None
+                r = silhouette.trace(path, width, pitch=pitch)   # judged at the sheet's own tile size (review P2)
                 if not r["ok"]:
                     raise ValueError(r["detail"])
                 poly = Polygon(r["outline"])
@@ -339,7 +343,7 @@ def build_sheet(spec, pitch, height, gap, origin=(0.0, 0.0), prefix="", lip_h=LI
         raise ValueError(f"unknown tile {tile!r}; use drape | square")
     pitch = pitch or TILE_PITCH[tile]
     check_params(pitch, height, gap, tile)
-    o = Outline(spec)
+    o = Outline(spec, pitch)
     if spec.startswith("text:"):
         o.scale_to(5 * pitch)
     cells, dropped = fill(o, pitch)
