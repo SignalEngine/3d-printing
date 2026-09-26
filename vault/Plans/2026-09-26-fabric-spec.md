@@ -88,3 +88,9 @@ designs, for now.
   [[2026-09-26-fabric-starter-plan]].
 - **Tile styles with pictures** (square / hexagon / scales) are offered only once hex (phase 5) AND a scale tile exist.
   Scales are a new tile style, added to the spec.
+
+## Tile style per shape (James, 26 Sep: "different fabric types will fit different shapes")
+Different tiles fit shapes differently: hexagons follow curves and diagonals more smoothly, smaller tiles keep finer
+detail, and scales suit organic shapes (animals, leaves). Once hex + scales exist, the starter preview shows the
+shape in each style and SUGGESTS the style that keeps it most recognisable (the least silhouette area lost at tile
+resolution, no islands). Until then the preview shows the square-tile result honestly.
