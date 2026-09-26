@@ -53,3 +53,10 @@ e.g. by exporting the caps as a separate coloured mesh for the render only.
 
 ## Checks (builder pastes; exit codes captured)
 `/root/3d-printing/.venv/bin/python -m pytest -q skills/model-forge/tests`. Explicit-path commits; don't push.
+
+## Known traps (brain, after #19 merged)
+- `check_sheet` flags tiles whose volume differs from the median as "not equal tiles"/"fused". Raised tiles are bigger:
+  teach `--check` to read `raised_tiles` from the sidecar (or allow the cap volume), and keep a test that a real fused
+  pair on a two-tone sheet still goes red.
+- First-layer relief (#19, `relieve_sheet`) runs after tile build; the cap must not change the z < FOOT_H section.
+- Drape tile: the cap must not collide with a neighbour when folded ±30° (the drape test covers it; run it on raised tiles).
