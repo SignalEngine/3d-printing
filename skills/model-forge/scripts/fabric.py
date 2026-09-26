@@ -6,7 +6,7 @@ One tile shape, checkerboard: "A" tiles have bridges (arch over a slot) on their
 that catches the bridge, so the pair cannot slide apart. Every tab/bridge face keeps `gap` clearance.
 Printable flat, no supports: every overhang is vertical or a straight bridge <= 3.2 mm; every tile sits on z=0.
 
-Usage: fabric.py --outline rect:W,H | circle:D | poly:"x,y x,y ..." | text:"ABC" [--pitch 10] [--height 3.0]
+Usage: fabric.py --outline rect:W,H | rrect:W,H,R | circle:D | heart:W | poly:"x,y x,y ..." | text:"ABC" [--pitch 10] [--height 3.0]
                  [--gap 0.4] --out fabric.3mf [--swatch]
 Writes <out> (one 3MF object per tile, `tile-r<row>-c<col>`) and <out>.json. Exit 2 = refused (bed / bad input).
 
@@ -87,11 +87,21 @@ class Outline:
         self.spec = spec
         kind, _, arg = spec.partition(":")
         self.mask = None
-        if kind in ("rect", "circle", "poly"):
+        if kind in ("rect", "rrect", "circle", "poly", "heart"):
             from shapely.geometry import Point, Polygon, box
             if kind == "rect":
                 w, h = (float(x) for x in arg.split(","))
                 poly = box(0, 0, w, h)
+            elif kind == "rrect":                # rounded rectangle: rrect:W,H,R (R capped at half the short side)
+                w, h, r = (float(x) for x in arg.split(","))
+                r = min(r, w / 2, h / 2)
+                poly = box(r, r, w - r, h - r).buffer(r, 64)
+            elif kind == "heart":                # heart:W, the classic parametric heart scaled to W mm wide
+                w = float(arg)
+                pts = [(16 * math.sin(t) ** 3, 13 * math.cos(t) - 5 * math.cos(2 * t) - 2 * math.cos(3 * t) - math.cos(4 * t))
+                       for t in (2 * math.pi * i / 200 for i in range(200))]
+                k = w / 32.0                     # the curve is exactly 32 units wide
+                poly = Polygon([(x * k, y * k) for x, y in pts])
             elif kind == "circle":
                 d = float(arg)
                 poly = Point(d / 2, d / 2).buffer(d / 2, 128)
@@ -117,7 +127,7 @@ class Outline:
             self.poly = None
             self.w = self.h = None
         else:
-            raise ValueError(f"unknown outline {spec!r}; use rect:W,H | circle:D | poly:\"x,y ...\" | text:ABC")
+            raise ValueError(f"unknown outline {spec!r}; use rect:W,H | rrect:W,H,R | circle:D | heart:W | poly:\"x,y ...\" | text:ABC")
 
     def scale_to(self, height_mm):
         """text only: scale so the ink is height_mm tall, and build the mask."""

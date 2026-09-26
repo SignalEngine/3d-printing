@@ -124,6 +124,14 @@ class Outline(unittest.TestCase):
                     continue
                 self.assertIn(cell, by, f"tile r{r}c{c} pokes into empty cell {cell}")
 
+    def test_heart_100_is_the_56_tile_example(self):
+        self.assertEqual(sheet("heart:100", 0.4)[1]["tiles"], 56)
+
+    def test_rrect_drops_the_corners_of_the_same_rect(self):
+        self.assertEqual(sheet("rect:100,100", 0.4)[1]["tiles"], 100)
+        self.assertEqual(sheet("rrect:100,100,8", 0.4)[1]["tiles"], 100)   # 8 mm corners keep >= half of each corner cell
+        self.assertLess(sheet("rrect:100,100,50", 0.4)[1]["tiles"], 100)   # R capped at half the side = a circle
+
     def test_text_outline_builds(self):
         tiles, info = fabric.build_sheet("text:HI", 10.0, 3.0, 0.4)
         self.assertGreater(info["tiles"], 3)
