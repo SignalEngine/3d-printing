@@ -20,8 +20,11 @@ TILES = {"drape": dict(pitch=8.0, height=None, n40=25, big="rect:160,160", heart
          "square": dict(pitch=10.0, height=3.0, n40=16, big="rect:200,200", heart=56)}
 
 
+ENGRAVE = None           # set by the Engraved* classes: every sheet() below is then built with this --engrave mask
+
+
 def sheet(spec, gap, tile="drape"):
-    return fabric.build_sheet(spec, TILES[tile]["pitch"], TILES[tile]["height"], gap, tile=tile)
+    return fabric.build_sheet(spec, TILES[tile]["pitch"], TILES[tile]["height"], gap, tile=tile, engrave=ENGRAVE)
 
 
 def both(cls):
@@ -450,6 +453,167 @@ class Limits(unittest.TestCase):
                             tempfile.mktemp(suffix=".3mf")], capture_output=True, text=True, timeout=120)
         self.assertNotEqual(r.returncode, 0)
         self.assertNotIn("ZeroDivisionError", r.stderr)
+
+
+# ---------------------------------------------------------------- face engrave (one layer, one swap)
+BIG_MASK = "poly:5,5 35,5 35,35 5,35"      # covers most of rect:40,40: every interior tile gets a pocket
+
+
+def engraved(cls):
+    """Re-run a contract class with every sheet engraved: the engrave must not change gap, captive, fold, bodies, flat print."""
+    for tile in ([None] if issubclass(cls, unittest.TestCase) else TILES):
+        nm = f"Engraved{cls.__name__}" + (f"_{tile}" if tile else "")
+
+        def setUp(self):
+            global ENGRAVE
+            ENGRAVE = BIG_MASK
+
+        def tearDown(self):
+            global ENGRAVE
+            ENGRAVE = None
+        attrs = {"setUp": setUp, "tearDown": tearDown, "__module__": __name__}
+        globals()[nm] = type(nm, (cls,) if tile is None else (cls, unittest.TestCase), dict(attrs, **({"TILE": tile} if tile else {})))
+    return cls
+
+
+for _c in (Gap, FirstLayerRelief, Captive, Drape):
+    engraved(_c)
+
+
+def sec_of(mesh, z=0.1):
+    return manifold(mesh).slice(z)
+
+
+def pt_in(cs, x, y):
+    from shapely.geometry import Point, Polygon
+    from functools import reduce
+    ps = [Polygon(p) for p in cs.to_polygons() if len(p) >= 3]
+    return bool(ps) and reduce(lambda a, b: a.symmetric_difference(b), ps).contains(Point(x, y))
+
+
+def poly_spec(*boxes):
+    return "poly:" + "|".join(f"{x0},{y0} {x1},{y0} {x1},{y1} {x0},{y1}" for x0, y0, x1, y1 in boxes)
+
+
+@both
+class EngraveCut:
+    def _pair(self, mask, depth=0.2):
+        t = TILES[self.TILE]
+        base, _ = fabric.build_sheet("rect:40,40", t["pitch"], t["height"], 0.4, tile=self.TILE)
+        eng, info = fabric.build_sheet("rect:40,40", t["pitch"], t["height"], 0.4, tile=self.TILE, engrave=mask, engrave_depth=depth)
+        return {(r, c): m for _, r, c, m in base}, {(r, c): m for _, r, c, m in eng}, info
+
+    def test_cut_depth_inside_mask_and_untouched_outside(self):
+        p = TILES[self.TILE]["pitch"]
+        base, eng, info = self._pair(poly_spec((p + 0.05, p + 0.05, 2 * p - 0.05, 2 * p - 0.05)))     # tile (1,1) only
+        pocket = sec_of(base[1, 1]) - sec_of(eng[1, 1])
+        self.assertGreater(pocket.area(), 1.0, "no pocket at z = 0.1 inside the mask")
+        self.assertLess((pocket - sec_of(eng[1, 1], 0.3)).area(), 1e-3, "the pocket is not bridged from layer 2 (z = 0.3)")
+        self.assertAlmostEqual(sec_of(base[1, 1], 0.3).area(), sec_of(eng[1, 1], 0.3).area(), 3, "the cut goes higher than one layer")
+        for k in base:
+            if k != (1, 1):
+                self.assertAlmostEqual(sec_of(base[k]).area(), sec_of(eng[k]).area(), 6, f"tile {k} outside the mask changed")
+                self.assertAlmostEqual(base[k].volume, eng[k].volume, 4)
+        self.assertEqual((info["swap_layer"], info["swap_z_mm"], info["engrave_depth"]), (2, 0.2, 0.2))
+
+    def test_the_rim_band_is_never_cut(self):
+        p = TILES[self.TILE]["pitch"]
+        base, eng, _ = self._pair(poly_spec((0, p, 4 * p, p + 3.0)))       # a stripe over the bottom 3 mm of row 1
+        cut_somewhere = 0
+        for (r, c), b in base.items():
+            if r != 1:
+                continue
+            sb, se = sec_of(b), sec_of(eng[r, c])
+            band = sb - sb.offset(-0.95, m3d.JoinType.Miter)
+            self.assertLess((band - se).area(), 1e-3, f"tile r{r}c{c}: the rim band lost material")
+            cut_somewhere += sb.area() - se.area() > 0.5
+        self.assertGreaterEqual(cut_somewhere, 2, "no pocket was cut: the rim test proves nothing")
+
+    def test_full_sheet_mask_keeps_bed_contact_and_bridgeable_pockets(self):
+        base, eng, info = self._pair("poly:-5,-5 45,-5 45,45 -5,45")
+        pockets = 0
+        for k, m in eng.items():
+            self.assertGreaterEqual(fabric.bed_contact(m), fabric.MIN_CONTACT, f"tile {k}")
+            pocket = sec_of(base[k]) - sec_of(m)
+            pockets += pocket.area() > 0.5
+            self.assertTrue(pocket.offset(-fabric.MAX_POCKET / 2, m3d.JoinType.Miter).is_empty(), f"tile {k}: pocket wider than {fabric.MAX_POCKET} mm")
+        self.assertGreater(pockets, 5)
+        if self.TILE == "drape":       # the drape plate is small: the full mask must have been clipped to keep its bed grip
+            self.assertGreater(info["engrave_clipped_tiles"], 0)
+
+
+    def test_no_pocket_narrower_than_a_printable_line(self):
+        """Trimming a design to each tile must not leave slivers under MIN_FEATURE (review P2); they are dropped + counted."""
+        t = TILES[self.TILE]
+        base, _ = fabric.build_sheet("rect:40,40", t["pitch"], t["height"], 0.4, tile=self.TILE)
+        inner = sec_of({(r, c): m for _, r, c, m in base}[1, 1]).offset(-fabric.RIM, m3d.JoinType.Miter).bounds()
+        x1, y0, y1 = inner[2], inner[1], inner[3]
+        base, eng, info = self._pair(poly_spec((x1 - 0.3, y0 - 5, x1 + 5, y1 + 5)))    # grazes tile (1,1)'s cuttable area by 0.3 mm
+        half = fabric.MIN_FEATURE / 2 - 0.02
+        for k, m in eng.items():
+            pocket = sec_of(base[k]) - sec_of(m)
+            opened = pocket.offset(-half, m3d.JoinType.Miter).offset(half, m3d.JoinType.Miter)
+            self.assertLess(pocket.area() - opened.area(), 0.05, f"tile {k}: a pocket sliver is under {fabric.MIN_FEATURE} mm")
+        self.assertGreater(info["engrave_dropped"], 0, "the sliver was not counted")
+
+class EngraveInputs(unittest.TestCase):
+    def _build(self, mask, tile="drape", **kw):
+        t = TILES[tile]
+        return fabric.build_sheet("rect:40,40", t["pitch"], t["height"], 0.4, tile=tile, engrave=mask, **kw)
+
+    def test_a_piece_under_0_8_mm_is_dropped_and_counted(self):
+        base, _ = sheet("rect:40,40", 0.4, "drape")
+        tiles, info = self._build(poly_spec((5, 5, 5.5, 15), (17, 17, 23, 23)))       # a 0.5 mm sliver + a 6 mm block
+        self.assertEqual(info["engrave_dropped"], 1)
+        eng = {(r, c): m for _, r, c, m in tiles}
+        b = {(r, c): m for _, r, c, m in base}
+        self.assertAlmostEqual(sec_of(b[0, 0]).area(), sec_of(eng[0, 0]).area(), 6)      # the sliver's tile is untouched
+        self.assertLess(sec_of(eng[2, 2]).area(), sec_of(b[2, 2]).area() - 0.5)         # the block is cut
+        with self.assertRaises(ValueError):
+            self._build(poly_spec((5, 5, 5.5, 15)))                                     # nothing printable left
+
+    def test_image_two_dots_give_two_pockets_in_the_right_tiles(self):
+        from PIL import Image, ImageDraw
+        img = Image.new("L", (200, 200), 255)
+        d = ImageDraw.Draw(img)
+        for cx in (60, 140):                                                            # 0.2 mm/px on a 40 mm outline: dots at x 12 and 28, y 20
+            d.ellipse((cx - 12, 88, cx + 12, 112), fill=0)
+        path = os.path.join(TMP, "dots.png")
+        img.save(path)
+        base, _ = sheet("rect:40,40", 0.4, "drape")
+        tiles, info = self._build(f"image:{path}")
+        b = {(r, c): m for _, r, c, m in base}
+        changed = {(r, c) for _, r, c, m in tiles if sec_of(b[r, c]).area() - sec_of(m).area() > 0.1}
+        self.assertEqual(changed, {(2, 1), (2, 3)})
+        self.assertEqual(info["engrave"], f"image:{path}")
+
+    def test_json_mask_and_depth_rules(self):
+        path = os.path.join(TMP, "mask.json")
+        json.dump({"polys": [[[17, 17], [23, 17], [23, 23], [17, 23]]]}, open(path, "w"))
+        _, info = self._build(path)
+        self.assertEqual(info["swap_layer"], 2)
+        _, info = self._build(path, engrave_depth=0.4)
+        self.assertEqual((info["swap_layer"], info["swap_z_mm"]), (3, 0.4))
+        for bad in (0.3, 0.6, 0.0, -0.2):
+            with self.assertRaises(ValueError, msg=bad):
+                self._build(path, engrave_depth=bad)
+        with self.assertRaises(ValueError):
+            self._build(os.path.join(TMP, "nope.json"))
+
+    def test_cli_sidecar_and_check(self):
+        out = os.path.join(TMP, "eng-cli.3mf")
+        rc = fabric.main(["--outline", "circle:60", "--tile", "drape", "--engrave", "poly:20,20 40,20 40,40 20,40", "--out", out])
+        self.assertEqual(rc, 0)
+        info = json.load(open(out + ".json"))
+        for k in ("engrave", "engrave_depth", "swap_layer", "swap_z_mm", "engrave_clipped_tiles", "engrave_dropped"):
+            self.assertIn(k, info)
+        self.assertEqual((info["swap_layer"], info["swap_z_mm"], info["engrave_depth"]), (2, 0.2, 0.2))
+        r = subprocess.run([sys.executable, os.path.join(SCRIPTS, "fabric.py"), "--check", out, "--gap", "0.4"], capture_output=True, text=True, timeout=300)
+        res = json.loads(r.stdout)
+        self.assertTrue(res["ok"], res)
+        self.assertEqual((res["bodies"], res["fused_pairs"]), (res["tiles"], 0))
+        with self.assertRaises(SystemExit):
+            fabric.main(["--swatch", "--engrave", "poly:1,1 5,1 5,5", "--out", out])
 
 
 if __name__ == "__main__":

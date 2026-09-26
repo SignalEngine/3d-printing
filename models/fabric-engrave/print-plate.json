@@ -1,0 +1,83 @@
+{
+ "layout": [
+  {
+   "design": "bat-drape",
+   "tile": "drape",
+   "tiles": 101,
+   "at_mm": [
+    0,
+    0
+   ],
+   "size_mm": [
+    141.9,
+    69.9
+   ]
+  },
+  {
+   "design": "pumpkin-drape",
+   "tile": "drape",
+   "tiles": 78,
+   "at_mm": [
+    158,
+    0
+   ],
+   "size_mm": [
+    85.9,
+    77.9
+   ]
+  },
+  {
+   "design": "ghost-drape",
+   "tile": "drape",
+   "tiles": 114,
+   "at_mm": [
+    0,
+    90
+   ],
+   "size_mm": [
+    109.9,
+    93.9
+   ]
+  },
+  {
+   "design": "ghost-square",
+   "tile": "square",
+   "tiles": 74,
+   "at_mm": [
+    124,
+    90
+   ],
+   "size_mm": [
+    109.6,
+    99.6
+   ]
+  }
+ ],
+ "extents_mm": [
+  243.9,
+  188.7,
+  3.8
+ ],
+ "min_gap_between_designs_mm": 11.3,
+ "swap_z_mm": 0.2,
+ "swap_layer": 2,
+ "tiles": 367,
+ "check": {
+  "ok": false,
+  "tiles": 367,
+  "bodies": 367,
+  "min_gap_mm": null,
+  "fused_pairs": 9,
+  "detail": "the fabric's tiles are fused together"
+ },
+ "not_on_plate": [
+  "coaster90-drape"
+ ],
+ "slice_gate": [
+  "supports: none",
+  "estimated print time: 4h 36m 28s",
+  "filament: 40.19g",
+  "RESULT: PASS"
+ ],
+ "slice_gate_rc": 0
+}

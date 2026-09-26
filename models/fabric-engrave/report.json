@@ -1,0 +1,117 @@
+{
+ "pumpkin-drape": {
+  "tile": "drape",
+  "tiles": 78,
+  "swap_layer": 2,
+  "swap_z_mm": 0.2,
+  "bbox": [
+   1.06,
+   1.06,
+   86.94,
+   78.94
+  ],
+  "engrave_clipped_tiles": 0,
+  "engrave_dropped": 5,
+  "min_bed_contact_mm2": 25.9,
+  "check": {
+   "ok": true,
+   "tiles": 78,
+   "bodies": 78,
+   "min_gap_mm": 0.4,
+   "fused_pairs": 0,
+   "detail": ""
+  }
+ },
+ "bat-drape": {
+  "tile": "drape",
+  "tiles": 101,
+  "swap_layer": 2,
+  "swap_z_mm": 0.2,
+  "bbox": [
+   1.06,
+   1.06,
+   142.94,
+   70.94
+  ],
+  "engrave_clipped_tiles": 0,
+  "engrave_dropped": 3,
+  "min_bed_contact_mm2": 25.9,
+  "check": {
+   "ok": true,
+   "tiles": 101,
+   "bodies": 101,
+   "min_gap_mm": 0.4,
+   "fused_pairs": 0,
+   "detail": ""
+  }
+ },
+ "ghost-drape": {
+  "tile": "drape",
+  "tiles": 114,
+  "swap_layer": 2,
+  "swap_z_mm": 0.2,
+  "bbox": [
+   1.06,
+   1.06,
+   110.94,
+   94.94
+  ],
+  "engrave_clipped_tiles": 0,
+  "engrave_dropped": 5,
+  "min_bed_contact_mm2": 25.9,
+  "check": {
+   "ok": true,
+   "tiles": 114,
+   "bodies": 114,
+   "min_gap_mm": 0.4,
+   "fused_pairs": 0,
+   "detail": ""
+  }
+ },
+ "ghost-square": {
+  "tile": "square",
+  "tiles": 74,
+  "swap_layer": 2,
+  "swap_z_mm": 0.2,
+  "bbox": [
+   0.2,
+   0.2,
+   109.8,
+   99.8
+  ],
+  "engrave_clipped_tiles": 0,
+  "engrave_dropped": 13,
+  "min_bed_contact_mm2": 64.1,
+  "check": {
+   "ok": true,
+   "tiles": 74,
+   "bodies": 74,
+   "min_gap_mm": 0.4,
+   "fused_pairs": 0,
+   "detail": ""
+  }
+ },
+ "coaster90-drape": {
+  "tile": "drape",
+  "tiles": 98,
+  "swap_layer": 2,
+  "swap_z_mm": 0.2,
+  "bbox": [
+   1.06,
+   1.06,
+   86.94,
+   86.94
+  ],
+  "engrave_clipped_tiles": 0,
+  "engrave_dropped": 4,
+  "min_bed_contact_mm2": 25.9,
+  "check": {
+   "ok": true,
+   "tiles": 98,
+   "bodies": 98,
+   "min_gap_mm": 0.4,
+   "fused_pairs": 0,
+   "detail": ""
+  }
+ }
+}
