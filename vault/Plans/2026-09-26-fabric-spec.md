@@ -129,3 +129,16 @@ James's idea: add detail by pressing features into the fabric surface, plus colo
 - Sources: https://makerworld.com/en/models/122006-nasa-fabric-v2 ,
   https://makerworld.com/en/models/147124-multi-color-nasa-chainmail , https://shop.thehueforge.com/pages/about-hueforge ,
   https://wiki.polymaker.com/the-basics/applications/hueforge-painting
+
+## Two-colour design (James, 26 Sep: "an option"; "do they have an AMS?")
+- It's an OPTION on the fabric page: "Two colours" + colour 1 / colour 2, plus a question: "Do you have an AMS?"
+- **One-swap method (any printer, the default):** the details are RAISED above the tile tops (pressed-in detail,
+  positive relief). Everything prints in colour 1 up to the tile-top height, then ONE swap to colour 2, so only the
+  raised details come out in colour 2. No swap back.
+- **Swap layer:** the first layer above the tile-top height (e.g. 3.0 mm at 0.20 mm layers → layer 16).
+  - Embed the colour change in the 3MF, so Bambu Studio opens with it set: on an A1 without an AMS it pauses for a
+    manual swap; with an AMS it swaps by itself. **UNVERIFIED:** confirm by slicing a real file (Bambu
+    custom-gcode-per-layer / filament-change metadata) before relying on it.
+  - The ready page ALSO states it: "At layer N (X mm), change to <colour 2>", with a picture.
+- **AMS unlocks per-region colour** (any pattern, the slicer swaps per layer; more purge waste and time). That's the
+  per-tile colour phase, later.
