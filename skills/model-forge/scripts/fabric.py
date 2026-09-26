@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Fabric generator: print-in-place linked-tile sheet (chainmail style) filling an outline.
 
-Two tile styles (--tile drape | square, default drape):
+Two tile styles (--tile drape | square, default square until TweakMyPart moves to drape):
 
 DRAPE (default): every tile is identical. A small plate with a raised dome; on its +x and +y edges a BAR (a
 1.2 mm octagonal rod held between two posts), on its -x and -y edges a RING (octagonal loop). The neighbour's ring
@@ -29,7 +29,7 @@ import manifold3d as m3d
 
 BED = 256.0
 DEFAULT_GAP = 0.4        # placeholder until James's swatch print picks the real value
-DEFAULT_TILE = "drape"
+DEFAULT_TILE = "square"   # prod (TweakMyPart host) calls fabric.py without --tile: it stays square until TweakMyPart switches its preview + price to drape
 TILE_PITCH = {"drape": 8.0, "square": 10.0}
 PLATE_T = 1.2            # plate + tab thickness (6 layers at 0.2)
 TAB_W, LEG_W, BAR_U0, BAR_W, LIP_W = 2.0, 1.0, 0.6, 1.2, 1.0

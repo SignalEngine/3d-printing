@@ -2,10 +2,10 @@
 
 A flexible sheet printed flat in one go: tiles linked like chainmail, no supports, no assembly.
 Generator: `scripts/fabric.py`. Tests: `tests/test_fabric.py`. Spec: vault `2026-09-26-fabric-spec`.
-Two tiles: `--tile drape` (the default, v2) and `--tile square` (v1, kept). Both share the outline fill, CLI,
+Two tiles: `--tile drape` (v2, draping) and `--tile square` (v1, the default until TweakMyPart moves its preview + price to drape). Both share the outline fill, CLI,
 sidecar (with a `"tile"` key) and `--check`.
 
-## Drape tile (default)
+## Drape tile (v2; becomes the default once TweakMyPart switches)
 - Every tile is identical: a plate (1.2 mm) with a raised dome (1 mm), a BAR on its +x/+y edges (1.2 mm octagonal rod
   held between two posts, a 2.4 mm bridge) and a RING on its -x/-y edges (octagonal loop, 0.85 mm wall). A neighbour's
   ring encircles this tile's bar: loop through loop, so every link is a chain link. Edge tiles omit the features that face

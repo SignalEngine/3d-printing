@@ -1,4 +1,4 @@
-"""fabric.py contract, for BOTH tiles (drape = default, square = the old one): gap, captive, bodies, outline fill, bed,
+"""fabric.py contract, for BOTH tiles (square = default for now, drape = the new draping tile): gap, captive, bodies, outline fill, bed,
 slices with no supports, swatch, --check. Plus the drape contract (the reason for the drape tile) in class Drape.
 Run: /root/3d-printing/.venv/bin/python -m pytest -q skills/model-forge/tests/test_fabric.py"""
 import itertools, json, os, subprocess, sys, tempfile, unittest
@@ -389,10 +389,15 @@ class Limits(unittest.TestCase):
         fabric.check_params(8.0, None, 0.6, "drape")
         fabric.check_params(6.0, None, 0.4, "drape")
 
-    def test_drape_is_the_default_tile(self):
+    def test_square_stays_the_default_until_tweakmypart_moves_and_drape_is_one_flag_away(self):
+        # the TweakMyPart host calls fabric.py WITHOUT --tile, and its preview/price assume square 10 mm tiles
         out = os.path.join(TMP, "default.3mf")
         self.assertEqual(fabric.main(["--outline", "rect:40,40", "--out", out]), 0)
         info = json.load(open(out + ".json"))
+        self.assertEqual((info["tile"], info["pitch"], info["tiles"]), ("square", 10.0, 16))
+        out2 = os.path.join(TMP, "drape.3mf")
+        self.assertEqual(fabric.main(["--outline", "rect:40,40", "--tile", "drape", "--out", out2]), 0)
+        info = json.load(open(out2 + ".json"))
         self.assertEqual((info["tile"], info["pitch"], info["tiles"]), ("drape", 8.0, 25))
 
     def test_empty_text_is_refused_not_a_crash(self):
