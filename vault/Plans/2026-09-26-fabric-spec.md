@@ -102,3 +102,13 @@ resolution, no islands). Until then the preview shows the square-tile result hon
   - no AI tweak/retry on fabric designs ("make another size or shape").
   - design-gate couldn't evaluate it: the page is sign-in gated, so the gate judged the Clerk page. Evidence: the
     signed-in 390 px screenshot plus the staging order.
+- **Drape tile MERGED** (model-forge #17): our own NASA-style bar-in-ring tile at pitch 8. It folds ±30° on every
+  pair (the square tile fails the same fold). Drape params are validated by building one tile (minimum pitch 6.5 @0.3
+  … 8.5 @0.6). The DEFAULT stays square until TweakMyPart switches its preview + price (then: make a drape ghost, and
+  message the lander to add its picker).
+- **Test designs + print plate** (`models/fabric-tests/`, see its README): pumpkin/bat/coaster/bookmark in drape,
+  ghost in square; the name tag was dropped (letters can't link). Plate: 239 x 189 mm, 4.4 h, 38 g, no supports. Sent
+  to James to print.
+- **Chat-path fabric fix SHIPPED** (printtweak #115 → prod 7b112d1): the judge sees fabric from the top. Before,
+  every chat-path fabric order failed "thin, flat structure". Proven on staging: a custom pumpkin → ready, 81 tiles.
+  The chat path also refuses a too-small size ("32 mm loses the lobes").
