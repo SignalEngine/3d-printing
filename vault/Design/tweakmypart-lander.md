@@ -59,3 +59,7 @@ James: the first box should take an idea; uploading a photo or model is a main f
 ## Examples section desktop-only (PR #110, 26 Sep)
 
 James: "large tweak looks bad on phone"; the examples list "doesn't make sense without the image next to it" on mobile, so remove it there. Real remixes and builds return once he has tested some. `#examples` stays mounted (so `useActiveSection`, which observes once, still tracks it after a tablet rotates past 1024px) but gets `.lander-desktop-only` (hidden <1024px) and mounts its contents only when `useIsDesktop() !== false`. Phones: hero, chat, adapt, fabric, checks, pricing, faq, cta. Live `051a4ca`, deploy `a546a981` SUCCESS.
+
+## Fabric available (PR #111, 26 Sep)
+
+Phase 2 live (prod web `8f30504`, #109). `#fabric` eyebrow NEW; six shape chips + "Design fabric" button link to `/design/new?q=a <shape> made of printable fabric` (test asserts every link in the section does). FAQ gains "Can it make fabric?" (shaped flat items, square linked tiles, one colour), and "What do I get?" now says fabric comes as a 3MF only (fabric builds write `step: null`). Don't advertise pictures, multi-colour, hex, straps, clothing or fabric remixes until those phases ship. Live `6549cea`, deploy `16a31813` SUCCESS; 390/1440 checked, 7 links, 0 overflow, 0 console errors. Not verified by this session: a fabric build completing on prod (proven on staging by the fabric session).
