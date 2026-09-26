@@ -81,3 +81,10 @@ designs, for now.
 - Lander: the "coming soon" section shipped (#108); the lander session (printtweak-1f) was told phase 2 is live and
   switches it to "available".
 - Next: phase 2b straps (anchor ends), phase 3 pictures, phase 4 colours, phase 5 hex, phase 6 remix (card fixes).
+
+## Decisions (James, 26 Sep, later)
+- **Fabric starter page:** "Design your own fabric" → shape picker + size + live tile preview → order. Preset orders
+  run the generator on the host with NO AI (deterministic, seconds). Custom shapes stay in the normal chat. Plan:
+  [[2026-09-26-fabric-starter-plan]].
+- **Tile styles with pictures** (square / hexagon / scales) are offered only once hex (phase 5) AND a scale tile exist.
+  Scales are a new tile style, added to the spec.
