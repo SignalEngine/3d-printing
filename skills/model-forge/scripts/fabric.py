@@ -304,6 +304,10 @@ def check_params(pitch, height, gap, tile=None):
         if pitch < DRAPE_MIN_PITCH or pitch - d["rec"] - d["m"] < 2.0 or RING_W / 2 + gap + POST_W > pitch / 2 - 0.4:
             raise ValueError(f"pitch {pitch} too small for the drape tile at gap {gap}: use >= {DRAPE_MIN_PITCH:.0f} mm "
                              f"(plate {pitch - d['rec'] - d['m']:.1f} mm wide at the links, needs >= 2.0)")
+        try:   # the arithmetic above misses some pitch/gap pairs the geometry can't build (review P2: 8 mm at 0.6): build one
+            drape_manifold(pitch, gap, {n: True for n in ((1, 0), (0, 1), (-1, 0), (0, -1))})
+        except Exception as e:
+            raise ValueError(f"the drape tile can't be built at pitch {pitch} mm with gap {gap} mm: try a larger pitch or a smaller gap") from e
         return
     slot_u = BAR_U0 + BAR_W + gap + LIP_W + gap
     waist = 2 * (pitch / 2 - gap / 2 - slot_u)

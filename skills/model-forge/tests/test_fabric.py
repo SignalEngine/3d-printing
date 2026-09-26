@@ -386,8 +386,16 @@ class Limits(unittest.TestCase):
             fabric.check_params(8.0, None, 0.7, "drape")       # the rings would slide off the bars
         with self.assertRaises(ValueError):
             fabric.check_params(5.0, None, 0.4, "drape")       # no room for a plate between the links
-        fabric.check_params(8.0, None, 0.6, "drape")
-        fabric.check_params(6.0, None, 0.4, "drape")
+        # measured minimum buildable pitch: 6.5 @0.3, 7.5 @0.4, 8.0 @0.5, 8.5 @0.6 (check_params builds one tile to know)
+        fabric.check_params(8.5, None, 0.6, "drape")
+        fabric.check_params(7.5, None, 0.4, "drape")
+        with self.assertRaises(ValueError):
+            fabric.check_params(6.0, None, 0.4, "drape")
+
+    def test_a_drape_pitch_gap_the_geometry_cannot_build_is_refused_not_a_crash(self):
+        # review P2: 8 mm at 0.6 mm passed the arithmetic checks and crashed in drape_manifold
+        with self.assertRaises(ValueError):
+            fabric.check_params(8.0, None, 0.6, "drape")
 
     def test_square_stays_the_default_until_tweakmypart_moves_and_drape_is_one_flag_away(self):
         # the TweakMyPart host calls fabric.py WITHOUT --tile, and its preview/price assume square 10 mm tiles
