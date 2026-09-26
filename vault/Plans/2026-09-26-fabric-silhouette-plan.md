@@ -59,6 +59,16 @@ Decisions:
   (storage) to the page. Upload-trace jobs cost nothing; word jobs log their AI cost.
 - **Safety:** uploaded images are data. Strip EXIF. Refuse anything that isn't an image. Size caps.
 
+## Fit within the fabric (James, 26 Sep: "it needs to fit within the fabric")
+Every shape becomes whole 10 mm tiles, so detail finer than about 2 tiles (whiskers, thin legs, a stalk) is lost.
+- The preview ALWAYS shows the TILED result (the kept cells), never just the smooth silhouette. The customer
+  confirms what will actually print.
+- A readability check at tile resolution:
+  - refuse or warn if the kept cells lose more than ~30 % of the silhouette area, or split it into islands;
+  - suggest the width at which the shape keeps its features ("looks better at 160 mm").
+- The word-shape prompt asks for a bold, chunky silhouette with no parts thinner than 2 tiles at the chosen size.
+- Hex/scale tiles later: the same rule at their own cell size.
+
 ## C. Tests (each red without its code)
 - model-forge as above.
 - Worker:
