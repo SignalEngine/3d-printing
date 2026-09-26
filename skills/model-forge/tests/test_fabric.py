@@ -174,5 +174,21 @@ class Swatch(unittest.TestCase):
         self.assertEqual(scene.bounds[0][2], 0)
 
 
+
+
+class Limits(unittest.TestCase):
+    def test_a_gap_the_lip_cannot_catch_is_refused(self):
+        # review P3: at gap >= the lip height the tiles slide apart; above 0.6 the bridge span passes 3.2 mm
+        with self.assertRaises(ValueError):
+            fabric.check_params(20.0, 4.0, 0.7)
+        fabric.check_params(10.0, 3.0, 0.6)   # the largest allowed gap still passes
+
+    def test_empty_text_is_refused_not_a_crash(self):
+        r = subprocess.run([sys.executable, os.path.join(SCRIPTS, "fabric.py"), "--outline", "text:", "--out",
+                            tempfile.mktemp(suffix=".3mf")], capture_output=True, text=True, timeout=120)
+        self.assertNotEqual(r.returncode, 0)
+        self.assertNotIn("ZeroDivisionError", r.stderr)
+
+
 if __name__ == "__main__":
     unittest.main()

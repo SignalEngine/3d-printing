@@ -119,6 +119,8 @@ class Outline:
     def scale_to(self, height_mm):
         """text only: scale so the ink is height_mm tall, and build the mask."""
         img = self.text_img
+        if img.height == 0 or img.width == 0:
+            raise ValueError("text outline is empty")
         k = height_mm * self.px / img.height
         img = img.resize((max(1, round(img.width * k)), max(1, round(img.height * k))))
         self.mask = np.asarray(img) > 127
@@ -170,6 +172,8 @@ def check_params(pitch, height, gap):
         raise ValueError(f"height {height} too low: bridge needs >= {PLATE_T + gap + MIN_FEATURE:.1f} mm")
     if gap < 0.1:
         raise ValueError("gap must be >= 0.1 mm")
+    if gap > 0.6:   # the lip (1.2 mm) must out-rise the gap to catch the bridge, and the bridge span (2 + 2*gap) stays <= 3.2 mm
+        raise ValueError(f"gap {gap} too large: tiles would slide apart (max 0.6 mm)")
 
 
 def build_sheet(spec, pitch, height, gap, origin=(0.0, 0.0), prefix="", lip_h=LIP_H):
