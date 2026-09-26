@@ -1,0 +1,15 @@
+{
+ "tiles": 86,
+ "tile": "drape",
+ "pitch": 8.0,
+ "height": 3.799,
+ "gap": 0.4,
+ "outline": "heart:100",
+ "bbox": [
+  0.86,
+  8.86,
+  95.14,
+  87.14
+ ],
+ "dropped_islands": 0
+}
