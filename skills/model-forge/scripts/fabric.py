@@ -9,6 +9,9 @@ Printable flat, no supports: every overhang is vertical or a straight bridge <= 
 Usage: fabric.py --outline rect:W,H | circle:D | poly:"x,y x,y ..." | text:"ABC" [--pitch 10] [--height 3.0]
                  [--gap 0.4] --out fabric.3mf [--swatch]
 Writes <out> (one 3MF object per tile, `tile-r<row>-c<col>`) and <out>.json. Exit 2 = refused (bed / bad input).
+
+       fabric.py --check X.3mf [--gap G]   re-measures the real geometry, prints one JSON line
+                 {"ok","tiles","bodies","min_gap_mm","fused_pairs","detail"}; exit 0 if ok else 1.
 """
 import argparse, json, math, os, sys
 import numpy as np
@@ -241,15 +244,81 @@ def export(tiles, extra, path):
     scene.export(path)
 
 
+def _manifold(mesh):
+    return m3d.Manifold(m3d.Mesh(np.asarray(mesh.vertices, dtype=np.float32), np.asarray(mesh.faces, dtype=np.uint32)))
+
+
+def check_sheet(path, gap=DEFAULT_GAP):
+    """Measure a fabric 3MF as printed: one watertight body per object, no pair closer than gap - 0.05, none fused."""
+    scene = trimesh.load(path)
+    objs = []
+    for node in scene.graph.nodes_geometry:
+        T, gname = scene.graph[node]
+        objs.append((node, scene.geometry[gname].copy().apply_transform(T)))
+    res = {"ok": False, "tiles": len(objs), "bodies": len(objs), "min_gap_mm": None, "fused_pairs": 0, "detail": ""}
+    bad = [n for n, m in objs if not m.is_watertight]
+    if bad:
+        res["detail"] = f"not watertight: {', '.join(bad[:3])}"
+        return res
+    for _, m in objs:                       # two tiles merged into one object = one object, several bodies
+        res["fused_pairs"] += max(0, len(m.split(only_watertight=False)) - 1)
+    mans = [_manifold(m) for _, m in objs]
+    ext = max(float(np.ptp(m.bounds, axis=0)[:2].max()) for _, m in objs) if objs else 1.0
+    pitch = ext
+    if os.path.exists(path + ".json"):
+        try:
+            pitch = float(json.load(open(path + ".json")).get("pitch", ext))
+        except (ValueError, OSError):
+            pass
+    grid = {}
+    for i, (_, m) in enumerate(objs):       # neighbour pruning: bucket by centre, look at the 3 x 3 buckets around
+        cx, cy = m.bounds.mean(axis=0)[:2]
+        grid.setdefault((int(cx // ext), int(cy // ext)), []).append(i)
+    search = max(gap, 0.1) + 0.5
+    min_gap = None
+    for (gx, gy), ids in grid.items():
+        for i in ids:
+            for dx in (-1, 0, 1):
+                for dy in (-1, 0, 1):
+                    for j in grid.get((gx + dx, gy + dy), ()):
+                        if j <= i:
+                            continue
+                        a, b = objs[i][1].bounds, objs[j][1].bounds
+                        if (np.maximum(a[0] - b[1], b[0] - a[1])[:2] > pitch).any():
+                            continue
+                        d = mans[i].min_gap(mans[j], search)
+                        if d < 1e-6:
+                            res["fused_pairs"] += 1
+                        if min_gap is None or d < min_gap:
+                            min_gap = d
+    res["min_gap_mm"] = None if min_gap is None else round(float(min_gap), 3)
+    if len(objs) < 2:
+        res["detail"] = "fewer than 2 bodies: not a fabric"
+    elif res["fused_pairs"]:
+        res["detail"] = "the fabric's tiles are fused together"
+    elif min_gap is not None and min_gap < gap - 0.05:
+        res["detail"] = f"tiles are closer than the print gap ({min_gap:.2f} mm < {gap} mm)"
+    else:
+        res["ok"] = True
+    return res
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--outline", default="rect:40,40")
     ap.add_argument("--pitch", type=float, default=10.0)
     ap.add_argument("--height", type=float, default=3.0)
     ap.add_argument("--gap", type=float, default=DEFAULT_GAP)
-    ap.add_argument("--out", required=True)
+    ap.add_argument("--out")
     ap.add_argument("--swatch", action="store_true")
+    ap.add_argument("--check", metavar="X.3mf")
     a = ap.parse_args(argv)
+    if a.check:
+        res = check_sheet(a.check, a.gap)
+        print(json.dumps(res))
+        return 0 if res["ok"] else 1
+    if not a.out:
+        ap.error("--out is required")
     try:
         if a.swatch:
             tiles, tags, patches = build_swatch(a.pitch, a.height)
