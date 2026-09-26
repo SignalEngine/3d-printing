@@ -11,6 +11,16 @@ Decisions:
   and no image-model account. No web image search.
 - **Photos:** automatic background cut-out with a small free model on OUR server. It costs nothing per use.
 
+## Current state (26 Sep afternoon)
+- The starter page is LIVE (printtweak #113): `app/(main)/design/fabric/FabricStarterClient.tsx`,
+  `convex/lib/fabricPreview.ts` (client preview + parity fixtures), `createFabric` + the `fabric` job kind,
+  `worker.process_fabric` (host runs fabric.py, no AI), the brief lane takes fabric jobs.
+- fabric.py (model-forge) has `--outline poly:/heart:/rrect:/circle:/rect:/text:`, `--tile square|drape` (default
+  square), `--tiles-glb`, and `--check`. Add `image:` here; the preview must use the SAME tile as the build (the
+  default square today, pitch 10).
+- Prior art for a host-side trace: none. For a short AI job, reuse the `vision_check` container pattern
+  (`worker/vision_check.py` + `worker/job/vision_job.py`).
+
 ## Worktrees
 - `3d-printing` (model-forge): `/root/wt-3dp-trace`, branch `build/fabric-trace`. Merges first.
 - `printtweak`: `/root/wt-pt-trace`, branch `build/fabric-silhouette` (off origin/master AFTER the starter page
