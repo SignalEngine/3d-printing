@@ -14,7 +14,8 @@ SQUARE (the old tile, kept as --tile square): checkerboard: "A" tiles have bridg
 that catches the bridge, so the pair cannot slide apart. Every tab/bridge face keeps `gap` clearance.
 Printable flat, no supports: every overhang is vertical or a straight bridge <= 3.2 mm; every tile sits on z=0.
 
-Usage: fabric.py --outline rect:W,H | rrect:W,H,R | circle:D | heart:W | poly:"x,y x,y ..." | text:"ABC" [--tile drape|square]
+Usage: fabric.py --outline rect:W,H | rrect:W,H,R | circle:D | heart:W | poly:"x,y x,y ..." | text:"ABC" | image:PATH[@W]
+                 (image: traces any picture with silhouette.py, W = overall width in mm, default 100) [--tile drape|square]
                  [--pitch 8 (drape) | 10 (square)] [--height 3.0 (square only)] [--gap 0.4] --out fabric.3mf [--swatch]
                  [--tiles-glb X-tiles.glb]   also write one glTF node per tile + X-tiles.json (tiles + links)
 Writes <out> (one 3MF object per tile, `tile-r<row>-c<col>`) and <out>.json. Exit 2 = refused (bed / bad input).
@@ -204,7 +205,7 @@ class Outline:
         self.spec = spec
         kind, _, arg = spec.partition(":")
         self.mask = None
-        if kind in ("rect", "rrect", "circle", "poly", "heart"):
+        if kind in ("rect", "rrect", "circle", "poly", "heart", "image"):
             from shapely.geometry import Point, Polygon, box
             if kind == "rect":
                 w, h = (float(x) for x in arg.split(","))
@@ -222,6 +223,15 @@ class Outline:
             elif kind == "circle":
                 d = float(arg)
                 poly = Point(d / 2, d / 2).buffer(d / 2, 128)
+            elif kind == "image":                # image:PATH[@W]: trace the picture (silhouette.py), W mm wide
+                path, _, w = arg.rpartition("@")
+                if not path:
+                    path, w = arg, ""
+                import silhouette
+                r = silhouette.trace(path, float(w) if w else 100.0)
+                if not r["ok"]:
+                    raise ValueError(r["detail"])
+                poly = Polygon(r["outline"])
             else:
                 pts = [tuple(float(v) for v in p.split(",")) for p in arg.split()]
                 poly = Polygon(pts)
@@ -244,7 +254,7 @@ class Outline:
             self.poly = None
             self.w = self.h = None
         else:
-            raise ValueError(f"unknown outline {spec!r}; use rect:W,H | rrect:W,H,R | circle:D | heart:W | poly:\"x,y ...\" | text:ABC")
+            raise ValueError(f"unknown outline {spec!r}; use rect:W,H | rrect:W,H,R | circle:D | heart:W | poly:\"x,y ...\" | text:ABC | image:PATH[@W]")
 
     def scale_to(self, height_mm):
         """text only: scale so the ink is height_mm tall, and build the mask."""
