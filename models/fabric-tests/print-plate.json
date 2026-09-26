@@ -1,0 +1,41 @@
+{
+ "layout": [
+  {
+   "design": "bat-drape",
+   "tiles": 101,
+   "at_mm": [
+    0,
+    0
+   ]
+  },
+  {
+   "design": "pumpkin-drape",
+   "tiles": 78,
+   "at_mm": [
+    153,
+    0
+   ]
+  },
+  {
+   "design": "ghost-square",
+   "tiles": 74,
+   "at_mm": [
+    0,
+    89
+   ]
+  },
+  {
+   "design": "coaster90-drape",
+   "tiles": 98,
+   "at_mm": [
+    120,
+    94
+   ]
+  }
+ ],
+ "extents_mm": [
+  239.3,
+  188.6,
+  3.8
+ ]
+}

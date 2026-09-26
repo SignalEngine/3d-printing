@@ -1,0 +1,1784 @@
+{
+ "units": "mm",
+ "tile": "drape",
+ "pitch_mm": 8.0,
+ "gap_mm": 0.4,
+ "tile_height_mm": 3.799,
+ "tiles": [
+  {
+   "name": "tile-r0-c1",
+   "row": 0,
+   "col": 1,
+   "center_mm": [
+    12.73,
+    4.73,
+    1.4
+   ]
+  },
+  {
+   "name": "tile-r0-c2",
+   "row": 0,
+   "col": 2,
+   "center_mm": [
+    19.35,
+    4.73,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r0-c3",
+   "row": 0,
+   "col": 3,
+   "center_mm": [
+    27.35,
+    4.73,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r0-c4",
+   "row": 0,
+   "col": 4,
+   "center_mm": [
+    35.35,
+    4.73,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r0-c5",
+   "row": 0,
+   "col": 5,
+   "center_mm": [
+    43.35,
+    4.73,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r0-c6",
+   "row": 0,
+   "col": 6,
+   "center_mm": [
+    51.35,
+    4.73,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r0-c7",
+   "row": 0,
+   "col": 7,
+   "center_mm": [
+    59.35,
+    4.73,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r0-c8",
+   "row": 0,
+   "col": 8,
+   "center_mm": [
+    67.35,
+    4.73,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r0-c9",
+   "row": 0,
+   "col": 9,
+   "center_mm": [
+    75.35,
+    4.73,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r0-c10",
+   "row": 0,
+   "col": 10,
+   "center_mm": [
+    83.35,
+    4.73,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r0-c11",
+   "row": 0,
+   "col": 11,
+   "center_mm": [
+    91.35,
+    4.73,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r0-c12",
+   "row": 0,
+   "col": 12,
+   "center_mm": [
+    99.35,
+    4.73,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r0-c13",
+   "row": 0,
+   "col": 13,
+   "center_mm": [
+    107.35,
+    4.73,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r0-c14",
+   "row": 0,
+   "col": 14,
+   "center_mm": [
+    115.35,
+    4.73,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r0-c15",
+   "row": 0,
+   "col": 15,
+   "center_mm": [
+    123.35,
+    4.73,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r0-c16",
+   "row": 0,
+   "col": 16,
+   "center_mm": [
+    130.62,
+    4.73,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r1-c0",
+   "row": 1,
+   "col": 0,
+   "center_mm": [
+    4.73,
+    12.73,
+    1.4
+   ]
+  },
+  {
+   "name": "tile-r1-c1",
+   "row": 1,
+   "col": 1,
+   "center_mm": [
+    11.35,
+    11.35,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r1-c2",
+   "row": 1,
+   "col": 2,
+   "center_mm": [
+    19.35,
+    11.35,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r1-c3",
+   "row": 1,
+   "col": 3,
+   "center_mm": [
+    27.35,
+    11.35,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r1-c4",
+   "row": 1,
+   "col": 4,
+   "center_mm": [
+    35.35,
+    11.35,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r1-c5",
+   "row": 1,
+   "col": 5,
+   "center_mm": [
+    43.35,
+    11.35,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r1-c6",
+   "row": 1,
+   "col": 6,
+   "center_mm": [
+    51.35,
+    11.35,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r1-c7",
+   "row": 1,
+   "col": 7,
+   "center_mm": [
+    59.35,
+    11.35,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r1-c8",
+   "row": 1,
+   "col": 8,
+   "center_mm": [
+    67.35,
+    11.35,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r1-c9",
+   "row": 1,
+   "col": 9,
+   "center_mm": [
+    75.35,
+    11.35,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r1-c10",
+   "row": 1,
+   "col": 10,
+   "center_mm": [
+    83.35,
+    11.35,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r1-c11",
+   "row": 1,
+   "col": 11,
+   "center_mm": [
+    91.35,
+    11.35,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r1-c12",
+   "row": 1,
+   "col": 12,
+   "center_mm": [
+    99.35,
+    11.35,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r1-c13",
+   "row": 1,
+   "col": 13,
+   "center_mm": [
+    107.35,
+    11.35,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r1-c14",
+   "row": 1,
+   "col": 14,
+   "center_mm": [
+    115.35,
+    11.35,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r1-c15",
+   "row": 1,
+   "col": 15,
+   "center_mm": [
+    123.35,
+    11.35,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r1-c16",
+   "row": 1,
+   "col": 16,
+   "center_mm": [
+    131.35,
+    11.35,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r1-c17",
+   "row": 1,
+   "col": 17,
+   "center_mm": [
+    138.62,
+    12.73,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r2-c0",
+   "row": 2,
+   "col": 0,
+   "center_mm": [
+    4.73,
+    19.35,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r2-c1",
+   "row": 2,
+   "col": 1,
+   "center_mm": [
+    11.35,
+    19.35,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r2-c2",
+   "row": 2,
+   "col": 2,
+   "center_mm": [
+    19.35,
+    19.35,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r2-c3",
+   "row": 2,
+   "col": 3,
+   "center_mm": [
+    27.35,
+    19.35,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r2-c4",
+   "row": 2,
+   "col": 4,
+   "center_mm": [
+    35.35,
+    19.35,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r2-c5",
+   "row": 2,
+   "col": 5,
+   "center_mm": [
+    43.35,
+    19.35,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r2-c6",
+   "row": 2,
+   "col": 6,
+   "center_mm": [
+    51.35,
+    19.35,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r2-c7",
+   "row": 2,
+   "col": 7,
+   "center_mm": [
+    59.35,
+    19.35,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r2-c8",
+   "row": 2,
+   "col": 8,
+   "center_mm": [
+    67.35,
+    19.35,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r2-c9",
+   "row": 2,
+   "col": 9,
+   "center_mm": [
+    75.35,
+    19.35,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r2-c10",
+   "row": 2,
+   "col": 10,
+   "center_mm": [
+    83.35,
+    19.35,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r2-c11",
+   "row": 2,
+   "col": 11,
+   "center_mm": [
+    91.35,
+    19.35,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r2-c12",
+   "row": 2,
+   "col": 12,
+   "center_mm": [
+    99.35,
+    19.35,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r2-c13",
+   "row": 2,
+   "col": 13,
+   "center_mm": [
+    107.35,
+    19.35,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r2-c14",
+   "row": 2,
+   "col": 14,
+   "center_mm": [
+    115.35,
+    19.35,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r2-c15",
+   "row": 2,
+   "col": 15,
+   "center_mm": [
+    123.35,
+    19.35,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r2-c16",
+   "row": 2,
+   "col": 16,
+   "center_mm": [
+    131.35,
+    19.35,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r2-c17",
+   "row": 2,
+   "col": 17,
+   "center_mm": [
+    139.35,
+    19.35,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r2-c18",
+   "row": 2,
+   "col": 18,
+   "center_mm": [
+    146.62,
+    20.73,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r3-c0",
+   "row": 3,
+   "col": 0,
+   "center_mm": [
+    4.73,
+    26.62,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r3-c1",
+   "row": 3,
+   "col": 1,
+   "center_mm": [
+    11.35,
+    27.35,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r3-c2",
+   "row": 3,
+   "col": 2,
+   "center_mm": [
+    19.35,
+    27.35,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r3-c3",
+   "row": 3,
+   "col": 3,
+   "center_mm": [
+    27.35,
+    27.35,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r3-c4",
+   "row": 3,
+   "col": 4,
+   "center_mm": [
+    35.35,
+    27.35,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r3-c5",
+   "row": 3,
+   "col": 5,
+   "center_mm": [
+    43.35,
+    27.35,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r3-c6",
+   "row": 3,
+   "col": 6,
+   "center_mm": [
+    51.35,
+    27.35,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r3-c7",
+   "row": 3,
+   "col": 7,
+   "center_mm": [
+    59.35,
+    27.35,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r3-c8",
+   "row": 3,
+   "col": 8,
+   "center_mm": [
+    67.35,
+    27.35,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r3-c9",
+   "row": 3,
+   "col": 9,
+   "center_mm": [
+    75.35,
+    27.35,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r3-c10",
+   "row": 3,
+   "col": 10,
+   "center_mm": [
+    83.35,
+    27.35,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r3-c11",
+   "row": 3,
+   "col": 11,
+   "center_mm": [
+    91.35,
+    27.35,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r3-c12",
+   "row": 3,
+   "col": 12,
+   "center_mm": [
+    99.35,
+    27.35,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r3-c13",
+   "row": 3,
+   "col": 13,
+   "center_mm": [
+    107.35,
+    27.35,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r3-c14",
+   "row": 3,
+   "col": 14,
+   "center_mm": [
+    115.35,
+    27.35,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r3-c15",
+   "row": 3,
+   "col": 15,
+   "center_mm": [
+    123.35,
+    27.35,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r3-c16",
+   "row": 3,
+   "col": 16,
+   "center_mm": [
+    131.35,
+    27.35,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r3-c17",
+   "row": 3,
+   "col": 17,
+   "center_mm": [
+    139.35,
+    27.35,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r3-c18",
+   "row": 3,
+   "col": 18,
+   "center_mm": [
+    146.62,
+    26.62,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r4-c1",
+   "row": 4,
+   "col": 1,
+   "center_mm": [
+    12.73,
+    34.62,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r4-c2",
+   "row": 4,
+   "col": 2,
+   "center_mm": [
+    19.35,
+    35.35,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r4-c3",
+   "row": 4,
+   "col": 3,
+   "center_mm": [
+    27.35,
+    35.35,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r4-c4",
+   "row": 4,
+   "col": 4,
+   "center_mm": [
+    35.35,
+    35.35,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r4-c5",
+   "row": 4,
+   "col": 5,
+   "center_mm": [
+    43.35,
+    35.35,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r4-c6",
+   "row": 4,
+   "col": 6,
+   "center_mm": [
+    51.35,
+    35.35,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r4-c7",
+   "row": 4,
+   "col": 7,
+   "center_mm": [
+    59.35,
+    35.35,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r4-c8",
+   "row": 4,
+   "col": 8,
+   "center_mm": [
+    67.35,
+    35.35,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r4-c9",
+   "row": 4,
+   "col": 9,
+   "center_mm": [
+    75.35,
+    35.35,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r4-c10",
+   "row": 4,
+   "col": 10,
+   "center_mm": [
+    83.35,
+    35.35,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r4-c11",
+   "row": 4,
+   "col": 11,
+   "center_mm": [
+    91.35,
+    35.35,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r4-c12",
+   "row": 4,
+   "col": 12,
+   "center_mm": [
+    99.35,
+    35.35,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r4-c13",
+   "row": 4,
+   "col": 13,
+   "center_mm": [
+    107.35,
+    35.35,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r4-c14",
+   "row": 4,
+   "col": 14,
+   "center_mm": [
+    115.35,
+    35.35,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r4-c15",
+   "row": 4,
+   "col": 15,
+   "center_mm": [
+    123.35,
+    35.35,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r4-c16",
+   "row": 4,
+   "col": 16,
+   "center_mm": [
+    131.35,
+    35.35,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r4-c17",
+   "row": 4,
+   "col": 17,
+   "center_mm": [
+    138.62,
+    34.62,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r5-c2",
+   "row": 5,
+   "col": 2,
+   "center_mm": [
+    20.73,
+    42.62,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r5-c3",
+   "row": 5,
+   "col": 3,
+   "center_mm": [
+    27.35,
+    42.62,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r5-c4",
+   "row": 5,
+   "col": 4,
+   "center_mm": [
+    35.35,
+    42.62,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r5-c5",
+   "row": 5,
+   "col": 5,
+   "center_mm": [
+    43.35,
+    42.62,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r5-c6",
+   "row": 5,
+   "col": 6,
+   "center_mm": [
+    51.35,
+    42.62,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r5-c7",
+   "row": 5,
+   "col": 7,
+   "center_mm": [
+    59.35,
+    42.62,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r5-c8",
+   "row": 5,
+   "col": 8,
+   "center_mm": [
+    67.35,
+    42.62,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r5-c9",
+   "row": 5,
+   "col": 9,
+   "center_mm": [
+    75.35,
+    42.62,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r5-c10",
+   "row": 5,
+   "col": 10,
+   "center_mm": [
+    83.35,
+    42.62,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r5-c11",
+   "row": 5,
+   "col": 11,
+   "center_mm": [
+    91.35,
+    42.62,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r5-c12",
+   "row": 5,
+   "col": 12,
+   "center_mm": [
+    99.35,
+    42.62,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r5-c13",
+   "row": 5,
+   "col": 13,
+   "center_mm": [
+    107.35,
+    42.62,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r5-c14",
+   "row": 5,
+   "col": 14,
+   "center_mm": [
+    115.35,
+    42.62,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r5-c15",
+   "row": 5,
+   "col": 15,
+   "center_mm": [
+    123.35,
+    42.62,
+    1.899
+   ]
+  },
+  {
+   "name": "tile-r5-c16",
+   "row": 5,
+   "col": 16,
+   "center_mm": [
+    130.62,
+    42.62,
+    1.899
+   ]
+  }
+ ],
+ "links": [
+  [
+   "tile-r0-c1",
+   "tile-r0-c2"
+  ],
+  [
+   "tile-r0-c1",
+   "tile-r1-c1"
+  ],
+  [
+   "tile-r0-c2",
+   "tile-r0-c3"
+  ],
+  [
+   "tile-r0-c2",
+   "tile-r1-c2"
+  ],
+  [
+   "tile-r0-c3",
+   "tile-r0-c4"
+  ],
+  [
+   "tile-r0-c3",
+   "tile-r1-c3"
+  ],
+  [
+   "tile-r0-c4",
+   "tile-r0-c5"
+  ],
+  [
+   "tile-r0-c4",
+   "tile-r1-c4"
+  ],
+  [
+   "tile-r0-c5",
+   "tile-r0-c6"
+  ],
+  [
+   "tile-r0-c5",
+   "tile-r1-c5"
+  ],
+  [
+   "tile-r0-c6",
+   "tile-r0-c7"
+  ],
+  [
+   "tile-r0-c6",
+   "tile-r1-c6"
+  ],
+  [
+   "tile-r0-c7",
+   "tile-r0-c8"
+  ],
+  [
+   "tile-r0-c7",
+   "tile-r1-c7"
+  ],
+  [
+   "tile-r0-c8",
+   "tile-r0-c9"
+  ],
+  [
+   "tile-r0-c8",
+   "tile-r1-c8"
+  ],
+  [
+   "tile-r0-c9",
+   "tile-r0-c10"
+  ],
+  [
+   "tile-r0-c9",
+   "tile-r1-c9"
+  ],
+  [
+   "tile-r0-c10",
+   "tile-r0-c11"
+  ],
+  [
+   "tile-r0-c10",
+   "tile-r1-c10"
+  ],
+  [
+   "tile-r0-c11",
+   "tile-r0-c12"
+  ],
+  [
+   "tile-r0-c11",
+   "tile-r1-c11"
+  ],
+  [
+   "tile-r0-c12",
+   "tile-r0-c13"
+  ],
+  [
+   "tile-r0-c12",
+   "tile-r1-c12"
+  ],
+  [
+   "tile-r0-c13",
+   "tile-r0-c14"
+  ],
+  [
+   "tile-r0-c13",
+   "tile-r1-c13"
+  ],
+  [
+   "tile-r0-c14",
+   "tile-r0-c15"
+  ],
+  [
+   "tile-r0-c14",
+   "tile-r1-c14"
+  ],
+  [
+   "tile-r0-c15",
+   "tile-r0-c16"
+  ],
+  [
+   "tile-r0-c15",
+   "tile-r1-c15"
+  ],
+  [
+   "tile-r0-c16",
+   "tile-r1-c16"
+  ],
+  [
+   "tile-r1-c0",
+   "tile-r1-c1"
+  ],
+  [
+   "tile-r1-c0",
+   "tile-r2-c0"
+  ],
+  [
+   "tile-r1-c1",
+   "tile-r1-c2"
+  ],
+  [
+   "tile-r1-c1",
+   "tile-r2-c1"
+  ],
+  [
+   "tile-r1-c2",
+   "tile-r1-c3"
+  ],
+  [
+   "tile-r1-c2",
+   "tile-r2-c2"
+  ],
+  [
+   "tile-r1-c3",
+   "tile-r1-c4"
+  ],
+  [
+   "tile-r1-c3",
+   "tile-r2-c3"
+  ],
+  [
+   "tile-r1-c4",
+   "tile-r1-c5"
+  ],
+  [
+   "tile-r1-c4",
+   "tile-r2-c4"
+  ],
+  [
+   "tile-r1-c5",
+   "tile-r1-c6"
+  ],
+  [
+   "tile-r1-c5",
+   "tile-r2-c5"
+  ],
+  [
+   "tile-r1-c6",
+   "tile-r1-c7"
+  ],
+  [
+   "tile-r1-c6",
+   "tile-r2-c6"
+  ],
+  [
+   "tile-r1-c7",
+   "tile-r1-c8"
+  ],
+  [
+   "tile-r1-c7",
+   "tile-r2-c7"
+  ],
+  [
+   "tile-r1-c8",
+   "tile-r1-c9"
+  ],
+  [
+   "tile-r1-c8",
+   "tile-r2-c8"
+  ],
+  [
+   "tile-r1-c9",
+   "tile-r1-c10"
+  ],
+  [
+   "tile-r1-c9",
+   "tile-r2-c9"
+  ],
+  [
+   "tile-r1-c10",
+   "tile-r1-c11"
+  ],
+  [
+   "tile-r1-c10",
+   "tile-r2-c10"
+  ],
+  [
+   "tile-r1-c11",
+   "tile-r1-c12"
+  ],
+  [
+   "tile-r1-c11",
+   "tile-r2-c11"
+  ],
+  [
+   "tile-r1-c12",
+   "tile-r1-c13"
+  ],
+  [
+   "tile-r1-c12",
+   "tile-r2-c12"
+  ],
+  [
+   "tile-r1-c13",
+   "tile-r1-c14"
+  ],
+  [
+   "tile-r1-c13",
+   "tile-r2-c13"
+  ],
+  [
+   "tile-r1-c14",
+   "tile-r1-c15"
+  ],
+  [
+   "tile-r1-c14",
+   "tile-r2-c14"
+  ],
+  [
+   "tile-r1-c15",
+   "tile-r1-c16"
+  ],
+  [
+   "tile-r1-c15",
+   "tile-r2-c15"
+  ],
+  [
+   "tile-r1-c16",
+   "tile-r1-c17"
+  ],
+  [
+   "tile-r1-c16",
+   "tile-r2-c16"
+  ],
+  [
+   "tile-r1-c17",
+   "tile-r2-c17"
+  ],
+  [
+   "tile-r2-c0",
+   "tile-r2-c1"
+  ],
+  [
+   "tile-r2-c0",
+   "tile-r3-c0"
+  ],
+  [
+   "tile-r2-c1",
+   "tile-r2-c2"
+  ],
+  [
+   "tile-r2-c1",
+   "tile-r3-c1"
+  ],
+  [
+   "tile-r2-c2",
+   "tile-r2-c3"
+  ],
+  [
+   "tile-r2-c2",
+   "tile-r3-c2"
+  ],
+  [
+   "tile-r2-c3",
+   "tile-r2-c4"
+  ],
+  [
+   "tile-r2-c3",
+   "tile-r3-c3"
+  ],
+  [
+   "tile-r2-c4",
+   "tile-r2-c5"
+  ],
+  [
+   "tile-r2-c4",
+   "tile-r3-c4"
+  ],
+  [
+   "tile-r2-c5",
+   "tile-r2-c6"
+  ],
+  [
+   "tile-r2-c5",
+   "tile-r3-c5"
+  ],
+  [
+   "tile-r2-c6",
+   "tile-r2-c7"
+  ],
+  [
+   "tile-r2-c6",
+   "tile-r3-c6"
+  ],
+  [
+   "tile-r2-c7",
+   "tile-r2-c8"
+  ],
+  [
+   "tile-r2-c7",
+   "tile-r3-c7"
+  ],
+  [
+   "tile-r2-c8",
+   "tile-r2-c9"
+  ],
+  [
+   "tile-r2-c8",
+   "tile-r3-c8"
+  ],
+  [
+   "tile-r2-c9",
+   "tile-r2-c10"
+  ],
+  [
+   "tile-r2-c9",
+   "tile-r3-c9"
+  ],
+  [
+   "tile-r2-c10",
+   "tile-r2-c11"
+  ],
+  [
+   "tile-r2-c10",
+   "tile-r3-c10"
+  ],
+  [
+   "tile-r2-c11",
+   "tile-r2-c12"
+  ],
+  [
+   "tile-r2-c11",
+   "tile-r3-c11"
+  ],
+  [
+   "tile-r2-c12",
+   "tile-r2-c13"
+  ],
+  [
+   "tile-r2-c12",
+   "tile-r3-c12"
+  ],
+  [
+   "tile-r2-c13",
+   "tile-r2-c14"
+  ],
+  [
+   "tile-r2-c13",
+   "tile-r3-c13"
+  ],
+  [
+   "tile-r2-c14",
+   "tile-r2-c15"
+  ],
+  [
+   "tile-r2-c14",
+   "tile-r3-c14"
+  ],
+  [
+   "tile-r2-c15",
+   "tile-r2-c16"
+  ],
+  [
+   "tile-r2-c15",
+   "tile-r3-c15"
+  ],
+  [
+   "tile-r2-c16",
+   "tile-r2-c17"
+  ],
+  [
+   "tile-r2-c16",
+   "tile-r3-c16"
+  ],
+  [
+   "tile-r2-c17",
+   "tile-r2-c18"
+  ],
+  [
+   "tile-r2-c17",
+   "tile-r3-c17"
+  ],
+  [
+   "tile-r2-c18",
+   "tile-r3-c18"
+  ],
+  [
+   "tile-r3-c0",
+   "tile-r3-c1"
+  ],
+  [
+   "tile-r3-c1",
+   "tile-r3-c2"
+  ],
+  [
+   "tile-r3-c1",
+   "tile-r4-c1"
+  ],
+  [
+   "tile-r3-c2",
+   "tile-r3-c3"
+  ],
+  [
+   "tile-r3-c2",
+   "tile-r4-c2"
+  ],
+  [
+   "tile-r3-c3",
+   "tile-r3-c4"
+  ],
+  [
+   "tile-r3-c3",
+   "tile-r4-c3"
+  ],
+  [
+   "tile-r3-c4",
+   "tile-r3-c5"
+  ],
+  [
+   "tile-r3-c4",
+   "tile-r4-c4"
+  ],
+  [
+   "tile-r3-c5",
+   "tile-r3-c6"
+  ],
+  [
+   "tile-r3-c5",
+   "tile-r4-c5"
+  ],
+  [
+   "tile-r3-c6",
+   "tile-r3-c7"
+  ],
+  [
+   "tile-r3-c6",
+   "tile-r4-c6"
+  ],
+  [
+   "tile-r3-c7",
+   "tile-r3-c8"
+  ],
+  [
+   "tile-r3-c7",
+   "tile-r4-c7"
+  ],
+  [
+   "tile-r3-c8",
+   "tile-r3-c9"
+  ],
+  [
+   "tile-r3-c8",
+   "tile-r4-c8"
+  ],
+  [
+   "tile-r3-c9",
+   "tile-r3-c10"
+  ],
+  [
+   "tile-r3-c9",
+   "tile-r4-c9"
+  ],
+  [
+   "tile-r3-c10",
+   "tile-r3-c11"
+  ],
+  [
+   "tile-r3-c10",
+   "tile-r4-c10"
+  ],
+  [
+   "tile-r3-c11",
+   "tile-r3-c12"
+  ],
+  [
+   "tile-r3-c11",
+   "tile-r4-c11"
+  ],
+  [
+   "tile-r3-c12",
+   "tile-r3-c13"
+  ],
+  [
+   "tile-r3-c12",
+   "tile-r4-c12"
+  ],
+  [
+   "tile-r3-c13",
+   "tile-r3-c14"
+  ],
+  [
+   "tile-r3-c13",
+   "tile-r4-c13"
+  ],
+  [
+   "tile-r3-c14",
+   "tile-r3-c15"
+  ],
+  [
+   "tile-r3-c14",
+   "tile-r4-c14"
+  ],
+  [
+   "tile-r3-c15",
+   "tile-r3-c16"
+  ],
+  [
+   "tile-r3-c15",
+   "tile-r4-c15"
+  ],
+  [
+   "tile-r3-c16",
+   "tile-r3-c17"
+  ],
+  [
+   "tile-r3-c16",
+   "tile-r4-c16"
+  ],
+  [
+   "tile-r3-c17",
+   "tile-r3-c18"
+  ],
+  [
+   "tile-r3-c17",
+   "tile-r4-c17"
+  ],
+  [
+   "tile-r4-c1",
+   "tile-r4-c2"
+  ],
+  [
+   "tile-r4-c2",
+   "tile-r4-c3"
+  ],
+  [
+   "tile-r4-c2",
+   "tile-r5-c2"
+  ],
+  [
+   "tile-r4-c3",
+   "tile-r4-c4"
+  ],
+  [
+   "tile-r4-c3",
+   "tile-r5-c3"
+  ],
+  [
+   "tile-r4-c4",
+   "tile-r4-c5"
+  ],
+  [
+   "tile-r4-c4",
+   "tile-r5-c4"
+  ],
+  [
+   "tile-r4-c5",
+   "tile-r4-c6"
+  ],
+  [
+   "tile-r4-c5",
+   "tile-r5-c5"
+  ],
+  [
+   "tile-r4-c6",
+   "tile-r4-c7"
+  ],
+  [
+   "tile-r4-c6",
+   "tile-r5-c6"
+  ],
+  [
+   "tile-r4-c7",
+   "tile-r4-c8"
+  ],
+  [
+   "tile-r4-c7",
+   "tile-r5-c7"
+  ],
+  [
+   "tile-r4-c8",
+   "tile-r4-c9"
+  ],
+  [
+   "tile-r4-c8",
+   "tile-r5-c8"
+  ],
+  [
+   "tile-r4-c9",
+   "tile-r4-c10"
+  ],
+  [
+   "tile-r4-c9",
+   "tile-r5-c9"
+  ],
+  [
+   "tile-r4-c10",
+   "tile-r4-c11"
+  ],
+  [
+   "tile-r4-c10",
+   "tile-r5-c10"
+  ],
+  [
+   "tile-r4-c11",
+   "tile-r4-c12"
+  ],
+  [
+   "tile-r4-c11",
+   "tile-r5-c11"
+  ],
+  [
+   "tile-r4-c12",
+   "tile-r4-c13"
+  ],
+  [
+   "tile-r4-c12",
+   "tile-r5-c12"
+  ],
+  [
+   "tile-r4-c13",
+   "tile-r4-c14"
+  ],
+  [
+   "tile-r4-c13",
+   "tile-r5-c13"
+  ],
+  [
+   "tile-r4-c14",
+   "tile-r4-c15"
+  ],
+  [
+   "tile-r4-c14",
+   "tile-r5-c14"
+  ],
+  [
+   "tile-r4-c15",
+   "tile-r4-c16"
+  ],
+  [
+   "tile-r4-c15",
+   "tile-r5-c15"
+  ],
+  [
+   "tile-r4-c16",
+   "tile-r4-c17"
+  ],
+  [
+   "tile-r4-c16",
+   "tile-r5-c16"
+  ],
+  [
+   "tile-r5-c2",
+   "tile-r5-c3"
+  ],
+  [
+   "tile-r5-c3",
+   "tile-r5-c4"
+  ],
+  [
+   "tile-r5-c4",
+   "tile-r5-c5"
+  ],
+  [
+   "tile-r5-c5",
+   "tile-r5-c6"
+  ],
+  [
+   "tile-r5-c6",
+   "tile-r5-c7"
+  ],
+  [
+   "tile-r5-c7",
+   "tile-r5-c8"
+  ],
+  [
+   "tile-r5-c8",
+   "tile-r5-c9"
+  ],
+  [
+   "tile-r5-c9",
+   "tile-r5-c10"
+  ],
+  [
+   "tile-r5-c10",
+   "tile-r5-c11"
+  ],
+  [
+   "tile-r5-c11",
+   "tile-r5-c12"
+  ],
+  [
+   "tile-r5-c12",
+   "tile-r5-c13"
+  ],
+  [
+   "tile-r5-c13",
+   "tile-r5-c14"
+  ],
+  [
+   "tile-r5-c14",
+   "tile-r5-c15"
+  ],
+  [
+   "tile-r5-c15",
+   "tile-r5-c16"
+  ]
+ ],
+ "note": "one glTF node per tile, named like tiles[].name, origin at the tile centre; links = neighbours joined by a bar-in-ring chain link (they hinge within 0.4 mm and cannot separate)"
+}

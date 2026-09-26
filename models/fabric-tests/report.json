@@ -1,0 +1,170 @@
+[
+ {
+  "name": "pumpkin-drape",
+  "tile": "drape",
+  "gen": 0,
+  "gen_out": [
+   "wrote models/fabric-tests/pumpkin-drape.3mf: 78 tiles"
+  ],
+  "tiles": 78,
+  "bbox": [
+   0.86,
+   0.86,
+   87.14,
+   79.14
+  ],
+  "dropped": 0,
+  "check": {
+   "ok": true,
+   "tiles": 78,
+   "bodies": 78,
+   "min_gap_mm": 0.4,
+   "fused_pairs": 0,
+   "detail": ""
+  }
+ },
+ {
+  "name": "bat-drape",
+  "tile": "drape",
+  "gen": 0,
+  "gen_out": [
+   "wrote models/fabric-tests/bat-drape.3mf: 40 tiles"
+  ],
+  "tiles": 40,
+  "bbox": [
+   8.86,
+   0.86,
+   103.14,
+   39.14
+  ],
+  "dropped": 0,
+  "check": {
+   "ok": true,
+   "tiles": 40,
+   "bodies": 40,
+   "min_gap_mm": 0.4,
+   "fused_pairs": 0,
+   "detail": ""
+  }
+ },
+ {
+  "name": "ghost-square",
+  "tile": "square",
+  "gen": 0,
+  "gen_out": [
+   "wrote models/fabric-tests/ghost-square.3mf: 44 tiles"
+  ],
+  "tiles": 44,
+  "bbox": [
+   0.2,
+   0.2,
+   59.8,
+   79.8
+  ],
+  "dropped": 0,
+  "check": {
+   "ok": true,
+   "tiles": 44,
+   "bodies": 44,
+   "min_gap_mm": 0.4,
+   "fused_pairs": 0,
+   "detail": ""
+  }
+ },
+ {
+  "name": "coaster90-drape",
+  "tile": "drape",
+  "gen": 0,
+  "gen_out": [
+   "wrote models/fabric-tests/coaster90-drape.3mf: 98 tiles"
+  ],
+  "tiles": 98,
+  "bbox": [
+   0.86,
+   0.86,
+   87.14,
+   87.14
+  ],
+  "dropped": 0,
+  "check": {
+   "ok": true,
+   "tiles": 98,
+   "bodies": 98,
+   "min_gap_mm": 0.4,
+   "fused_pairs": 0,
+   "detail": ""
+  }
+ },
+ {
+  "name": "coaster90-square",
+  "tile": "square",
+  "gen": 0,
+  "gen_out": [
+   "wrote models/fabric-tests/coaster90-square.3mf: 69 tiles"
+  ],
+  "tiles": 69,
+  "bbox": [
+   0.2,
+   0.2,
+   89.8,
+   89.8
+  ],
+  "dropped": 0,
+  "check": {
+   "ok": true,
+   "tiles": 69,
+   "bodies": 69,
+   "min_gap_mm": 0.4,
+   "fused_pairs": 0,
+   "detail": ""
+  }
+ },
+ {
+  "name": "bookmark-drape",
+  "tile": "drape",
+  "gen": 0,
+  "gen_out": [
+   "wrote models/fabric-tests/bookmark-drape.3mf: 104 tiles"
+  ],
+  "tiles": 104,
+  "bbox": [
+   0.86,
+   0.86,
+   151.14,
+   47.14
+  ],
+  "dropped": 0,
+  "check": {
+   "ok": true,
+   "tiles": 104,
+   "bodies": 104,
+   "min_gap_mm": 0.4,
+   "fused_pairs": 0,
+   "detail": ""
+  }
+ },
+ {
+  "name": "nametag-square",
+  "tile": "square",
+  "gen": 0,
+  "gen_out": [
+   "wrote models/fabric-tests/nametag-square.3mf: 18 tiles"
+  ],
+  "tiles": 18,
+  "bbox": [
+   70.2,
+   0.2,
+   129.8,
+   49.8
+  ],
+  "dropped": 11,
+  "check": {
+   "ok": true,
+   "tiles": 18,
+   "bodies": 18,
+   "min_gap_mm": 0.4,
+   "fused_pairs": 0,
+   "detail": ""
+  }
+ }
+]

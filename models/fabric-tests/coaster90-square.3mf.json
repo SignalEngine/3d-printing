@@ -1,0 +1,15 @@
+{
+ "tiles": 69,
+ "tile": "square",
+ "pitch": 10.0,
+ "height": 3.0,
+ "gap": 0.4,
+ "outline": "circle:90",
+ "bbox": [
+  0.2,
+  0.2,
+  89.8,
+  89.8
+ ],
+ "dropped_islands": 0
+}
