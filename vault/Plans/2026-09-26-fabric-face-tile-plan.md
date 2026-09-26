@@ -56,6 +56,16 @@ Python `/root/3d-printing/.venv/bin/python`.
    - A tile close-up render (iso from the back) so the brain can judge the links.
 5. **Swatch:** `--swatch --tile face` (gaps 0.3/0.4/0.5) in `models/fabric-swatch-face/`.
 
+## Face-down reads the right way round (from the engrave review)
+- The sheet prints face-down, so the face is seen MIRRORED relative to the top-view frame.
+  - A traced photo, a word shape or text would come out backwards.
+- Add `--face-down`: mirror the outline AND the engrave mask in x about the outline centre before tiling, so the face
+  reads correctly when you look at it. The sidecar records `face_down: true`.
+  - It defaults ON for `--tile face`, off for the others.
+- Test: an asymmetric mask (an "L") on a face sheet; the bottom-view render, mirrored as the viewer sees it, matches
+  the original "L" orientation.
+- The face renders must be titled without the model name. The blind read was partly given away by the titles.
+
 ## Checks
 `/root/3d-printing/.venv/bin/python -m pytest -q skills/model-forge/tests` (run-limited, exit code captured before
 commit). Sabotage:
