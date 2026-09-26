@@ -112,3 +112,20 @@ resolution, no islands). Until then the preview shows the square-tile result hon
 - **Chat-path fabric fix SHIPPED** (printtweak #115 → prod 7b112d1): the judge sees fabric from the top. Before,
   every chat-path fabric order failed "thin, flat structure". Proven on staging: a custom pumpkin → ready, 81 tiles.
   The chat path also refuses a too-small size ("32 mm loses the lobes").
+
+## Detail + colour (James, 26 Sep; research notes)
+James's idea: add detail by pressing features into the fabric surface, plus colour with the AMS ("litho pane"?).
+- **Pressed-in detail:** relief on the TILE TOPS (the underside prints against the bed: raised is impossible there,
+  indented wouldn't show). Single colour, any printer.
+- **Colour options:**
+  - two-colour tops (bodies one colour, top 0.8 mm another: one filament change; some MakerWorld NASA fabric designs
+    do exactly this);
+  - per-tile colour (each tile one of 2–4 filaments, pixel art at tile size, like the 4-colour Gandalf file);
+  - HueForge-style "filament painting" (stacked translucent layers blend optically, driven by Transmission Distance;
+    photo-like but broken by the tile gaps, and needs calibrated filaments).
+  - A lithophane is different: single colour, thickness for backlight.
+- **DECIDED (James, 26 Sep): after the silhouette feature, build TWO-COLOUR TOPS next**, then pressed-in detail;
+  per-tile colour and HueForge-style later.
+- Sources: https://makerworld.com/en/models/122006-nasa-fabric-v2 ,
+  https://makerworld.com/en/models/147124-multi-color-nasa-chainmail , https://shop.thehueforge.com/pages/about-hueforge ,
+  https://wiki.polymaker.com/the-basics/applications/hueforge-painting
