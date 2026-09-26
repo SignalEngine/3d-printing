@@ -72,6 +72,43 @@ class Gap:
             self.assertGreater(checked, 40)
 
 
+def bed_section(mesh, z):
+    return manifold(mesh).slice(z).extrude(0.2)
+
+
+@both
+class FirstLayerRelief:
+    """The bed level of every tile is inset (FOOT_IN below FOOT_H) so first-layer squash can't fuse neighbours, and no tile
+    loses so much bed contact that it peels off (the bat and pumpkin drape tiles did not stick)."""
+
+    def test_bed_level_gap(self):
+        for gap in (0.3, 0.4):
+            tiles, _ = sheet("rect:40,40", gap, self.TILE)
+            n = 0
+            for _, _, a, b in neighbours(tiles):
+                for z in (0.1, 0.3):
+                    n += 1
+                    d = bed_section(a, z).min_gap(bed_section(b, z), 5.0)
+                    self.assertGreaterEqual(d, gap + 2 * 0.3 - 0.05, f"gap {gap} z={z}")
+            self.assertGreater(n, 40)
+
+    def test_bed_contact_floor(self):
+        tiles, info = sheet("rect:40,40", 0.4, self.TILE)
+        contact = [fabric.bed_contact(m) for _, _, _, m in tiles]
+        self.assertGreaterEqual(min(contact), fabric.MIN_CONTACT, f"min bed contact {min(contact):.1f} mm2")
+        self.assertEqual((info["foot_in"], info["foot_h"]), (0.3, 0.4))   # the plan's defaults, pinned
+
+    def test_relief_out_of_range_refused(self):
+        for kw in ({"foot_in": -1}, {"foot_in": 3}, {"foot_h": 2.0}):
+            with self.assertRaises(ValueError, msg=kw):
+                fabric.build_sheet("rect:30,30", TILES[self.TILE]["pitch"], TILES[self.TILE]["height"], 0.4, tile=self.TILE, **kw)
+
+    def test_each_tile_one_body(self):
+        tiles, _ = sheet("rect:40,40", 0.4, self.TILE)
+        for name, _, _, m in tiles:
+            self.assertEqual(len(m.split(only_watertight=False)), 1, name)
+
+
 @both
 class Captive:
     def test_captive_every_neighbour_pair(self):

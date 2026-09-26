@@ -6,7 +6,7 @@ Two tiles: `--tile drape` (v2, draping) and `--tile square` (v1, the default unt
 sidecar (with a `"tile"` key) and `--check`.
 
 ## Drape tile (v2; becomes the default once TweakMyPart switches)
-- Every tile is identical: a plate (1.2 mm) with a raised dome (1 mm), a BAR on its +x/+y edges (1.2 mm octagonal rod
+- Every tile is identical: a plate (1.4 mm) with a raised dome (1 mm), a BAR on its +x/+y edges (1.2 mm octagonal rod
   held between two posts, a 2.4 mm bridge) and a RING on its -x/-y edges (octagonal loop, 0.85 mm wall). A neighbour's
   ring encircles this tile's bar: loop through loop, so every link is a chain link. Edge tiles omit the features that face
   a missing neighbour.
@@ -31,9 +31,22 @@ sidecar (with a `"tile"` key) and `--check`.
 - Captive (tested): moving one tile 2 mm along +-x, +-y makes it hit its neighbour; +z is caught for the
   tab tile of each pair, and every tile is locked in +z by at least one neighbour.
 - Print flat: every tile on z=0, overhangs are vertical or a straight bridge <= 3.2 mm, smallest feature
-  >= 0.8 mm (bar 1.2, leg 1.0, lip 1.0, tab 2.0). Plate 1.2 mm thick, total height `--height` (3.0).
+  >= 0.8 mm (bar 1.2, leg 1.0, lip 1.0, tab 2.0). Plate 1.4 mm thick (>= 0.8 mm above the 0.4 mm first-layer relief), total height `--height` (3.0).
 - Sizes are fixed except pitch/gap/height; pitch must leave a 1.2 mm plate waist (>= ~9 mm at gap 0.4).
 - It does NOT drape: the tab sits in a slot only `gap` tall, so folding a pair collides (tested).
+
+## First-layer relief (both tiles, on by default)
+The first layer prints wider than the model ("elephant's foot"), which closes the 0.4 mm gaps at the bed and fuses neighbours
+(James's first plate: the square tile looked "all linked together" after 30 min). So below z = `FOOT_H` (0.4 mm, two
+layers at 0.20) every tile is its z = 0.2 section inset by `FOOT_IN` (0.3 mm) per side: a 0.3 mm step, no overhang problem,
+still one watertight body. Bed-level gap between neighbours becomes >= gap + 2 x `FOOT_IN` (tested at z = 0.1 and 0.3).
+- Where a tile is already >= gap + 2 x `FOOT_IN` from every neighbour (plate faces), it keeps its full footprint: bed contact
+  matters as much as the gap (the bat and pumpkin drape tiles did not stick to the bed). Every tile keeps >= `MIN_CONTACT`
+  (25 mm^2, tested at gap 0.4) of section at z = 0.1; `bed_contact(mesh)` measures it. Measured on a 5 x 5 sheet at gap 0.4:
+  drape min 33.2 -> 31.7 mm^2, square min 79.2 -> 64.3 mm^2 (a plain uniform inset would leave drape at 24.0, under the floor).
+- `--foot-in MM` / `--foot-h MM` override (`--foot-in 0` = off); the sidecar records `foot_in` / `foot_h`.
+- In the slicer keep "Elephant foot compensation" at its default or on: the relief and the slicer's compensation stack, and
+  with the compensation off the 0.3 mm step is what stops the fuse. Do not turn the compensation up to "fix" a fused sheet.
 
 ## Fill rules
 Tiles sit on a pitch grid from the outline's bbox corner; a cell is kept if >= half of it is inside the outline.
@@ -41,7 +54,7 @@ Only the largest connected group is kept (islands dropped, reported). Links (bar
 are omitted. Sheet must fit 256 x 256 mm, else refused (exit 2).
 
 ## CLI
-`fabric.py --outline rect:W,H | rrect:W,H,R | circle:D | heart:W | poly:"x,y x,y ..." | text:ABC --tile drape|square --pitch 8|10 --height 3.0 --gap 0.4 --out f.3mf [--swatch] [--tiles-glb f-tiles.glb]`
+`fabric.py --outline rect:W,H | rrect:W,H,R | circle:D | heart:W | poly:"x,y x,y ..." | text:ABC --tile drape|square --pitch 8|10 --height 3.0 --gap 0.4 --out f.3mf [--swatch] [--tiles-glb f-tiles.glb] [--foot-in 0.3] [--foot-h 0.4]`
 - Writes one 3MF object per tile (`tile-r<row>-c<col>`) and `<out>.json` (tile, tiles, pitch, gap, outline, bbox).
 - `--tiles-glb X-tiles.glb` also writes one glTF node per tile (origin at its bbox centre) and `X-tiles.json` (tiles + `links`,
   one pair per hinge): what the lander's cloth viewer reads. Examples: `models/fabric-examples/` (drape; `*-square*` = v1).
