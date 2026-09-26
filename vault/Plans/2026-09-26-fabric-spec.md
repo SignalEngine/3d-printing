@@ -177,3 +177,15 @@ James's idea: add detail by pressing features into the fabric surface, plus colo
   - builds use the confirmed outline with no AI.
   Staging proof: "a pumpkin" → ready (95 tiles); the test cat photo is refused at 120 mm (splits into 4), ready at 160
   mm (148 tiles).
+
+## Two-tone decision (James, 26 Sep evening)
+- **No AMS. He wants it face-down, like NASA fabric**, so the face picks up the plate texture.
+- So the one-swap two-tone is: layers 1–2 = face colour, then ONE filament change at layer 3 (0.6 mm).
+  - No geometry change. The face is solid colour 1, and colour 2 shows as thin outlines (the first-layer relief rim +
+    the gaps).
+  - Test plate sent: `models/fabric-tests/print-plate.3mf` + README steps.
+- The raised-cap method (branch `build/fabric-two-tone`, 3eeeb36, unpushed, 119 tests) is **PARKED**. Face-up caps
+  were too small to read as a face (3.2 mm dots). The bigger-caps continuation was stopped before it finished.
+- Per-tile colour faces need an AMS: assign the face tiles to a second filament (each tile is already its own
+  object). That is the future "do you have an AMS?" option.
+- Next build: the fine ~7 mm tile.
