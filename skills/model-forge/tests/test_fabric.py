@@ -98,6 +98,11 @@ class FirstLayerRelief:
         self.assertGreaterEqual(min(contact), fabric.MIN_CONTACT, f"min bed contact {min(contact):.1f} mm2")
         self.assertEqual((info["foot_in"], info["foot_h"]), (0.3, 0.4))   # the plan's defaults, pinned
 
+    def test_relief_out_of_range_refused(self):
+        for kw in ({"foot_in": -1}, {"foot_in": 3}, {"foot_h": 2.0}):
+            with self.assertRaises(ValueError, msg=kw):
+                fabric.build_sheet("rect:30,30", TILES[self.TILE]["pitch"], TILES[self.TILE]["height"], 0.4, tile=self.TILE, **kw)
+
     def test_each_tile_one_body(self):
         tiles, _ = sheet("rect:40,40", 0.4, self.TILE)
         for name, _, _, m in tiles:

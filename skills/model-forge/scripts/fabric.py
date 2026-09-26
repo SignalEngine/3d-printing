@@ -198,7 +198,9 @@ def relieve_sheet(tiles, gap, foot_in=None, foot_h=None):
     squash cannot close the gap, so the tile keeps its full bed contact: a tile with too little contact peels off the bed)."""
     foot_in = FOOT_IN if foot_in is None else foot_in
     foot_h = FOOT_H if foot_h is None else foot_h
-    if foot_in <= 0 or foot_h <= 0:
+    if not (0 <= foot_in <= 0.5 and 0 <= foot_h <= 0.6):  # taller than 0.6 reaches the drape interlock and fuses it
+        raise ValueError(f"first-layer relief out of range: foot_in {foot_in} (0-0.5), foot_h {foot_h} (0-0.6)")
+    if foot_in == 0 or foot_h == 0:
         return tiles
     mans = {(r, c): _manifold(m) for _, r, c, m in tiles}
     secs = {k: v.slice(foot_h / 2) for k, v in mans.items()}
@@ -213,6 +215,10 @@ def relieve_sheet(tiles, gap, foot_in=None, foot_h=None):
             keep = keep + far
         slab = _box(-1e3, 1e3, -1e3, 1e3, -1, foot_h)
         out.append((name, r, c, _to_trimesh((man - slab) + keep.extrude(foot_h))))
+        if not out[-1][3].is_watertight or len(out[-1][3].split(only_watertight=False)) != 1:
+            raise ValueError(f"tile {name} is not one solid body after the relief; use the default --foot-in/--foot-h")
+        if bed_contact(out[-1][3]) < MIN_CONTACT:
+            raise ValueError(f"tile {name} keeps under {MIN_CONTACT:.0f} mm^2 on the bed after the relief; use a smaller --foot-in")
     return out
 
 
