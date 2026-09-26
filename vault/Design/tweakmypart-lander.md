@@ -63,3 +63,11 @@ James: "large tweak looks bad on phone"; the examples list "doesn't make sense w
 ## Fabric available (PR #111, 26 Sep)
 
 Phase 2 live (prod web `8f30504`, #109). `#fabric` eyebrow NEW; six shape chips + "Design fabric" button link to `/design/new?q=a <shape> made of printable fabric` (test asserts every link in the section does). FAQ gains "Can it make fabric?" (shaped flat items, square linked tiles, one colour), and "What do I get?" now says fabric comes as a 3MF only (fabric builds write `step: null`). Don't advertise pictures, multi-colour, hex, straps, clothing or fabric remixes until those phases ship. Live `6549cea`, deploy `16a31813` SUCCESS; 390/1440 checked, 7 links, 0 overflow, 0 console errors. Not verified by this session: a fabric build completing on prod (proven on staging by the fabric session).
+
+## Fabric heart you can pick up (PR #112, 26 Sep)
+
+James: the merged-mesh still "doesn't look like anything"; wanted a real fabric model that hangs and swings. `#fabric` now shows a poster of a 100 mm heart (56 tiles, 93 links, the generator's own GLB with one node per tile + `tiles.json`) and "Pick it up" mounts `components/lander/FabricCloth` (WebGL only on tap).
+- Physics `lib/fabricCloth.ts` (tested): one particle per tile; link constraints = rest ± 0.4 mm gap; bend limit 40° per hinge (ponytail: unmeasured, revisit after the swatch print); diagonal shear constraints; hung from the top row; gravity along -rows. Tile rotation = neighbour frame × rest frameᵀ (the hooks push tile centres off the grid, which made raw frames tilt ~10°).
+- Grab = the tile centre nearest the pointer ray (mesh hits slip through slots and gaps); the pointer is a *target* applied before the constraint solve, so links can't be stretched (review-gate P2). Real-time step capped at 1/30 s. `touch-action: none`. Reduced motion: settled static render, turn only. WebGL missing or model load failure: back to the poster with a note.
+- Evidence: two normal-motion recordings watched frame by frame (hangs as a heart, folds when grabbed without tiles separating, swings back and settles). Live `17b5194`, deploy `b589d0c5`: canvas mounts, drag changes the frame, 3MF 200 OK, 0 errors at 390/1440.
+- Pending: chips and "Design fabric" switch to `/design/fabric?shape=<shape>` when the fabric session says that page is live. Don't mention tile styles.
