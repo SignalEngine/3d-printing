@@ -1,0 +1,47 @@
+{
+ "note": "polygons in the outline's frame: mm, origin at the outline's bounding-box corner, seen from the top; cut one layer into the face by fabric.py --engrave",
+ "polys": [
+  [
+   [
+    44.0,
+    78.0
+   ],
+   [
+    52.229,
+    55.326
+   ],
+   [
+    76.336,
+    54.507
+   ],
+   [
+    57.315,
+    39.674
+   ],
+   [
+    63.985,
+    16.493
+   ],
+   [
+    44.0,
+    30.0
+   ],
+   [
+    24.015,
+    16.493
+   ],
+   [
+    30.685,
+    39.674
+   ],
+   [
+    11.664,
+    54.507
+   ],
+   [
+    35.771,
+    55.326
+   ]
+  ]
+ ]
+}

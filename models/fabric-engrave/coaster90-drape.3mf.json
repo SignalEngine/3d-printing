@@ -1,0 +1,24 @@
+{
+ "tiles": 98,
+ "tile": "drape",
+ "foot_in": 0.3,
+ "foot_h": 0.4,
+ "pitch": 8.0,
+ "height": 3.799,
+ "gap": 0.4,
+ "outline": "circle:90",
+ "bbox": [
+  1.06,
+  1.06,
+  86.94,
+  86.94
+ ],
+ "dropped_islands": 0,
+ "engrave": "/root/wt-3dp-engrave/models/fabric-engrave/face-coaster90-drape.json",
+ "engrave_depth": 0.2,
+ "swap_layer": 2,
+ "swap_z_mm": 0.2,
+ "engrave_clipped_tiles": 0,
+ "engrave_dropped": 0,
+ "engrave_trimmed_mm2": -0.0
+}

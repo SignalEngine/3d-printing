@@ -18,6 +18,10 @@ Usage: fabric.py --outline rect:W,H | rrect:W,H,R | circle:D | heart:W | poly:"x
                  (image: traces any picture with silhouette.py, W = overall width in mm, default 100) [--tile drape|square]
                  [--pitch 8 (drape) | 10 (square)] [--height 3.0 (square only)] [--gap 0.4] --out fabric.3mf [--swatch]
                  [--tiles-glb X-tiles.glb]   also write one glTF node per tile + X-tiles.json (tiles + links)
+                 [--engrave poly:"x,y x,y|x,y ..." | FILE.json {"polys": [...]} | image:PATH [--engrave-depth 0.2]]
+                   one-layer face engrave for a two-colour print with one swap (face down, no AMS): the design is cut ENGRAVE_DEPTH
+                   into the bed side (mm, in the outline's frame; the sheet is seen mirrored from the face). Layer 1 stays colour 1,
+                   the pockets show colour 2 after one filament change at swap_layer (in the sidecar). Every tile keeps a RIM band.
 Writes <out> (one 3MF object per tile, `tile-r<row>-c<col>`) and <out>.json. Exit 2 = refused (bed / bad input).
 
        fabric.py --check X.3mf [--gap G]   re-measures the real geometry, prints one JSON line
@@ -38,6 +42,11 @@ LIP_H = 1.2              # lip rise above the tab; must exceed gap to catch the 
 MIN_FEATURE = 0.8
 FOOT_H = 0.4             # first-layer relief: below this height the tile is inset...
 FOOT_IN = 0.3            # ...by this much per side, so first-layer squash ("elephant's foot") can't close the gap at the bed
+ENGRAVE_DEPTH = 0.2      # one layer at 0.20: the design pockets are cut from z = 0 up to this
+ENGRAVE_MAX = 0.4
+LAYER_H = 0.2
+RIM = 1.0                # colour-1 band inside each tile's bed section that an engrave never cuts (bed grip + bridges the pocket)
+MAX_POCKET = 6.0         # a pocket is bridged at layer 2 from the rim: keep it <= this across its narrowest direction
 MIN_CONTACT = 25.0       # mm^2 of bed contact a tile keeps after the relief (a tile with less peels off the bed)
 
 
@@ -222,6 +231,105 @@ def relieve_sheet(tiles, gap, foot_in=None, foot_h=None):
     return out
 
 
+# ---------------------------------------------------------------- engrave
+def load_engrave(spec, width):
+    """--engrave: poly:"x,y x,y|x,y ..." | a JSON file {"polys": [[[x, y], ...], ...]} | image:PATH (dark = design, all blobs,
+    scaled to the outline's `width` mm). Coordinates are the outline's frame (mm, origin at its bounding-box corner).
+    Returns a shapely geometry (overlapping pieces are unioned)."""
+    from shapely.geometry import Polygon
+    from shapely.ops import unary_union
+    try:
+        if spec.startswith("image:"):
+            polys = _image_polys(spec[6:], width)
+        else:
+            rings = ([[tuple(float(v) for v in p.split(",")) for p in part.split()] for part in spec[5:].split("|")]
+                     if spec.startswith("poly:") else json.load(open(spec))["polys"])
+            polys = [Polygon(r) for r in rings]
+    except (OSError, ValueError, KeyError, TypeError) as e:
+        raise ValueError(f"unreadable --engrave {spec[:60]!r}: use poly:\"x,y x,y|x,y ...\", a JSON file {{\"polys\": [...]}} or image:PATH") from e
+    polys = [p if p.is_valid else p.buffer(0) for p in polys]
+    polys = [p for p in polys if p.area > 0]
+    if not polys:
+        raise ValueError("--engrave holds no design (no valid polygon / no dark pixels)")
+    return unary_union(polys)
+
+
+def _image_polys(path, width):
+    import silhouette
+    from scipy import ndimage as ndi
+    from shapely.geometry import Polygon
+    from skimage.measure import find_contours
+    try:
+        img = silhouette._load(path)
+    except Exception as e:
+        raise ValueError(f"{path}: not a picture we can read") from e
+    alpha = silhouette._has_alpha(img)
+    gray = np.asarray(img.convert("L"))
+    mask = alpha > 127 if alpha is not None else gray <= silhouette._otsu(gray)
+    if not mask.any() or mask.all():
+        return []
+    k = width / img.width                                   # mm per pixel; the picture spans the outline's width
+    pad = np.pad(mask.astype(float), 1)
+    out = None
+    for c in find_contours(pad, 0.5):                        # outer edges and holes: even-odd via symmetric difference
+        p = Polygon([((x - 1) * k, (img.height - (y - 1)) * k) for y, x in c])
+        if p.is_valid and p.area > 0:
+            out = p if out is None else out.symmetric_difference(p)
+    return [] if out is None else [g.simplify(0.05) for g in getattr(out, "geoms", [out])]
+
+
+def clean_engrave(mask):
+    """Drop what a 0.4 mm nozzle can't print (narrower than MIN_FEATURE = two lines). Returns (geometry, pieces dropped, mm^2 trimmed).
+    Opening with mitred joins: thin parts vanish, sharp corners stay."""
+    half = MIN_FEATURE / 2
+    opened = mask.buffer(-half, join_style=2).buffer(half, join_style=2).intersection(mask)
+    pieces = list(getattr(mask, "geoms", [mask]))
+    dropped = sum(1 for g in pieces if g.buffer(-half, join_style=2).is_empty)
+    return opened, dropped, round(mask.area - opened.area, 2)
+
+
+def _xsec(geom):
+    from shapely.geometry import MultiPolygon
+    rings = []
+    for g in getattr(geom, "geoms", [geom]):
+        if g.geom_type == "Polygon" and not g.is_empty:
+            rings += [np.asarray(g.exterior.coords)[:-1]] + [np.asarray(i.coords)[:-1] for i in g.interiors]
+    return m3d.CrossSection(rings, m3d.FillRule.EvenOdd) if rings else m3d.CrossSection()
+
+
+def check_engrave_depth(depth):
+    k = depth / LAYER_H
+    if not (0 < depth <= ENGRAVE_MAX + 1e-9 and abs(k - round(k)) < 1e-6):
+        raise ValueError(f"--engrave-depth {depth} must be a whole number of {LAYER_H} mm layers, up to {ENGRAVE_MAX}")
+
+
+def engrave_sheet(tiles, mask, depth):
+    """Cut `mask` (a shapely geometry, world frame) into the bed side of every tile, from z = 0 up to `depth`.
+    Each tile keeps a RIM band inside its bed section (grip + bridges the pocket at layer 2); the mask is clipped further where a
+    tile would keep under MIN_CONTACT of bed contact or a pocket would be wider than MAX_POCKET. Returns (tiles, clipped tile count)."""
+    xm = _xsec(mask)
+    out, clipped = [], 0
+    for name, r, c, m in tiles:
+        man = _manifold(m)
+        sec = man.slice(0.1)
+        rim, hit = RIM, False
+        while True:
+            cut = (sec.offset(-rim, m3d.JoinType.Miter) if rim > 0 else sec) ^ xm
+            if cut.is_empty() or (sec.area() - cut.area() >= MIN_CONTACT and cut.offset(-MAX_POCKET / 2, m3d.JoinType.Miter).is_empty()):
+                break
+            rim, hit = rim + 0.1, True
+            if rim > 4.0:
+                cut = m3d.CrossSection()
+                break
+        clipped += hit
+        if not cut.is_empty():
+            m = _to_trimesh(man - cut.extrude(depth + 1).translate((0, 0, -1)))
+            if not m.is_watertight or len(m.split(only_watertight=False)) != 1:
+                raise ValueError(f"tile {name} is not one solid body after the engrave")
+        out.append((name, r, c, m))
+    return out, clipped
+
+
 def bed_contact(mesh, z=0.1):
     """Bed-contact area (mm^2) of a tile mesh: its section at z (default mid first layer)."""
     return float(_manifold(mesh).slice(z).area())
@@ -373,9 +481,11 @@ def check_params(pitch, height, gap, tile=None):
         raise ValueError(f"gap {gap} too large: tiles would slide apart (max 0.6 mm)")
 
 
-def build_sheet(spec, pitch, height, gap, origin=(0.0, 0.0), prefix="", lip_h=LIP_H, tile=None, foot_in=None, foot_h=None):
+def build_sheet(spec, pitch, height, gap, origin=(0.0, 0.0), prefix="", lip_h=LIP_H, tile=None, foot_in=None, foot_h=None,
+                engrave=None, engrave_depth=ENGRAVE_DEPTH):
     """Returns (tiles, info). tiles: [(name, row, col, trimesh)]. pitch None = the tile's default; height applies to the
-    square tile only (the drape tile's height is set by its rings)."""
+    square tile only (the drape tile's height is set by its rings). engrave: a --engrave spec (see the module doc), cut engrave_depth
+    into the bed side; info then carries engrave, engrave_depth, swap_layer, swap_z_mm, engrave_clipped_tiles, engrave_dropped."""
     tile = tile or DEFAULT_TILE
     if tile not in TILE_PITCH:
         raise ValueError(f"unknown tile {tile!r}; use drape | square")
@@ -405,11 +515,21 @@ def build_sheet(spec, pitch, height, gap, origin=(0.0, 0.0), prefix="", lip_h=LI
                            shift=(origin[0] + c * pitch + pitch / 2, origin[1] + r * pitch + pitch / 2))
         tiles.append((f"{prefix}tile-r{r}-c{c}", r, c, mesh))
     tiles = relieve_sheet(tiles, gap, foot_in, foot_h)
+    extra = {}
+    if engrave:
+        check_engrave_depth(engrave_depth)
+        mask, dropped_eng, trimmed = clean_engrave(load_engrave(engrave, o.w))
+        if mask.is_empty:
+            raise ValueError("--engrave holds nothing a 0.4 mm nozzle can print (every piece is under 0.8 mm wide)")
+        from shapely import affinity
+        tiles, clipped = engrave_sheet(tiles, affinity.translate(mask, *origin), engrave_depth)
+        extra = {"engrave": engrave, "engrave_depth": engrave_depth, "swap_layer": round(engrave_depth / LAYER_H) + 1,
+                 "swap_z_mm": engrave_depth, "engrave_clipped_tiles": clipped, "engrave_dropped": dropped_eng, "engrave_trimmed_mm2": trimmed}
     allv = np.vstack([t[3].vertices for t in tiles])
     info = {"tiles": len(tiles), "tile": tile, "foot_in": FOOT_IN if foot_in is None else foot_in, "foot_h": FOOT_H if foot_h is None else foot_h, "pitch": pitch, "height": round(drape_dims(gap)["height"], 3) if tile == "drape" else height,
             "gap": gap, "outline": spec,
             "bbox": [round(float(v), 3) for v in (*allv.min(0)[:2], *allv.max(0)[:2])],
-            "dropped_islands": dropped}
+            "dropped_islands": dropped, **extra}
     return tiles, info
 
 
@@ -553,6 +673,8 @@ def main(argv=None):
     ap.add_argument("--gap", type=float, default=DEFAULT_GAP)
     ap.add_argument("--foot-in", type=float, default=None, help=f"first-layer relief inset per side, mm (default {FOOT_IN}; 0 = off)")
     ap.add_argument("--foot-h", type=float, default=None, help=f"first-layer relief height, mm (default {FOOT_H})")
+    ap.add_argument("--engrave", metavar="SPEC", help='design cut into the face, one filament swap: poly:"x,y x,y|x,y ..." | FILE.json | image:PATH')
+    ap.add_argument("--engrave-depth", type=float, default=ENGRAVE_DEPTH, help=f"mm, a whole number of {LAYER_H} layers up to {ENGRAVE_MAX} (default {ENGRAVE_DEPTH})")
     ap.add_argument("--out")
     ap.add_argument("--swatch", action="store_true")
     ap.add_argument("--check", metavar="X.3mf")
@@ -563,6 +685,8 @@ def main(argv=None):
         return 0 if res["ok"] else 1
     if not a.out:
         ap.error("--out is required")
+    if a.swatch and a.engrave:
+        ap.error("--engrave does not combine with --swatch")
     try:
         if a.swatch:
             tiles, tags, patches = build_swatch(a.pitch, a.height, a.tile, a.foot_in, a.foot_h)
@@ -577,7 +701,8 @@ def main(argv=None):
             if info["bbox"][2] - info["bbox"][0] > BED or info["bbox"][3] - info["bbox"][1] > BED:
                 raise ValueError("swatch does not fit the bed")
         else:
-            tiles, info = build_sheet(a.outline, a.pitch, a.height, a.gap, tile=a.tile, foot_in=a.foot_in, foot_h=a.foot_h)
+            tiles, info = build_sheet(a.outline, a.pitch, a.height, a.gap, tile=a.tile, foot_in=a.foot_in, foot_h=a.foot_h,
+                                     engrave=a.engrave, engrave_depth=a.engrave_depth)
             tags = []
         export(tiles, tags, a.out)
         if a.tiles_glb:
