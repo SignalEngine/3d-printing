@@ -15,3 +15,11 @@ Built with the real generator (`fabric.py`), rebuilt 26 Sep with the first-layer
 **Print plate** (`print-plate.3mf`): bat + pumpkin + coaster (drape) and ghost (square), 239 x 189 mm; slice_gate with
 supports none: PASS, 4.4 h, 38.7 g PLA (A1, 0.20 mm Standard). Print flat, supports OFF.
 Each design also has `-tiles.glb` (one node per tile) + `-tiles.json` (links) for the lander's cloth viewer.
+
+## Two-tone, one swap, no AMS (face-down, like NASA fabric)
+The side on the bed is the face (it picks up the plate texture). Load the FACE colour first.
+1. Bambu Studio: open `print-plate.3mf`, slice, open Preview.
+2. Drag the layer slider to **layer 3 (0.6 mm)**, right-click the `+` → **Change filament**.
+3. Print. The A1 pauses once after layer 2; swap to colour 2 and resume. No swap back.
+Result (`print-plate-face-two-tone.png`): the face is colour 1, and colour 2 shows as thin outlines where the
+first-layer relief steps in and between tiles. Settings: No brim, supports off, elephant foot 0.15, 2 walls.
