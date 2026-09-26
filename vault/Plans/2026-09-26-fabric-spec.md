@@ -94,3 +94,11 @@ Different tiles fit shapes differently: hexagons follow curves and diagonals mor
 detail, and scales suit organic shapes (animals, leaves). Once hex + scales exist, the starter preview shows the
 shape in each style and SUGGESTS the style that keeps it most recognisable (the least silhouette area lost at tile
 resolution, no islands). Until then the preview shows the square-tile result honestly.
+- **Starter page SHIPPED** (26 Sep, printtweak #113 → prod 8f96e6d; model-forge #16 heart/rrect):
+  - /design/fabric (round/square coaster, bookmark, heart, patch; no name tag yet);
+  - a live tile preview parity-tested against fabric.py; price shown;
+  - `createFabric` + a `fabric` job kind; `process_fabric` runs fabric.py on the host (no AI, cost 0; ~25 s on staging);
+  - the brief lane takes fabric jobs (`PRINTTWEAK_KINDS=brief,fabric`);
+  - no AI tweak/retry on fabric designs ("make another size or shape").
+  - design-gate couldn't evaluate it: the page is sign-in gated, so the gate judged the Clerk page. Evidence: the
+    signed-in 390 px screenshot plus the staging order.
